@@ -6,10 +6,7 @@ mod utils;
 use args::Args;
 use clap::Parser;
 use errors::RunnerError;
-use reqwest::{
-    header::{HeaderMap, ACCEPT, CONTENT_TYPE},
-    Client, StatusCode,
-};
+use reqwest::StatusCode;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use starknet::{
     core::types::{
@@ -86,11 +83,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let params = AddDeclareTransactionRequestRef {
         declare_transaction: declared_transaction.as_ref(),
     };
-    let result = send_post_request(rpc_url, &params).await?;
     // let json_params = serde_json::to_string(&declared_transaction)?;
     // let declare_transaction_result =
     //     call(rpc_url, "starknet_addDeclareTransaction", vec![json_params]).await?;
-    dbg!(result);
+    dbg!(send_post_request(rpc_url, &params).await?);
 
     Ok(())
 }

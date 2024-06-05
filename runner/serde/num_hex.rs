@@ -34,3 +34,4 @@ pub mod u64 {
                 .map_err(|err| serde::de::Error::custom(format!("invalid u64 hex string: {err}")))
         }
     }
+}
