@@ -1,5 +1,5 @@
 use reqwest::header::{HeaderMap, ACCEPT, CONTENT_TYPE};
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::HashMap;
 
 pub async fn call(
@@ -11,17 +11,13 @@ pub async fn call(
     map.insert("jsonrpc", serde_json::Value::from("2.0"));
     map.insert("id", serde_json::Value::from("1"));
     map.insert("method", serde_json::Value::from(method));
-
     let mut headers = HeaderMap::new();
     headers.insert(CONTENT_TYPE, "application/json".parse().unwrap());
     headers.insert(ACCEPT, "application/json".parse().unwrap());
-
     if !params.is_empty() {
-        let mut params_stored = Vec::new();
-        for param in params {
-            params_stored.push(serde_json::Value::from(param));
-        }
-        map.insert("params", serde_json::Value::from(params_stored));
+        let params_stored: Vec<Value> = params.iter().map(|param| json!(param)).collect();
+        map.insert("params", serde_json::Value::Array(params_stored.clone()));
+        println!("JSON Parameters: {:?}", params_stored.clone());
     }
 
     let client = reqwest::Client::new();
