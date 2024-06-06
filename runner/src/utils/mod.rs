@@ -52,6 +52,19 @@ impl AsRef<BlockId> for BlockId {
     }
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum JsonRpcResponse<T> {
+    Success { id: u64, result: T },
+    Error { id: u64, error: JsonRpcError },
+}
+#[derive(Debug, Deserialize)]
+pub struct JsonRpcError {
+    pub code: i64,
+    pub message: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data: Option<serde_json::Value>,
+}
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(untagged)]
 pub enum BroadcastedInvokeTransaction {

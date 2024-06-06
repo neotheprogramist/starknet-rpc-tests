@@ -4,7 +4,7 @@ use super::{
     BroadcastedTransaction,
 };
 use crate::utils::unsigned_field_element::UfeHex;
-use crate::BroadcastedDeclareTransaction;
+use crate::utils::BroadcastedDeclareTransaction;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
 use starknet::core::types::{FieldElement, FlattenedSierraClass};
