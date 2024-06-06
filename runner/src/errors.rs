@@ -32,4 +32,7 @@ pub enum RunnerError {
 
     #[error("Starknet-devnet not launched : {0}")]
     DevnetNotLaunched(String),
+
+    #[error("Request failed: {0}")]
+    ReqwestError(#[from] reqwest::Error),
 }

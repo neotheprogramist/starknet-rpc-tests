@@ -25,3 +25,6 @@ serde_with = "3.8.1"
 hex-literal = "0.4.1"
 tracing = "0.1.40"
 base64 = { version = "0.21.0", default-features = false, features = ["alloc"] }
+async-trait = "0.1.68"
+auto_impl = "1.0.1"
+log = "0.4.19"
