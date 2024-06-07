@@ -16,3 +16,4 @@ Cargo.lock
 .snfoundry_cache/
 
 Scarb.lock
+.cargo

@@ -9,3 +9,22 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace.dependencies]
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+serde_json = { version = "1.0.96", default-features = false, features = [
+    "alloc",
+    "raw_value",
+] }
+starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "d980869" }
+thiserror = "1.0.59"
+url = "2.5.0"
+regex = "1.10.4"
+clap = { version = "4.5.4", features = ["derive", "env"] }
+serde = "1.0.203"
+serde_with = "3.8.1"
+hex-literal = "0.4.1"
+tracing = "0.1.40"
+base64 = { version = "0.21.0", default-features = false, features = ["alloc"] }
+async-trait = "0.1.68"
+auto_impl = "1.0.1"
+log = "0.4.19"
