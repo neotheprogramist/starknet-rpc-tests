@@ -1,5 +1,3 @@
-// src/lib.rs or any main module file
-
 // src/tests.rs
 #[cfg(test)]
 mod tests {
