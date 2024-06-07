@@ -1,5 +1,5 @@
 use clap::Parser;
-use starknet::core::types::FieldElement;
+use starknet_crypto::FieldElement;
 
 #[derive(Parser, Debug, Clone)]
 #[command(version, about, long_about = None)]

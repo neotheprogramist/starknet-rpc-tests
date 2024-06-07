@@ -7,7 +7,7 @@ use crate::utils::unsigned_field_element::UfeHex;
 use ::serde::Deserialize;
 use serde::{Serialize, Serializer};
 use serde_with::serde_as;
-use starknet::core::types::FieldElement;
+use starknet_crypto::FieldElement;
 
 #[derive(Debug, Serialize)]
 #[serde(tag = "type", rename_all = "SCREAMING_SNAKE_CASE")]
