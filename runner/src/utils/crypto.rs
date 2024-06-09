@@ -1,6 +1,7 @@
 pub use starknet_crypto::{pedersen_hash, ExtendedSignature, Signature};
 use starknet_crypto::{rfc6979_generate_k, sign, verify, FieldElement, SignError, VerifyError};
 
+#[allow(dead_code)]
 mod errors {
     use core::fmt::{Display, Formatter, Result};
 
@@ -44,6 +45,7 @@ mod errors {
 }
 pub use errors::{EcdsaSignError, EcdsaVerifyError};
 
+#[allow(dead_code)]
 pub fn compute_hash_on_elements(data: &[FieldElement]) -> FieldElement {
     let mut current_hash = FieldElement::ZERO;
 
@@ -55,6 +57,7 @@ pub fn compute_hash_on_elements(data: &[FieldElement]) -> FieldElement {
     pedersen_hash(&current_hash, &data_len)
 }
 
+#[allow(dead_code)]
 pub fn ecdsa_sign(
     private_key: &FieldElement,
     message_hash: &FieldElement,
@@ -82,6 +85,7 @@ pub fn ecdsa_sign(
     }
 }
 
+#[allow(dead_code)]
 pub fn ecdsa_verify(
     public_key: &FieldElement,
     message_hash: &FieldElement,

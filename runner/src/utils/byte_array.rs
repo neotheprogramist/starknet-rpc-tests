@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 pub mod base64 {
 
     use std::fmt::{self, Formatter};

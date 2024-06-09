@@ -4,6 +4,7 @@ use super::codegen::FlattenedSierraClass;
 use starknet_crypto::{FieldElement, PoseidonHasher};
 /// [DeclarationV3] but with `nonce`, `gas` and `gas_price` already determined.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct RawDeclarationV3 {
     pub contract_class: Arc<FlattenedSierraClass>,
     pub compiled_class_hash: FieldElement,
@@ -11,6 +12,7 @@ pub struct RawDeclarationV3 {
     pub gas: u64,
     pub gas_price: u128,
 }
+#[allow(dead_code)]
 /// Cairo string for "declare"
 const PREFIX_DECLARE: FieldElement = FieldElement::from_mont([
     17542456862011667323,
@@ -19,6 +21,7 @@ const PREFIX_DECLARE: FieldElement = FieldElement::from_mont([
     191557713328401194,
 ]);
 
+#[allow(dead_code)]
 /// 2 ^ 128 + 1
 const QUERY_VERSION_ONE: FieldElement = FieldElement::from_mont([
     18446744073700081633,
@@ -27,6 +30,7 @@ const QUERY_VERSION_ONE: FieldElement = FieldElement::from_mont([
     576460752142433776,
 ]);
 
+#[allow(dead_code)]
 /// 2 ^ 128 + 2
 const QUERY_VERSION_TWO: FieldElement = FieldElement::from_mont([
     18446744073700081601,
@@ -35,6 +39,7 @@ const QUERY_VERSION_TWO: FieldElement = FieldElement::from_mont([
     576460752142433232,
 ]);
 
+#[allow(dead_code)]
 /// 2 ^ 128 + 3
 const QUERY_VERSION_THREE: FieldElement = FieldElement::from_mont([
     18446744073700081569,
@@ -43,6 +48,7 @@ const QUERY_VERSION_THREE: FieldElement = FieldElement::from_mont([
     576460752142432688,
 ]);
 
+#[allow(dead_code)]
 impl RawDeclarationV3 {
     pub fn transaction_hash(
         &self,

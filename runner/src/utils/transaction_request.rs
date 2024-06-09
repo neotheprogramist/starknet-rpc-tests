@@ -11,6 +11,7 @@ use starknet_crypto::FieldElement;
 
 #[derive(Debug, Serialize)]
 #[serde(tag = "type", rename_all = "SCREAMING_SNAKE_CASE")]
+#[allow(dead_code)]
 pub enum TransactionRequest {
     Declare(DeclareTransaction),
     // InvokeFunction(InvokeFunctionTransaction),
@@ -19,6 +20,7 @@ pub enum TransactionRequest {
 
 #[derive(Debug, Serialize)]
 #[serde(untagged)]
+#[allow(dead_code)]
 pub enum DeclareTransaction {
     // V1(DeclareV1Transaction),
     // V2(DeclareV2Transaction),

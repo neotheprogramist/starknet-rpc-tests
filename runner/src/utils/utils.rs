@@ -1,7 +1,10 @@
 use sha3::{Digest, Keccak256};
 use starknet_crypto::{pedersen_hash, FieldElement};
 
+#[allow(dead_code)]
 const DEFAULT_ENTRY_POINT_NAME: &str = "__default__";
+
+#[allow(dead_code)]
 const DEFAULT_L1_ENTRY_POINT_NAME: &str = "__l1_default__";
 
 // 2 ** 251 - 256
@@ -12,6 +15,7 @@ const ADDR_BOUND: FieldElement = FieldElement::from_mont([
     576459263475590224,
 ]);
 
+#[allow(dead_code)]
 // Cairo string of "STARKNET_CONTRACT_ADDRESS"
 const CONTRACT_ADDRESS_PREFIX: FieldElement = FieldElement::from_mont([
     3829237882463328880,
@@ -20,6 +24,7 @@ const CONTRACT_ADDRESS_PREFIX: FieldElement = FieldElement::from_mont([
     533439743893157637,
 ]);
 
+#[allow(dead_code)]
 /// The uniqueness settings for UDC deployments.
 #[derive(Debug, Clone)]
 pub enum UdcUniqueness {
@@ -27,12 +32,14 @@ pub enum UdcUniqueness {
     Unique(UdcUniqueSettings),
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct UdcUniqueSettings {
     pub deployer_address: FieldElement,
     pub udc_contract_address: FieldElement,
 }
 
+#[allow(dead_code)]
 mod errors {
     use core::fmt::{Display, Formatter, Result};
 
@@ -115,6 +122,7 @@ pub fn starknet_keccak(data: &[u8]) -> FieldElement {
     FieldElement::from_bytes_be(unsafe { &*(hash[..].as_ptr() as *const [u8; 32]) }).unwrap()
 }
 
+#[allow(dead_code)]
 pub fn get_selector_from_name(func_name: &str) -> Result<FieldElement, NonAsciiNameError> {
     if func_name == DEFAULT_ENTRY_POINT_NAME || func_name == DEFAULT_L1_ENTRY_POINT_NAME {
         Ok(FieldElement::ZERO)
@@ -128,6 +136,7 @@ pub fn get_selector_from_name(func_name: &str) -> Result<FieldElement, NonAsciiN
     }
 }
 
+#[allow(dead_code)]
 pub fn get_storage_var_address(
     var_name: &str,
     args: &[FieldElement],
@@ -144,6 +153,7 @@ pub fn get_storage_var_address(
     }
 }
 
+#[allow(dead_code)]
 /// Converts Cairo short string to [FieldElement].
 pub fn cairo_short_string_to_felt(str: &str) -> Result<FieldElement, CairoShortStringToFeltError> {
     if !str.is_ascii() {
@@ -162,6 +172,7 @@ pub fn cairo_short_string_to_felt(str: &str) -> Result<FieldElement, CairoShortS
     Ok(FieldElement::from_bytes_be(&buffer).unwrap())
 }
 
+#[allow(dead_code)]
 /// Converts [FieldElement] to Cairo short string.
 pub fn parse_cairo_short_string(felt: &FieldElement) -> Result<String, ParseCairoShortStringError> {
     if felt == &FieldElement::ZERO {
@@ -186,6 +197,7 @@ pub fn parse_cairo_short_string(felt: &FieldElement) -> Result<String, ParseCair
     Ok(buffer)
 }
 
+#[allow(dead_code)]
 /// Computes the target contract address of a "native" contract deployment. Use
 /// `get_udc_deployed_address` instead if you want to compute the target address for deployments
 /// through the Universal Deployer Contract.
@@ -204,6 +216,7 @@ pub fn get_contract_address(
     ]))
 }
 
+#[allow(dead_code)]
 /// Computes the target contract address for deployments through the Universal Deploy Contract.
 pub fn get_udc_deployed_address(
     salt: FieldElement,
@@ -231,10 +244,13 @@ pub fn normalize_address(address: FieldElement) -> FieldElement {
     address % ADDR_BOUND
 }
 
+#[allow(dead_code)]
 pub fn create_jsonrpc_client() -> JsonRpcClient<HttpTransport> {
     let rpc_url = std::env::var("STARKNET_RPC").unwrap_or("http://localhost:5050/".into());
     JsonRpcClient::new(HttpTransport::new(url::Url::parse(&rpc_url).unwrap()))
 }
+
+#[allow(dead_code)]
 pub async fn get_compiled_contract(
     sierra_path: &str,
     casm_path: &str,

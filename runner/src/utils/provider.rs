@@ -300,6 +300,7 @@ pub trait Provider {
     // }
 }
 
+#[allow(dead_code)]
 /// Trait for implementation-specific error type. These errors are irrelevant in most cases,
 /// assuming that users typically care more about the specifics of RPC errors instead of the
 /// underlying transport. Therefore, it makes little sense to bloat [ProviderError] with a generic
@@ -311,6 +312,7 @@ pub trait ProviderImplError: Error + Debug + Send + Sync {
     fn as_any(&self) -> &dyn Any;
 }
 
+#[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
 pub enum ProviderError {
     #[error(transparent)]

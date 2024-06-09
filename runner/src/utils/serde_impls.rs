@@ -148,6 +148,7 @@ pub(crate) mod u64_hex {
     }
 }
 
+#[allow(dead_code)]
 pub(crate) mod u128_hex {
     use serde::de::Visitor;
 
@@ -184,6 +185,7 @@ pub(crate) mod u128_hex {
     }
 }
 
+#[allow(dead_code)]
 pub(crate) mod u64_hex_opt {
     use serde::de::Visitor;
 

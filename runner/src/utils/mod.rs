@@ -10,6 +10,7 @@ use codegen::{
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use starknet_crypto::FieldElement;
+#[allow(dead_code)]
 /// Cairo string for "CONTRACT_CLASS_V0.1.0"
 const PREFIX_CONTRACT_CLASS_V0_1_0: FieldElement = FieldElement::from_mont([
     5800711240972404213,
@@ -18,6 +19,7 @@ const PREFIX_CONTRACT_CLASS_V0_1_0: FieldElement = FieldElement::from_mont([
     37302452645455172,
 ]);
 
+#[allow(dead_code)]
 /// Cairo string for "COMPILED_CLASS_V1"
 const PREFIX_COMPILED_CLASS_V1: FieldElement = FieldElement::from_mont([
     2291010424822318237,

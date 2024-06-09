@@ -190,6 +190,7 @@ struct Felt(#[serde_as(as = "UfeHex")] pub FieldElement);
 #[derive(Serialize, Deserialize)]
 struct FeltArray(#[serde_as(as = "Vec<UfeHex>")] pub Vec<FieldElement>);
 
+#[allow(dead_code)]
 impl<T> JsonRpcClient<T> {
     pub fn new(transport: T) -> Self {
         Self { transport }
