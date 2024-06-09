@@ -5,7 +5,7 @@ use serde::{
     Deserializer, Serializer,
 };
 use serde_with::{DeserializeAs, SerializeAs};
-use starknet::core::types::FieldElement;
+use starknet_crypto::FieldElement;
 
 pub struct UfeHex;
 

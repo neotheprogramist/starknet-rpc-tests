@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use auto_impl::auto_impl;
-use starknet::core::types::FieldElement;
+use starknet_crypto::FieldElement;
 use std::{any::Any, error::Error, fmt::Debug};
 
 use crate::utils::{

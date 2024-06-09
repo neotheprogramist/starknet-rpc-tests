@@ -1,19 +1,17 @@
 use auto_impl::auto_impl;
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize, Serializer};
-use starknet::core::types::{
-    requests::{CallRequest, GetNonceRequest},
-    FieldElement,
-};
+use starknet_crypto::FieldElement;
+
 use std::{any::Any, error::Error, fmt::Display};
 pub mod http;
 use crate::utils::{
     codegen::{
         AddDeclareTransactionRequest, AddDeclareTransactionRequestRef,
         AddDeployAccountTransactionRequest, AddDeployAccountTransactionRequestRef,
-        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, CallRequestRef,
+        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, CallRequest, CallRequestRef,
         ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef, FeeEstimate, FunctionCall,
-        GetNonceRequestRef, NoTraceAvailableErrorData, SimulationFlagForEstimateFee, StarknetError,
-        TransactionExecutionErrorData,
+        GetNonceRequest, GetNonceRequestRef, NoTraceAvailableErrorData,
+        SimulationFlagForEstimateFee, StarknetError, TransactionExecutionErrorData,
     },
     provider::{Provider, ProviderError, ProviderImplError},
     unsigned_field_element::UfeHex,

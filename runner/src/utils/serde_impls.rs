@@ -237,7 +237,7 @@ mod block_id {
     use crate::utils::UfeHex;
     use serde::{Deserialize, Deserializer, Serialize};
     use serde_with::serde_as;
-    use starknet::core::types::FieldElement;
+    use starknet_crypto::FieldElement;
 
     use crate::utils::{codegen::BlockTag, BlockId};
 

@@ -7,7 +7,7 @@ use crate::utils::unsigned_field_element::UfeHex;
 use crate::utils::BroadcastedDeclareTransaction;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
-use starknet::core::types::{FieldElement, FlattenedSierraClass};
+use starknet_crypto::FieldElement;
 use std::sync;
 /// Request for method starknet_estimateFee
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -2539,4 +2539,28 @@ impl<'de> Deserialize<'de> for DeclareTransactionV3 {
             fee_data_availability_mode: tagged.fee_data_availability_mode,
         })
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GetNonceRequest {
+    /// The hash of the requested block, or number (height) of the requested block, or a block tag
+    pub block_id: BlockId,
+    /// The address of the contract whose nonce we're seeking
+    pub contract_address: FieldElement,
+}
+
+/// The definition of a sierra Starknet contract class.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct FlattenedSierraClass {
+    /// The list of sierra instructions of which the program consists
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub sierra_program: Vec<FieldElement>,
+    /// The version of the contract class object. Currently, the Starknet os supports version 0.1.0
+    pub contract_class_version: String,
+    /// Entry points by type
+    pub entry_points_by_type: EntryPointsByType,
+    /// The class abi, as supplied by the user declaring the class
+    pub abi: String,
 }

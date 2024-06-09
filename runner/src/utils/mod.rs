@@ -1,5 +1,4 @@
 use crate::utils::unsigned_field_element::UfeHex;
-use ::serde::Deserialize;
 use codegen::{
     BlockTag, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
     BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
@@ -7,15 +6,37 @@ use codegen::{
     DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3, DeployTransaction,
     InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3,
 };
-use serde::Serialize;
+
+use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
-use starknet::core::types::FieldElement;
+use starknet_crypto::FieldElement;
+/// Cairo string for "CONTRACT_CLASS_V0.1.0"
+const PREFIX_CONTRACT_CLASS_V0_1_0: FieldElement = FieldElement::from_mont([
+    5800711240972404213,
+    15539482671244488427,
+    18446734822722598327,
+    37302452645455172,
+]);
+
+/// Cairo string for "COMPILED_CLASS_V1"
+const PREFIX_COMPILED_CLASS_V1: FieldElement = FieldElement::from_mont([
+    2291010424822318237,
+    1609463842841646376,
+    18446744073709549462,
+    324306817650036332,
+]);
+
+pub mod accounts;
 pub mod byte_array;
 pub mod codegen;
+pub mod contract;
+pub mod crypto;
 pub mod provider;
 pub mod serde_impls;
 pub mod transaction_request;
 pub mod unsigned_field_element;
+pub mod utils;
+
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(tag = "type")]
 pub enum BroadcastedTransaction {
