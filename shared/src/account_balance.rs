@@ -28,12 +28,6 @@ pub struct AccountBalanceParams {
     pub block_tag: String,
 }
 
-#[derive(Debug)]
-pub enum AccountBalanceResponse {
-    V0_0_5(AccountBalanceResponseV0_0_5),
-    V0_0_6(AccountBalanceResponseV0_0_6),
-}
-
 pub async fn account_balance(
     account_balance_params: &AccountBalanceParams,
     version: &Version,
