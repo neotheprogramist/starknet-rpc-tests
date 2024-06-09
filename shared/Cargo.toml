@@ -1,0 +1,16 @@
+[package]
+name = "shared"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+tokio.workspace = true
+reqwest.workspace = true
+serde.workspace = true
+clap.workspace = true
+colored.workspace = true
+v0-0-5 = { path = "../v0-0-5" }
+v0-0-6 = { path = "../v0-0-6" }
+
+[path]
+src = "src/lib.rs"

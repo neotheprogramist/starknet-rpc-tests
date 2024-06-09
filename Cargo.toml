@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["runner", "v0-0-5", "v0-0-6"]
+members = ["runner", "shared", "v0-0-5", "v0-0-6"]
 
 [workspace.package]
 version = "0.1.0"
@@ -40,6 +40,6 @@ async-trait = "0.1.68"
 auto_impl = "1.0.1"
 log = "0.4.19"
 starknet-accounts = "0.9.0"
-
 starknet-signers = "0.8.0"
 sha3 = { version = "0.10.7", default-features = false }
+colored = "2.1.0"
