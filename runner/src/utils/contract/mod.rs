@@ -290,13 +290,6 @@ mod errors {
         Json(JsonError),
     }
 
-    #[cfg(feature = "std")]
-    #[derive(Debug)]
-    pub enum CompressProgramError {
-        Json(JsonError),
-        Io(std::io::Error),
-    }
-
     #[derive(Debug)]
     pub struct JsonError {
         pub(crate) message: String,
@@ -330,19 +323,6 @@ mod errors {
                 Self::InvalidBytecodeSegment(inner) => write!(f, "{}", inner),
                 Self::PcOutOfRange(inner) => write!(f, "{}", inner),
                 Self::Json(inner) => write!(f, "json serialization error: {}", inner),
-            }
-        }
-    }
-
-    #[cfg(feature = "std")]
-    impl std::error::Error for CompressProgramError {}
-
-    #[cfg(feature = "std")]
-    impl Display for CompressProgramError {
-        fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-            match self {
-                Self::Json(inner) => write!(f, "json serialization error: {}", inner),
-                Self::Io(inner) => write!(f, "compression io error: {}", inner),
             }
         }
     }

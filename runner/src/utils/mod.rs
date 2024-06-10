@@ -1,10 +1,6 @@
 use crate::utils::unsigned_field_element::UfeHex;
 use codegen::{
-    BlockTag, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
-    BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
-    BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionV0,
-    DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3, DeployTransaction,
-    InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3,
+    BlockTag, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3, DeployAccountTransactionTrace, DeployTransaction, InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionTrace
 };
 
 use serde::{Deserialize, Serialize};
@@ -28,7 +24,7 @@ const PREFIX_COMPILED_CLASS_V1: FieldElement = FieldElement::from_mont([
     324306817650036332,
 ]);
 
-pub mod accounts;
+pub mod account;
 pub mod byte_array;
 pub mod codegen;
 pub mod contract;
@@ -98,6 +94,7 @@ pub enum BroadcastedInvokeTransaction {
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(untagged)]
 pub enum BroadcastedDeclareTransaction {
+    V1(BroadcastedDeclareTransactionV1),
     V2(BroadcastedDeclareTransactionV2),
     V3(BroadcastedDeclareTransactionV3),
 }
@@ -175,4 +172,21 @@ pub enum DeclareTransaction {
     V2(DeclareTransactionV2),
     #[serde(rename = "0x3")]
     V3(DeclareTransactionV3),
+}
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(tag = "type")]
+pub enum TransactionTrace {
+    #[serde(rename = "INVOKE")]
+    Invoke(InvokeTransactionTrace),
+    #[serde(rename = "DEPLOY_ACCOUNT")]
+    DeployAccount(DeployAccountTransactionTrace),
+    #[serde(rename = "L1_HANDLER")]
+    L1Handler(L1HandlerTransactionTrace),
+    #[serde(rename = "DECLARE")]
+    Declare(DeclareTransactionTrace),
+}
+impl AsRef<BroadcastedInvokeTransaction> for BroadcastedInvokeTransaction {
+    fn as_ref(&self) -> &BroadcastedInvokeTransaction {
+        self
+    }
 }

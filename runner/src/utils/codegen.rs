@@ -1,8 +1,10 @@
 use super::serde_impls::NumAsHex;
 use super::{
     BlockId, BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction,
-    BroadcastedTransaction,
+    BroadcastedTransaction, TransactionTrace,
 };
+use crate::transports::ExecuteInvocation;
+use crate::utils::byte_array::base64;
 use crate::utils::unsigned_field_element::UfeHex;
 use crate::utils::BroadcastedDeclareTransaction;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -2564,4 +2566,981 @@ pub struct FlattenedSierraClass {
     pub entry_points_by_type: EntryPointsByType,
     /// The class abi, as supplied by the user declaring the class
     pub abi: String,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct SimulatedTransaction {
+    /// The transaction's trace
+    pub transaction_trace: TransactionTrace,
+    /// The transaction's resources and fee
+    pub fee_estimation: FeeEstimate,
+}
+/// The execution trace of an invoke transaction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InvokeTransactionTrace {
+    pub validate_invocation: Option<FunctionInvocation>,
+    pub execute_invocation: ExecuteInvocation,
+    pub fee_transfer_invocation: Option<FunctionInvocation>,
+    /// The state diffs induced by the transaction
+    pub state_diff: Option<StateDiff>,
+    /// The resources consumed by the transaction, includes both computation and data
+    pub execution_resources: ExecutionResources,
+}
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct FunctionInvocation {
+    /// Contract address
+    #[serde_as(as = "UfeHex")]
+    pub contract_address: FieldElement,
+    /// Entry point selector
+    #[serde_as(as = "UfeHex")]
+    pub entry_point_selector: FieldElement,
+    /// The parameters passed to the function
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub calldata: Vec<FieldElement>,
+    /// The address of the invoking contract. 0 for the root invocation
+    #[serde_as(as = "UfeHex")]
+    pub caller_address: FieldElement,
+    /// The hash of the class being called
+    #[serde_as(as = "UfeHex")]
+    pub class_hash: FieldElement,
+    pub entry_point_type: EntryPointType,
+    pub call_type: CallType,
+    /// The value returned from the function invocation
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub result: Vec<FieldElement>,
+    /// The calls made by this invocation
+    pub calls: Vec<FunctionInvocation>,
+    /// The events emitted in this invocation
+    pub events: Vec<OrderedEvent>,
+    /// The messages sent by this invocation to L1
+    pub messages: Vec<OrderedMessage>,
+    /// Resources consumed by the internal call. This is named execution_resources for legacy
+    /// reasons
+    pub execution_resources: ComputationResources,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum EntryPointType {
+    #[serde(rename = "EXTERNAL")]
+    External,
+    #[serde(rename = "L1_HANDLER")]
+    L1Handler,
+    #[serde(rename = "CONSTRUCTOR")]
+    Constructor,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CallType {
+    #[serde(rename = "LIBRARY_CALL")]
+    LibraryCall,
+    #[serde(rename = "CALL")]
+    Call,
+    #[serde(rename = "DELEGATE")]
+    Delegate,
+}
+
+/// Computation resources.
+///
+/// The resources consumed by the vm.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct ComputationResources {
+    /// The number of cairo steps used
+    pub steps: u64,
+    /// The number of unused memory cells (each cell is roughly equivalent to a step)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub memory_holes: Option<u64>,
+    /// The number of range_check builtin instances
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub range_check_builtin_applications: Option<u64>,
+    /// The number of pedersen builtin instances
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pedersen_builtin_applications: Option<u64>,
+    /// The number of poseidon builtin instances
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub poseidon_builtin_applications: Option<u64>,
+    /// The number of ec_op builtin instances
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ec_op_builtin_applications: Option<u64>,
+    /// The number of ecdsa builtin instances
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ecdsa_builtin_applications: Option<u64>,
+    /// The number of bitwise builtin instances
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bitwise_builtin_applications: Option<u64>,
+    /// The number of keccak builtin instances
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub keccak_builtin_applications: Option<u64>,
+    /// The number of accesses to the segment arena
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub segment_arena_builtin: Option<u64>,
+}
+
+/// Orderedevent.
+///
+/// An event alongside its order within the transaction.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct OrderedEvent {
+    /// The order of the event within the transaction
+    pub order: u64,
+    /// Keys
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub keys: Vec<FieldElement>,
+    /// Data
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub data: Vec<FieldElement>,
+}
+
+///
+/// A message alongside its order within the transaction.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct OrderedMessage {
+    /// The order of the message within the transaction
+    pub order: u64,
+    /// The address of the L2 contract sending the message
+    #[serde_as(as = "UfeHex")]
+    pub from_address: FieldElement,
+    /// The target L1 address the message is sent to
+    #[serde_as(as = "UfeHex")]
+    pub to_address: FieldElement,
+    /// The payload of the message
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub payload: Vec<FieldElement>,
+}
+
+/// The execution trace of a deploy account transaction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeployAccountTransactionTrace {
+    pub validate_invocation: Option<FunctionInvocation>,
+    /// The trace of the __execute__ call or constructor call, depending on the transaction type
+    /// (none for declare transactions)
+    pub constructor_invocation: FunctionInvocation,
+    pub fee_transfer_invocation: Option<FunctionInvocation>,
+    /// The state diffs induced by the transaction
+    pub state_diff: Option<StateDiff>,
+    /// The resources consumed by the transaction, includes both computation and data
+    pub execution_resources: ExecutionResources,
+}
+/// The execution trace of an L1 handler transaction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct L1HandlerTransactionTrace {
+    /// The trace of the __execute__ call or constructor call, depending on the transaction type
+    /// (none for declare transactions)
+    pub function_invocation: FunctionInvocation,
+    /// The state diffs induced by the transaction
+    pub state_diff: Option<StateDiff>,
+    /// The resources consumed by the transaction, includes both computation and data
+    pub execution_resources: ExecutionResources,
+}
+/// The execution trace of a declare transaction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeclareTransactionTrace {
+    pub validate_invocation: Option<FunctionInvocation>,
+    pub fee_transfer_invocation: Option<FunctionInvocation>,
+    /// The state diffs induced by the transaction
+    pub state_diff: Option<StateDiff>,
+    /// The resources consumed by the transaction, includes both computation and data
+    pub execution_resources: ExecutionResources,
+}
+
+/// Flags that indicate how to simulate a given transaction. By default, the sequencer behavior is
+/// replicated locally (enough funds are expected to be in the account, and fee will be deducted
+/// from the balance before the simulation of the next transaction). To skip the fee charge, use the
+/// skip_fee_charge flag.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SimulationFlag {
+    #[serde(rename = "SKIP_VALIDATE")]
+    SkipValidate,
+    #[serde(rename = "SKIP_FEE_CHARGE")]
+    SkipFeeCharge,
+}
+
+/// The change in state applied in this block, given as a mapping of addresses to the new values
+/// and/or new contracts.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct StateDiff {
+    /// Storage diffs
+    pub storage_diffs: Vec<ContractStorageDiffItem>,
+    /// Deprecated declared classes
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub deprecated_declared_classes: Vec<FieldElement>,
+    /// Declared classes
+    pub declared_classes: Vec<DeclaredClassItem>,
+    /// Deployed contracts
+    pub deployed_contracts: Vec<DeployedContractItem>,
+    /// Replaced classes
+    pub replaced_classes: Vec<ReplacedClassItem>,
+    /// Nonces
+    pub nonces: Vec<NonceUpdate>,
+}
+/// Contract storage diff item.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct ContractStorageDiffItem {
+    /// The contract address for which the storage changed
+    #[serde_as(as = "UfeHex")]
+    pub address: FieldElement,
+    /// The changes in the storage of the contract
+    pub storage_entries: Vec<StorageEntry>,
+}
+/// Replaced class.
+///
+/// The list of contracts whose class was replaced.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct ReplacedClassItem {
+    /// The address of the contract whose class was replaced
+    #[serde_as(as = "UfeHex")]
+    pub contract_address: FieldElement,
+    /// The new class hash
+    #[serde_as(as = "UfeHex")]
+    pub class_hash: FieldElement,
+}
+/// Storage diff item.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct StorageEntry {
+    /// The key of the changed value
+    #[serde_as(as = "UfeHex")]
+    pub key: FieldElement,
+    /// The new value applied to the given address
+    #[serde_as(as = "UfeHex")]
+    pub value: FieldElement,
+}
+/// Nonce update.
+///
+/// The updated nonce per contract address.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct NonceUpdate {
+    /// The address of the contract
+    #[serde_as(as = "UfeHex")]
+    pub contract_address: FieldElement,
+    /// The nonce for the given address at the end of the block
+    #[serde_as(as = "UfeHex")]
+    pub nonce: FieldElement,
+}
+/// Deployed contract item.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct DeployedContractItem {
+    /// The address of the contract
+    #[serde_as(as = "UfeHex")]
+    pub address: FieldElement,
+    /// The hash of the contract code
+    #[serde_as(as = "UfeHex")]
+    pub class_hash: FieldElement,
+}
+
+/// New classes.
+///
+/// The declared class hash and compiled class hash.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct DeclaredClassItem {
+    /// The hash of the declared class
+    #[serde_as(as = "UfeHex")]
+    pub class_hash: FieldElement,
+    /// The cairo assembly hash corresponding to the declared class
+    #[serde_as(as = "UfeHex")]
+    pub compiled_class_hash: FieldElement,
+}
+/// Execution resources.
+///
+/// The resources consumed by the transaction, includes both computation and data.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct ExecutionResources {
+    #[serde(flatten)]
+    pub computation_resources: ComputationResources,
+    #[serde(flatten)]
+    pub data_resources: DataResources,
+}
+
+/// Dataresources.
+///
+/// The data-availability resources of this transaction.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct DataResources {
+    pub data_availability: DataAvailabilityResources,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct DataAvailabilityResources {
+    /// The gas consumed by this transaction's data, 0 if it uses data gas for da
+    pub l1_gas: u64,
+    /// The data gas consumed by this transaction's data, 0 if it uses gas for da
+    pub l1_data_gas: u64,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct RevertedInvocation {
+    /// The revert reason for the failed execution
+    pub revert_reason: String,
+}
+
+/// Block with transaction hashes.
+///
+/// The block object.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct BlockWithTxHashes {
+    /// Status
+    pub status: BlockStatus,
+    /// Block hash
+    #[serde_as(as = "UfeHex")]
+    pub block_hash: FieldElement,
+    /// The hash of this block's parent
+    #[serde_as(as = "UfeHex")]
+    pub parent_hash: FieldElement,
+    /// The block number (its height)
+    pub block_number: u64,
+    /// The new global state root
+    #[serde_as(as = "UfeHex")]
+    pub new_root: FieldElement,
+    /// The time in which the block was created, encoded in Unix time
+    pub timestamp: u64,
+    /// The Starknet identity of the sequencer submitting this block
+    #[serde_as(as = "UfeHex")]
+    pub sequencer_address: FieldElement,
+    /// The price of L1 gas in the block
+    pub l1_gas_price: ResourcePrice,
+    /// The price of L1 data gas in the block
+    pub l1_data_gas_price: ResourcePrice,
+    /// Specifies whether the data of this block is published via blob data or calldata
+    pub l1_da_mode: L1DataAvailabilityMode,
+    /// Semver of the current Starknet protocol
+    pub starknet_version: String,
+    /// The hashes of the transactions included in this block
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub transactions: Vec<FieldElement>,
+}
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct ResourcePrice {
+    /// The price of one unit of the given resource, denominated in fri (10^-18 strk)
+    #[serde_as(as = "UfeHex")]
+    pub price_in_fri: FieldElement,
+    /// The price of one unit of the given resource, denominated in wei
+    #[serde_as(as = "UfeHex")]
+    pub price_in_wei: FieldElement,
+}
+
+/// L1 da mode.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum L1DataAvailabilityMode {
+    #[serde(rename = "BLOB")]
+    Blob,
+    #[serde(rename = "CALLDATA")]
+    Calldata,
+}
+
+/// Pending block with transaction hashes.
+///
+/// The dynamic block being constructed by the sequencer. Note that this object will be deprecated
+/// upon decentralization.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct PendingBlockWithTxHashes {
+    /// The hashes of the transactions included in this block
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub transactions: Vec<FieldElement>,
+    /// The hash of this block's parent
+    #[serde_as(as = "UfeHex")]
+    pub parent_hash: FieldElement,
+    /// The time in which the block was created, encoded in Unix time
+    pub timestamp: u64,
+    /// The Starknet identity of the sequencer submitting this block
+    #[serde_as(as = "UfeHex")]
+    pub sequencer_address: FieldElement,
+    /// The price of L1 gas in the block
+    pub l1_gas_price: ResourcePrice,
+    /// The price of L1 data gas in the block
+    pub l1_data_gas_price: ResourcePrice,
+    /// Specifies whether the data of this block is published via blob data or calldata
+    pub l1_da_mode: L1DataAvailabilityMode,
+    /// Semver of the current Starknet protocol
+    pub starknet_version: String,
+}
+/// Block status.
+///
+/// The status of the block.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BlockStatus {
+    #[serde(rename = "PENDING")]
+    Pending,
+    #[serde(rename = "ACCEPTED_ON_L2")]
+    AcceptedOnL2,
+    #[serde(rename = "ACCEPTED_ON_L1")]
+    AcceptedOnL1,
+    #[serde(rename = "REJECTED")]
+    Rejected,
+}
+
+impl Serialize for InvokeTransactionTrace {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub validate_invocation: &'a Option<FunctionInvocation>,
+            pub execute_invocation: &'a ExecuteInvocation,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub fee_transfer_invocation: &'a Option<FunctionInvocation>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub state_diff: &'a Option<StateDiff>,
+            pub execution_resources: &'a ExecutionResources,
+            pub r#type: &'a str,
+        }
+
+        let r#type = "INVOKE";
+
+        let tagged = Tagged {
+            validate_invocation: &self.validate_invocation,
+            execute_invocation: &self.execute_invocation,
+            fee_transfer_invocation: &self.fee_transfer_invocation,
+            state_diff: &self.state_diff,
+            execution_resources: &self.execution_resources,
+            r#type,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for InvokeTransactionTrace {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+        struct Tagged {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub validate_invocation: Option<FunctionInvocation>,
+            pub execute_invocation: ExecuteInvocation,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub fee_transfer_invocation: Option<FunctionInvocation>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub state_diff: Option<StateDiff>,
+            pub execution_resources: ExecutionResources,
+            pub r#type: Option<String>,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "INVOKE" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            validate_invocation: tagged.validate_invocation,
+            execute_invocation: tagged.execute_invocation,
+            fee_transfer_invocation: tagged.fee_transfer_invocation,
+            state_diff: tagged.state_diff,
+            execution_resources: tagged.execution_resources,
+        })
+    }
+}
+impl Serialize for DeployAccountTransactionTrace {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub validate_invocation: &'a Option<FunctionInvocation>,
+            pub constructor_invocation: &'a FunctionInvocation,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub fee_transfer_invocation: &'a Option<FunctionInvocation>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub state_diff: &'a Option<StateDiff>,
+            pub execution_resources: &'a ExecutionResources,
+            pub r#type: &'a str,
+        }
+
+        let r#type = "DEPLOY_ACCOUNT";
+
+        let tagged = Tagged {
+            validate_invocation: &self.validate_invocation,
+            constructor_invocation: &self.constructor_invocation,
+            fee_transfer_invocation: &self.fee_transfer_invocation,
+            state_diff: &self.state_diff,
+            execution_resources: &self.execution_resources,
+            r#type,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for DeployAccountTransactionTrace {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+        struct Tagged {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub validate_invocation: Option<FunctionInvocation>,
+            pub constructor_invocation: FunctionInvocation,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub fee_transfer_invocation: Option<FunctionInvocation>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub state_diff: Option<StateDiff>,
+            pub execution_resources: ExecutionResources,
+            pub r#type: Option<String>,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "DEPLOY_ACCOUNT" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            validate_invocation: tagged.validate_invocation,
+            constructor_invocation: tagged.constructor_invocation,
+            fee_transfer_invocation: tagged.fee_transfer_invocation,
+            state_diff: tagged.state_diff,
+            execution_resources: tagged.execution_resources,
+        })
+    }
+}
+
+impl Serialize for L1HandlerTransactionTrace {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            pub function_invocation: &'a FunctionInvocation,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub state_diff: &'a Option<StateDiff>,
+            pub execution_resources: &'a ExecutionResources,
+            pub r#type: &'a str,
+        }
+
+        let r#type = "L1_HANDLER";
+
+        let tagged = Tagged {
+            function_invocation: &self.function_invocation,
+            state_diff: &self.state_diff,
+            execution_resources: &self.execution_resources,
+            r#type,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for L1HandlerTransactionTrace {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+        struct Tagged {
+            pub function_invocation: FunctionInvocation,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub state_diff: Option<StateDiff>,
+            pub execution_resources: ExecutionResources,
+            pub r#type: Option<String>,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "L1_HANDLER" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            function_invocation: tagged.function_invocation,
+            state_diff: tagged.state_diff,
+            execution_resources: tagged.execution_resources,
+        })
+    }
+}
+
+impl Serialize for DeclareTransactionTrace {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub validate_invocation: &'a Option<FunctionInvocation>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub fee_transfer_invocation: &'a Option<FunctionInvocation>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub state_diff: &'a Option<StateDiff>,
+            pub execution_resources: &'a ExecutionResources,
+            pub r#type: &'a str,
+        }
+
+        let r#type = "DECLARE";
+
+        let tagged = Tagged {
+            validate_invocation: &self.validate_invocation,
+            fee_transfer_invocation: &self.fee_transfer_invocation,
+            state_diff: &self.state_diff,
+            execution_resources: &self.execution_resources,
+            r#type,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for DeclareTransactionTrace {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+        struct Tagged {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub validate_invocation: Option<FunctionInvocation>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub fee_transfer_invocation: Option<FunctionInvocation>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            pub state_diff: Option<StateDiff>,
+            pub execution_resources: ExecutionResources,
+            pub r#type: Option<String>,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "DECLARE" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            validate_invocation: tagged.validate_invocation,
+            fee_transfer_invocation: tagged.fee_transfer_invocation,
+            state_diff: tagged.state_diff,
+            execution_resources: tagged.execution_resources,
+        })
+    }
+}
+
+/// Request for method starknet_simulateTransactions
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SimulateTransactionsRequest {
+    /// The hash of the requested block, or number (height) of the requested block, or a block tag,
+    /// for the block referencing the state or call the transaction on.
+    pub block_id: BlockId,
+    /// The transactions to simulate
+    pub transactions: Vec<BroadcastedTransaction>,
+    /// describes what parts of the transaction should be executed
+    pub simulation_flags: Vec<SimulationFlag>,
+}
+/// Reference version of [SimulateTransactionsRequest].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SimulateTransactionsRequestRef<'a> {
+    pub block_id: &'a BlockId,
+    pub transactions: &'a [BroadcastedTransaction],
+    pub simulation_flags: &'a [SimulationFlag],
+}
+
+impl<'a> Serialize for SimulateTransactionsRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            pub transactions: &'a [BroadcastedTransaction],
+        }
+
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field2<'a> {
+            pub simulation_flags: &'a [SimulationFlag],
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            block_id: self.block_id,
+        })?;
+        seq.serialize_element(&Field1 {
+            transactions: self.transactions,
+        })?;
+        seq.serialize_element(&Field2 {
+            simulation_flags: self.simulation_flags,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for SimulateTransactionsRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            pub block_id: BlockId,
+            pub transactions: Vec<BroadcastedTransaction>,
+            pub simulation_flags: Vec<SimulationFlag>,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            pub block_id: BlockId,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field1 {
+            pub transactions: Vec<BroadcastedTransaction>,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field2 {
+            pub simulation_flags: Vec<SimulationFlag>,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field2 = serde_json::from_value::<Field2>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+            let field1 = serde_json::from_value::<Field1>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                block_id: field0.block_id,
+                transactions: field1.transactions,
+                simulation_flags: field2.simulation_flags,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                block_id: object.block_id,
+                transactions: object.transactions,
+                simulation_flags: object.simulation_flags,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
+
+/// Request for method starknet_getBlockWithTxHashes
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetBlockWithTxHashesRequest {
+    /// The hash of the requested block, or number (height) of the requested block, or a block tag
+    pub block_id: BlockId,
+}
+impl<'de> Deserialize<'de> for GetBlockWithTxHashesRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            pub block_id: BlockId,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            pub block_id: BlockId,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                block_id: field0.block_id,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                block_id: object.block_id,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
+/// Reference version of [GetBlockWithTxHashesRequest].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetBlockWithTxHashesRequestRef<'a> {
+    pub block_id: &'a BlockId,
+}
+
+impl<'a> Serialize for GetBlockWithTxHashesRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            block_id: self.block_id,
+        })?;
+
+        seq.end()
+    }
+}
+/// Broadcasted declare contract transaction v1.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BroadcastedDeclareTransactionV1 {
+    /// The address of the account contract sending the declaration transaction
+    pub sender_address: FieldElement,
+    /// The maximal fee that can be charged for including the transaction
+    pub max_fee: FieldElement,
+    /// Signature
+    pub signature: Vec<FieldElement>,
+    /// Nonce
+    pub nonce: FieldElement,
+    /// The class to be declared
+    pub contract_class: OwnedPtr<CompressedLegacyContractClass>,
+    /// If set to `true`, uses a query-only transaction version that's invalid for execution
+    pub is_query: bool,
+}
+/// Deprecated contract class.
+///
+/// The definition of a Starknet contract class.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct CompressedLegacyContractClass {
+    /// A base64 representation of the compressed program code
+    #[serde(with = "base64")]
+    pub program: Vec<u8>,
+    /// Deprecated entry points by type
+    pub entry_points_by_type: LegacyEntryPointsByType,
+    /// Contract abi
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub abi: Option<Vec<LegacyContractAbiEntry>>,
+}
+impl Serialize for BroadcastedDeclareTransactionV1 {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            pub r#type: &'a str,
+            #[serde_as(as = "UfeHex")]
+            pub sender_address: &'a FieldElement,
+            #[serde_as(as = "UfeHex")]
+            pub max_fee: &'a FieldElement,
+            #[serde_as(as = "UfeHex")]
+            pub version: &'a FieldElement,
+            #[serde_as(as = "[UfeHex]")]
+            pub signature: &'a [FieldElement],
+            #[serde_as(as = "UfeHex")]
+            pub nonce: &'a FieldElement,
+            pub contract_class: &'a CompressedLegacyContractClass,
+        }
+
+        let r#type = "DECLARE";
+
+        let version = &(if self.is_query {
+            FieldElement::ONE + QUERY_VERSION_OFFSET
+        } else {
+            FieldElement::ONE
+        });
+
+        let tagged = Tagged {
+            r#type,
+            sender_address: &self.sender_address,
+            max_fee: &self.max_fee,
+            version,
+            signature: &self.signature,
+            nonce: &self.nonce,
+            contract_class: &self.contract_class,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for BroadcastedDeclareTransactionV1 {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        #[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+        struct Tagged {
+            pub r#type: Option<String>,
+            #[serde_as(as = "UfeHex")]
+            pub sender_address: FieldElement,
+            #[serde_as(as = "UfeHex")]
+            pub max_fee: FieldElement,
+            #[serde_as(as = "UfeHex")]
+            pub version: FieldElement,
+            #[serde_as(as = "Vec<UfeHex>")]
+            pub signature: Vec<FieldElement>,
+            #[serde_as(as = "UfeHex")]
+            pub nonce: FieldElement,
+            pub contract_class: CompressedLegacyContractClass,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "DECLARE" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        let is_query = if tagged.version == FieldElement::ONE {
+            false
+        } else if tagged.version == FieldElement::ONE + QUERY_VERSION_OFFSET {
+            true
+        } else {
+            return Err(serde::de::Error::custom("invalid `version` value"));
+        };
+
+        Ok(Self {
+            sender_address: tagged.sender_address,
+            max_fee: tagged.max_fee,
+            signature: tagged.signature,
+            nonce: tagged.nonce,
+            contract_class: OwnedPtr::new(tagged.contract_class),
+            is_query,
+        })
+    }
 }

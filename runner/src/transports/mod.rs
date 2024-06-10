@@ -8,10 +8,13 @@ use crate::utils::{
     codegen::{
         AddDeclareTransactionRequest, AddDeclareTransactionRequestRef,
         AddDeployAccountTransactionRequest, AddDeployAccountTransactionRequestRef,
-        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, CallRequest, CallRequestRef,
-        ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef, FeeEstimate, FunctionCall,
-        GetNonceRequest, GetNonceRequestRef, NoTraceAvailableErrorData,
-        SimulationFlagForEstimateFee, StarknetError, TransactionExecutionErrorData,
+        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockWithTxHashes,
+        CallRequest, CallRequestRef, ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef,
+        FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithTxHashesRequest,
+        GetBlockWithTxHashesRequestRef, GetNonceRequest, GetNonceRequestRef,
+        NoTraceAvailableErrorData, PendingBlockWithTxHashes, ResourcePrice, RevertedInvocation,
+        SimulateTransactionsRequest, SimulateTransactionsRequestRef, SimulatedTransaction,
+        SimulationFlag, SimulationFlagForEstimateFee, StarknetError, TransactionExecutionErrorData,
     },
     provider::{Provider, ProviderError, ProviderImplError},
     unsigned_field_element::UfeHex,
@@ -48,8 +51,8 @@ pub struct JsonRpcClient<T> {
 pub enum JsonRpcMethod {
     // #[serde(rename = "starknet_specVersion")]
     // SpecVersion,
-    // #[serde(rename = "starknet_getBlockWithTxHashes")]
-    // GetBlockWithTxHashes,
+    #[serde(rename = "starknet_getBlockWithTxHashes")]
+    GetBlockWithTxHashes,
     // #[serde(rename = "starknet_getBlockWithTxs")]
     // GetBlockWithTxs,
     // #[serde(rename = "starknet_getBlockWithReceipts")]
@@ -100,8 +103,8 @@ pub enum JsonRpcMethod {
     AddDeployAccountTransaction,
     // #[serde(rename = "starknet_traceTransaction")]
     // TraceTransaction,
-    // #[serde(rename = "starknet_simulateTransactions")]
-    // SimulateTransactions,
+    #[serde(rename = "starknet_simulateTransactions")]
+    SimulateTransactions,
     // #[serde(rename = "starknet_traceBlockTransactions")]
     // TraceBlockTransactions,
 }
@@ -120,7 +123,7 @@ pub enum JsonRpcRequestData {
     Call(CallRequest),
     GetNonce(GetNonceRequest),
     // SpecVersion(SpecVersionRequest),
-    // GetBlockWithTxHashes(GetBlockWithTxHashesRequest),
+    GetBlockWithTxHashes(GetBlockWithTxHashesRequest),
     // GetBlockWithTxs(GetBlockWithTxsRequest),
     // GetBlockWithReceipts(GetBlockWithReceiptsRequest),
     // GetStateUpdate(GetStateUpdateRequest),
@@ -142,7 +145,7 @@ pub enum JsonRpcRequestData {
     // GetEvents(GetEventsRequest),
     //
     // TraceTransaction(TraceTransactionRequest),
-    // SimulateTransactions(SimulateTransactionsRequest),
+    SimulateTransactions(SimulateTransactionsRequest),
     // TraceBlockTransactions(TraceBlockTransactionsRequest),
 }
 
@@ -235,22 +238,22 @@ where
     //         .await
     // }
 
-    // /// Get block information with transaction hashes given the block id
-    // async fn get_block_with_tx_hashes<B>(
-    //     &self,
-    //     block_id: B,
-    // ) -> Result<MaybePendingBlockWithTxHashes, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::GetBlockWithTxHashes,
-    //         GetBlockWithTxHashesRequestRef {
-    //             block_id: block_id.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    /// Get block information with transaction hashes given the block id
+    async fn get_block_with_tx_hashes<B>(
+        &self,
+        block_id: B,
+    ) -> Result<MaybePendingBlockWithTxHashes, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetBlockWithTxHashes,
+            GetBlockWithTxHashesRequestRef {
+                block_id: block_id.as_ref(),
+            },
+        )
+        .await
+    }
 
     // /// Get block information with full transactions given the block id
     // async fn get_block_with_txs<B>(
@@ -682,27 +685,27 @@ where
     // Other types of failures (e.g. unexpected error or failure in the validation phase) will
     // result in TRANSACTION_EXECUTION_ERROR.
 
-    // async fn simulate_transactions<B, TX, S>(
-    //     &self,
-    //     block_id: B,
-    //     transactions: TX,
-    //     simulation_flags: S,
-    // ) -> Result<Vec<SimulatedTransaction>, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    //     TX: AsRef<[BroadcastedTransaction]> + Send + Sync,
-    //     S: AsRef<[SimulationFlag]> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::SimulateTransactions,
-    //         SimulateTransactionsRequestRef {
-    //             block_id: block_id.as_ref(),
-    //             transactions: transactions.as_ref(),
-    //             simulation_flags: simulation_flags.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    async fn simulate_transactions<B, TX, S>(
+        &self,
+        block_id: B,
+        transactions: TX,
+        simulation_flags: S,
+    ) -> Result<Vec<SimulatedTransaction>, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        TX: AsRef<[BroadcastedTransaction]> + Send + Sync,
+        S: AsRef<[SimulationFlag]> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::SimulateTransactions,
+            SimulateTransactionsRequestRef {
+                block_id: block_id.as_ref(),
+                transactions: transactions.as_ref(),
+                simulation_flags: simulation_flags.as_ref(),
+            },
+        )
+        .await
+    }
 
     // /// Retrieve traces for all transactions in the given block.
     // async fn trace_block_transactions<B>(
@@ -743,10 +746,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
             //     serde_json::from_value::<SpecVersionRequest>(raw_request.params)
             //         .map_err(error_mapper)?,
             // ),
-            // JsonRpcMethod::GetBlockWithTxHashes => JsonRpcRequestData::GetBlockWithTxHashes(
-            //     serde_json::from_value::<GetBlockWithTxHashesRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::GetBlockWithTxHashes => JsonRpcRequestData::GetBlockWithTxHashes(
+                serde_json::from_value::<GetBlockWithTxHashesRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::GetBlockWithTxs => JsonRpcRequestData::GetBlockWithTxs(
             //     serde_json::from_value::<GetBlockWithTxsRequest>(raw_request.params)
             //         .map_err(error_mapper)?,
@@ -852,17 +855,17 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                     .map_err(error_mapper)?,
                 )
             } // JsonRpcMethod::TraceTransaction => JsonRpcRequestData::TraceTransaction(
-              //     serde_json::from_value::<TraceTransactionRequest>(raw_request.params)
-              //         .map_err(error_mapper)?,
-              // ),
-              // JsonRpcMethod::SimulateTransactions => JsonRpcRequestData::SimulateTransactions(
-              //     serde_json::from_value::<SimulateTransactionsRequest>(raw_request.params)
-              //         .map_err(error_mapper)?,
-              // ),
-              // JsonRpcMethod::TraceBlockTransactions => JsonRpcRequestData::TraceBlockTransactions(
-              //     serde_json::from_value::<TraceBlockTransactionsRequest>(raw_request.params)
-              //         .map_err(error_mapper)?,
-              // ),
+            //     serde_json::from_value::<TraceTransactionRequest>(raw_request.params)
+            //         .map_err(error_mapper)?,
+            // ),
+            JsonRpcMethod::SimulateTransactions => JsonRpcRequestData::SimulateTransactions(
+                serde_json::from_value::<SimulateTransactionsRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
+            // JsonRpcMethod::TraceBlockTransactions => JsonRpcRequestData::TraceBlockTransactions(
+            //     serde_json::from_value::<TraceBlockTransactionsRequest>(raw_request.params)
+            //         .map_err(error_mapper)?,
+            // ),
         };
 
         Ok(Self {
@@ -1151,6 +1154,34 @@ impl<'de> Deserialize<'de> for AddInvokeTransactionRequest {
             })
         } else {
             Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(untagged)]
+pub enum ExecuteInvocation {
+    Success(FunctionInvocation),
+    Reverted(RevertedInvocation),
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum MaybePendingBlockWithTxHashes {
+    Block(BlockWithTxHashes),
+    PendingBlock(PendingBlockWithTxHashes),
+}
+
+impl MaybePendingBlockWithTxHashes {
+    pub fn transactions(&self) -> &[FieldElement] {
+        match self {
+            MaybePendingBlockWithTxHashes::Block(block) => &block.transactions,
+            MaybePendingBlockWithTxHashes::PendingBlock(block) => &block.transactions,
+        }
+    }
+
+    pub fn l1_gas_price(&self) -> &ResourcePrice {
+        match self {
+            MaybePendingBlockWithTxHashes::Block(block) => &block.l1_gas_price,
+            MaybePendingBlockWithTxHashes::PendingBlock(block) => &block.l1_gas_price,
         }
     }
 }

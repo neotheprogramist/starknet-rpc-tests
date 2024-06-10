@@ -302,6 +302,8 @@ mod block_id {
 // Deriving the Serialize trait directly results in duplicate fields since the variants also write
 // the tag fields when individually serialized.
 mod enum_ser_impls {
+    use crate::transports::ExecuteInvocation;
+
     use super::super::*;
 
     impl Serialize for Transaction {
@@ -359,17 +361,35 @@ mod enum_ser_impls {
     impl Serialize for BroadcastedDeclareTransaction {
         fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
             match self {
+                Self::V1(variant) => variant.serialize(serializer),
                 Self::V2(variant) => variant.serialize(serializer),
                 Self::V3(variant) => variant.serialize(serializer),
             }
         }
     }
-
+    impl Serialize for TransactionTrace {
+        fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+            match self {
+                Self::Invoke(variant) => variant.serialize(serializer),
+                Self::DeployAccount(variant) => variant.serialize(serializer),
+                Self::L1Handler(variant) => variant.serialize(serializer),
+                Self::Declare(variant) => variant.serialize(serializer),
+            }
+        }
+    }
     impl Serialize for BroadcastedDeployAccountTransaction {
         fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
             match self {
                 Self::V1(variant) => variant.serialize(serializer),
                 Self::V3(variant) => variant.serialize(serializer),
+            }
+        }
+    }
+    impl Serialize for ExecuteInvocation {
+        fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+            match self {
+                Self::Success(variant) => variant.serialize(serializer),
+                Self::Reverted(variant) => variant.serialize(serializer),
             }
         }
     }
