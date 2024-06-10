@@ -2,6 +2,7 @@ use thiserror::Error;
 use url::ParseError;
 
 #[derive(Debug, Error)]
+#[allow(dead_code)]
 pub enum RunnerError {
     #[error("failed to parse url")]
     ParsingError(#[from] ParseError),

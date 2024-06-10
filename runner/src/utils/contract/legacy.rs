@@ -29,6 +29,8 @@ use starknet_crypto::FieldElement;
 use std::collections::BTreeMap;
 
 use super::ComputeClassHashError;
+
+#[allow(dead_code)]
 const API_VERSION: FieldElement = FieldElement::ZERO;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -279,6 +281,7 @@ pub struct RawLegacyMember {
     pub r#type: String,
 }
 
+#[allow(dead_code)]
 struct ProgramForHintedHash;
 struct AttributeForHintedHash;
 
@@ -396,6 +399,7 @@ impl<'de> Deserialize<'de> for RawLegacyAbiEntry {
     }
 }
 
+#[allow(dead_code)]
 impl LegacyContractClass {
     pub fn class_hash(&self) -> Result<FieldElement, ComputeClassHashError> {
         let mut elements = Vec::new();

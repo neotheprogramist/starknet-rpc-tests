@@ -9,8 +9,10 @@ use starknet_crypto::FieldElement;
 
 pub struct UfeHex;
 
+#[allow(dead_code)]
 pub struct UfeHexOption;
 
+#[allow(dead_code)]
 pub struct UfePendingBlockHash;
 
 struct UfeHexVisitor;

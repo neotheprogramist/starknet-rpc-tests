@@ -407,6 +407,7 @@ use super::{
     },
 };
 
+#[allow(dead_code)]
 impl SierraClass {
     pub fn class_hash(&self) -> Result<FieldElement, ComputeClassHashError> {
         // Technically we don't have to use the Pythonic JSON style here. Doing this just to align

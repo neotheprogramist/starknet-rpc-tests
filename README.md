@@ -24,3 +24,14 @@ If you want to run a specific test, such as jsonrpc_add_declare_transaction, use
 ```bash
 cargo test jsonrpc_add_declare_transaction -- --nocapture
 ```
+
+## Checking compatibility
+
+To check compatibility for certain version run
+
+```bash
+cargo run -p runner -- --vers <version> --url <url>
+```
+
+example version: v5
+example url: "http://127.0.0.1:5050"

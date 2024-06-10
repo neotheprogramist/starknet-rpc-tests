@@ -1,0 +1,10 @@
+[package]
+name = "v0-0-5"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde.workspace = true
+
+[lib]
+path = "src/lib.rs"
