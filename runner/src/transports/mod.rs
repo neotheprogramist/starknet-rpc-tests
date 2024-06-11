@@ -22,12 +22,9 @@ use crate::utils::{
     BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult,
     InvokeTransactionResult,
 };
-use async_trait::async_trait;
 use serde_with::serde_as;
 use std::fmt::Debug;
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[auto_impl(&, Box, Arc)]
 pub trait JsonRpcTransport {
     type Error: Error + Send + Sync;
@@ -226,8 +223,6 @@ where
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<T> Provider for JsonRpcClient<T>
 where
     T: 'static + JsonRpcTransport + Sync + Send,

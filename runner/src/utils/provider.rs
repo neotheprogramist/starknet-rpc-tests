@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use auto_impl::auto_impl;
 use starknet_crypto::FieldElement;
 use std::{any::Any, error::Error, fmt::Debug};
@@ -18,8 +17,6 @@ use super::{
     codegen::StarknetError, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
 };
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 #[auto_impl(&, Box, Arc)]
 pub trait Provider {
     // /// Returns the version of the Starknet JSON-RPC specification being used

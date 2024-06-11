@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use log::trace;
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
@@ -60,8 +59,6 @@ impl HttpTransport {
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl JsonRpcTransport for HttpTransport {
     type Error = HttpTransportError;
 
