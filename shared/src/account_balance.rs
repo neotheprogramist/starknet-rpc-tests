@@ -4,6 +4,7 @@ use clap::Parser;
 use colored::*;
 use reqwest::{Client, Error};
 use tracing::info;
+use url::Url;
 
 #[derive(Parser, Debug, Clone)]
 pub enum Version {
@@ -32,17 +33,20 @@ pub struct AccountBalanceParams {
 pub async fn account_balance(
     account_balance_params: &AccountBalanceParams,
     version: &Version,
-    url: &str,
+    base_url: Url,
 ) -> Result<(), Error> {
     let client = Client::new();
-    let url = format!(
-        "{}/account_balance?address={}&unit={}&block_tag={}",
-        url,
-        account_balance_params.address,
-        account_balance_params.unit,
-        account_balance_params.block_tag
-    );
-    let res = client.get(&url).send().await?;
+
+    let res = client
+        .get(base_url.join("account_balance").unwrap())
+        .query(&[
+            ("address", &account_balance_params.address),
+            ("unit", &account_balance_params.unit),
+            ("block_tag", &account_balance_params.block_tag),
+        ])
+        .send()
+        .await?;
+    println!("{}", res.url());
     match version {
         Version::V0_0_5 => {
             let account_balance_response = res.json::<AccountBalanceResponseV0_0_5>().await;
