@@ -1,5 +1,4 @@
-use crate::utils::unsigned_field_element::UfeHex;
-use codegen::{
+use crate::codegen::{
     BlockTag, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2,
     BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1,
     BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1,
@@ -8,6 +7,7 @@ use codegen::{
     DeployAccountTransactionTrace, DeployTransaction, InvokeTransactionTrace, InvokeTransactionV0,
     InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionTrace,
 };
+use crate::unsigned_field_element::UfeHex;
 
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
@@ -29,17 +29,6 @@ const PREFIX_COMPILED_CLASS_V1: FieldElement = FieldElement::from_mont([
     18446744073709549462,
     324306817650036332,
 ]);
-
-pub mod account;
-pub mod byte_array;
-pub mod codegen;
-pub mod contract;
-pub mod crypto;
-pub mod provider;
-pub mod serde_impls;
-pub mod starknet_utils;
-pub mod transaction_request;
-pub mod unsigned_field_element;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(tag = "type")]

@@ -2,12 +2,12 @@ use serde::{de::Visitor, ser::SerializeSeq, Deserialize, Deserializer, Serialize
 use serde_json_pythonic::to_string_pythonic;
 use serde_with::serde_as;
 
-use crate::utils::codegen::FlattenedSierraClass;
+use crate::codegen::FlattenedSierraClass;
 use starknet_crypto::{poseidon_hash_many, FieldElement, PoseidonHasher};
 use std::boxed;
 /// Module containing types related to artifacts of contracts compiled with a Cairo 0.x compiler.
 pub mod legacy;
-use crate::utils::UfeHex;
+use crate::unsigned_field_element::UfeHex;
 /// Cairo string for "CONTRACT_CLASS_V0.1.0"
 const PREFIX_CONTRACT_CLASS_V0_1_0: FieldElement = FieldElement::from_mont([
     5800711240972404213,

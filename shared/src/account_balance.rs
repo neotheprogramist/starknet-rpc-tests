@@ -4,6 +4,7 @@ use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
 use clap::Parser;
 use colored::*;
 use reqwest::Client;
+use starknet_crypto::FieldElement;
 use tracing::info;
 use url::Url;
 

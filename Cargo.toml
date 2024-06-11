@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["runner", "shared", "v0-0-5", "v0-0-6"]
+members = ["runner", "shared", "utils", "v0-0-5", "v0-0-6"]
 
 [workspace.package]
 version = "0.1.0"

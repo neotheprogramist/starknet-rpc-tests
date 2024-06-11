@@ -2,7 +2,6 @@ use std::fmt::{self, Formatter};
 
 use serde::{de::Visitor, Deserializer};
 use serde_with::{DeserializeAs, SerializeAs};
-
 pub(crate) struct NumAsHex;
 
 struct NumAsHexVisitorU64;
@@ -236,12 +235,12 @@ pub(crate) mod u64_hex_opt {
 }
 
 mod block_id {
-    use crate::utils::UfeHex;
+    use crate::unsigned_field_element::UfeHex;
     use serde::{Deserialize, Deserializer, Serialize};
     use serde_with::serde_as;
     use starknet_crypto::FieldElement;
 
-    use crate::utils::{codegen::BlockTag, BlockId};
+    use crate::{codegen::BlockTag, models::BlockId};
 
     #[derive(Deserialize)]
     #[serde(untagged)]
@@ -302,9 +301,19 @@ mod block_id {
 // Deriving the Serialize trait directly results in duplicate fields since the variants also write
 // the tag fields when individually serialized.
 mod enum_ser_impls {
+
+    use serde::Serialize;
+
+    use crate::models::BroadcastedDeclareTransaction;
+    use crate::models::BroadcastedDeployAccountTransaction;
+    use crate::models::BroadcastedInvokeTransaction;
+    use crate::models::BroadcastedTransaction;
+    use crate::models::DeclareTransaction;
+    use crate::models::InvokeTransaction;
+    use crate::models::Transaction;
+    use crate::models::TransactionTrace;
     use crate::transports::ExecuteInvocation;
 
-    use super::super::*;
 
     impl Serialize for Transaction {
         fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {

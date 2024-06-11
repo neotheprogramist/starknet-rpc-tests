@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use starknet_crypto::{FieldElement, PoseidonHasher};
 
-use crate::utils::{
+use crate::{
     codegen::{
         BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2,
         BroadcastedDeclareTransactionV3, BroadcastedInvokeTransactionV1,
@@ -11,9 +11,11 @@ use crate::utils::{
     },
     contract::{legacy::LegacyContractClass, ComputeClassHashError},
     crypto::compute_hash_on_elements,
+    models::{
+        BroadcastedDeclareTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
+        DeclareTransactionResult, InvokeTransactionResult,
+    },
     provider::Provider,
-    BroadcastedDeclareTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-    DeclareTransactionResult, InvokeTransactionResult,
 };
 
 use super::{

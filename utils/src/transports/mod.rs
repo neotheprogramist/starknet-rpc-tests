@@ -4,7 +4,7 @@ use starknet_crypto::FieldElement;
 
 use std::{any::Any, error::Error, fmt::Display};
 pub mod http;
-use crate::utils::{
+use crate::{
     codegen::{
         AddDeclareTransactionRequest, AddDeclareTransactionRequestRef,
         AddDeployAccountTransactionRequest, AddDeployAccountTransactionRequestRef,
@@ -16,11 +16,13 @@ use crate::utils::{
         SimulateTransactionsRequest, SimulateTransactionsRequestRef, SimulatedTransaction,
         SimulationFlag, SimulationFlagForEstimateFee, StarknetError, TransactionExecutionErrorData,
     },
+    models::{
+        BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
+        BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult,
+        InvokeTransactionResult,
+    },
     provider::{Provider, ProviderError, ProviderImplError},
     unsigned_field_element::UfeHex,
-    BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
-    BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult,
-    InvokeTransactionResult,
 };
 use serde_with::serde_as;
 use std::fmt::Debug;

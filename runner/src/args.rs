@@ -7,7 +7,10 @@ use url::Url;
 #[command(version, about, long_about = None)]
 pub struct Args {
     #[arg(long, short, env)]
-    pub sender_address: FieldElement,
+    pub account_address: FieldElement,
+
+    #[arg(long, short, env)]
+    pub private_key: FieldElement,
 
     #[arg(long, short, env)]
     pub vers: Version,

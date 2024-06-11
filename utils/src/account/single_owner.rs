@@ -1,5 +1,5 @@
-use crate::utils::{
-    codegen::BlockTag, contract::ComputeClassHashError, provider::Provider, BlockId,
+use crate::{
+    codegen::BlockTag, contract::ComputeClassHashError, models::BlockId, provider::Provider,
 };
 use starknet_crypto::FieldElement;
 use starknet_signers::Signer;
