@@ -27,6 +27,7 @@ const PREFIX_COMPILED_CLASS_V1: FieldElement = FieldElement::from_mont([
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 #[allow(clippy::large_enum_variant)]
+#[allow(clippy::enum_variant_names)]
 pub enum ContractArtifact {
     SierraClass(SierraClass),
     CompiledClass(CompiledClass),
@@ -385,7 +386,7 @@ pub use errors::CompressProgramError;
 
 use super::{
     codegen::{EntryPointsByType, SierraEntryPoint},
-    utils::{
+    starknet_utils::{
         cairo_short_string_to_felt, normalize_address, starknet_keccak, CairoShortStringToFeltError,
     },
 };

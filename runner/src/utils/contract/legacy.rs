@@ -17,8 +17,8 @@ use crate::utils::codegen::LegacyStructMember;
 use crate::utils::contract::errors::CompressProgramError;
 use crate::utils::contract::JsonError;
 use crate::utils::crypto::compute_hash_on_elements;
-use crate::utils::utils::cairo_short_string_to_felt;
-use crate::utils::utils::starknet_keccak;
+use crate::utils::starknet_utils::cairo_short_string_to_felt;
+use crate::utils::starknet_utils::starknet_keccak;
 use crate::utils::UfeHex;
 use crate::utils::{codegen::LegacyTypedParameter, serde_impls::u64_hex};
 #[cfg(feature = "std")]

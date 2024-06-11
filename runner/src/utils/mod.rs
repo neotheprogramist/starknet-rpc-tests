@@ -1,6 +1,12 @@
 use crate::utils::unsigned_field_element::UfeHex;
 use codegen::{
-    BlockTag, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3, DeployAccountTransactionTrace, DeployTransaction, InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionTrace
+    BlockTag, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2,
+    BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1,
+    BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1,
+    BroadcastedInvokeTransactionV3, DeclareTransactionTrace, DeclareTransactionV0,
+    DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3,
+    DeployAccountTransactionTrace, DeployTransaction, InvokeTransactionTrace, InvokeTransactionV0,
+    InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionTrace,
 };
 
 use serde::{Deserialize, Serialize};
@@ -31,9 +37,9 @@ pub mod contract;
 pub mod crypto;
 pub mod provider;
 pub mod serde_impls;
+pub mod starknet_utils;
 pub mod transaction_request;
 pub mod unsigned_field_element;
-pub mod utils;
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(tag = "type")]

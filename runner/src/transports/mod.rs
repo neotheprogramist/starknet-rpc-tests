@@ -148,8 +148,8 @@ pub enum JsonRpcRequestData {
     SimulateTransactions(SimulateTransactionsRequest),
     // TraceBlockTransactions(TraceBlockTransactionsRequest),
 }
-
 #[derive(Debug, thiserror::Error)]
+#[allow(clippy::enum_variant_names)]
 pub enum JsonRpcClientError<T> {
     #[error(transparent)]
     JsonError(serde_json::Error),
