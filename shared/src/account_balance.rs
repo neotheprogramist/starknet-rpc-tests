@@ -4,6 +4,7 @@ use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
 use clap::Parser;
 use colored::*;
 use reqwest::Client;
+use starknet_crypto::FieldElement;
 use tracing::info;
 use url::Url;
 
@@ -26,7 +27,7 @@ impl std::str::FromStr for Version {
 }
 
 pub struct AccountBalanceParams {
-    pub address: String,
+    pub address: FieldElement,
     pub unit: String,
     pub block_tag: String,
 }
