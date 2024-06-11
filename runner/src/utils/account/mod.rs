@@ -10,7 +10,6 @@ use super::{
     provider::{Provider, ProviderError},
     BlockId,
 };
-use async_trait::async_trait;
 use auto_impl::auto_impl;
 use call::Call;
 use starknet_crypto::{FieldElement, PoseidonHasher};
@@ -201,8 +200,6 @@ pub trait ExecutionEncoder {
 /// signer or provider. Account implementations that come with an active connection to the network
 /// should also implement [ConnectedAccount] for useful functionalities like estimating fees and
 /// sending transactions.
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 pub trait Account: ExecutionEncoder + Sized {
     type SignError: Error + Send + Sync;
 
@@ -286,8 +283,6 @@ pub trait Account: ExecutionEncoder + Sized {
 /// An [Account] implementation that also comes with a [Provider]. Functionalities that require a
 /// connection to the sequencer or node are offloaded to this trait to keep the base [Account]
 /// clean and flexible.
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 pub trait ConnectedAccount: Account {
     type Provider: Provider + Sync;
 
@@ -456,8 +451,6 @@ pub enum AccountError<S> {
     FeeOutOfRange,
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<A> Account for &A
 where
     A: Account + Sync,
@@ -515,8 +508,6 @@ where
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<A> Account for Box<A>
 where
     A: Account + Sync + Send,
@@ -578,8 +569,6 @@ where
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<A> Account for Arc<A>
 where
     A: Account + Sync + Send,
@@ -641,8 +630,6 @@ where
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<A> ConnectedAccount for &A
 where
     A: ConnectedAccount + Sync,
@@ -662,8 +649,6 @@ where
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<A> ConnectedAccount for Box<A>
 where
     A: ConnectedAccount + Sync + Send,
@@ -683,8 +668,6 @@ where
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<A> ConnectedAccount for Arc<A>
 where
     A: ConnectedAccount + Sync + Send,

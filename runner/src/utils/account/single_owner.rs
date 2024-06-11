@@ -1,4 +1,3 @@
-use crate::utils::account::async_trait;
 use crate::utils::{
     codegen::BlockTag, contract::ComputeClassHashError, provider::Provider, BlockId,
 };
@@ -80,8 +79,6 @@ where
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<P, S> Account for SingleOwnerAccount<P, S>
 where
     P: Provider + Sync + Send,

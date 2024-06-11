@@ -4,7 +4,7 @@ mod tests {
     use crate::transports::http::HttpTransport;
     use crate::transports::JsonRpcClient;
     use crate::utils::account::Account;
-    use crate::utils::utils::get_selector_from_name;
+    use crate::utils::starknet_utils::get_selector_from_name;
     use crate::utils::{
         // accounts::{Call, RawDeclarationV3, RawExecutionV3},
         account::{
@@ -16,7 +16,7 @@ mod tests {
             ResourceBoundsMapping,
         },
         provider::Provider,
-        utils::{create_jsonrpc_client, get_compiled_contract},
+        starknet_utils::{create_jsonrpc_client, get_compiled_contract},
         BlockId,
         BroadcastedDeclareTransaction,
     };
@@ -143,6 +143,6 @@ mod tests {
         )
         .await;
         let result = invoke_v3(&account, declare_transaction_result.class_hash, "transfer").await;
-        println!("TRANSACTION HASH {}", result.transaction_hash);
+        tracing::debug!("TRANSACTION HASH {}", result.transaction_hash);
     }
 }
