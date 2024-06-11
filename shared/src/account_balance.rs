@@ -50,7 +50,6 @@ pub async fn account_balance(
         ])
         .send()
         .await?;
-    println!("{}", res.url());
     match version {
         Version::V0_0_5 => {
             let account_balance_response = res.json::<AccountBalanceResponseV0_0_5>().await;
