@@ -1,29 +1,21 @@
 // src/tests.rs
 #[cfg(test)]
 mod tests {
-    use crate::transports::http::HttpTransport;
-    use crate::transports::JsonRpcClient;
-    use crate::utils::account::Account;
-    use crate::utils::starknet_utils::get_selector_from_name;
-    use crate::utils::{
-        // accounts::{Call, RawDeclarationV3, RawExecutionV3},
-        account::{
-            call::Call,
-            single_owner::{ExecutionEncoding, SingleOwnerAccount},
-        },
-        codegen::{
-            BlockTag, BroadcastedDeclareTransactionV3, DataAvailabilityMode, ResourceBounds,
-            ResourceBoundsMapping,
-        },
-        provider::Provider,
-        starknet_utils::{create_jsonrpc_client, get_compiled_contract},
-        BlockId,
-        BroadcastedDeclareTransaction,
-    };
-    use crate::utils::{DeclareTransactionResult, InvokeTransactionResult};
+
     use starknet_crypto::FieldElement;
     use starknet_signers::{LocalWallet, SigningKey};
     use std::sync::Arc;
+    use utils::{
+        account::{
+            call::Call,
+            single_owner::{ExecutionEncoding, SingleOwnerAccount},
+            Account,
+        },
+        codegen::BlockTag,
+        models::{BlockId, DeclareTransactionResult, InvokeTransactionResult},
+        provider::Provider,
+        starknet_utils::{create_jsonrpc_client, get_compiled_contract, get_selector_from_name},
+    };
     #[tokio::test]
     async fn jsonrpc_get_nonce() {
         let rpc_client = create_jsonrpc_client();

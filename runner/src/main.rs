@@ -1,12 +1,9 @@
 mod args;
-mod errors;
-mod transports;
-mod utils;
+
 use args::Args;
 use clap::Parser;
 mod tests;
 use shared::account_balance::{account_balance, AccountBalanceParams};
-use tracing_subscriber;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

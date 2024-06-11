@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use super::codegen::{DataAvailabilityMode, EntryPointsByType, ResourceBoundsMapping};
-use crate::utils::byte_array::base64::serialize as base64_ser;
-use crate::utils::serde_impls::u64_hex;
-use crate::utils::unsigned_field_element::UfeHex;
+use crate::byte_array::base64::serialize as base64_ser;
+use crate::serde_impls::u64_hex;
+use crate::unsigned_field_element::UfeHex;
 use ::serde::Deserialize;
 use serde::{Serialize, Serializer};
 use serde_with::serde_as;

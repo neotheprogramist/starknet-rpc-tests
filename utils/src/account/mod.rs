@@ -7,8 +7,8 @@ use super::{
     codegen::{BlockTag, FlattenedSierraClass},
     contract::{legacy::LegacyContractClass, ComputeClassHashError},
     crypto::compute_hash_on_elements,
+    models::BlockId,
     provider::{Provider, ProviderError},
-    BlockId,
 };
 use auto_impl::auto_impl;
 use call::Call;

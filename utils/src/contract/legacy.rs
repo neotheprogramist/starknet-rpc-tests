@@ -1,26 +1,25 @@
-#[cfg(feature = "std")]
-use crate::types::{contract::CompressProgramError, CompressedLegacyContractClass};
-use crate::utils::codegen::CompressedLegacyContractClass;
-use crate::utils::codegen::FunctionStateMutability;
-use crate::utils::codegen::LegacyContractAbiEntry;
-use crate::utils::codegen::LegacyContractEntryPoint;
-use crate::utils::codegen::LegacyEntryPointsByType;
-use crate::utils::codegen::LegacyEventAbiEntry;
-use crate::utils::codegen::LegacyEventAbiType;
-use crate::utils::codegen::LegacyFunctionAbiEntry;
-use crate::utils::codegen::LegacyStructAbiEntry;
-use crate::utils::codegen::LegacyStructAbiType;
+use crate::codegen::CompressedLegacyContractClass;
+use crate::codegen::FunctionStateMutability;
+use crate::codegen::LegacyContractAbiEntry;
+use crate::codegen::LegacyContractEntryPoint;
+use crate::codegen::LegacyEntryPointsByType;
+use crate::codegen::LegacyEventAbiEntry;
+use crate::codegen::LegacyEventAbiType;
+use crate::codegen::LegacyFunctionAbiEntry;
+use crate::codegen::LegacyStructAbiEntry;
+use crate::codegen::LegacyStructAbiType;
+
 use flate2::{write::GzEncoder, Compression};
 
-use crate::utils::codegen::LegacyFunctionAbiType;
-use crate::utils::codegen::LegacyStructMember;
-use crate::utils::contract::errors::CompressProgramError;
-use crate::utils::contract::JsonError;
-use crate::utils::crypto::compute_hash_on_elements;
-use crate::utils::starknet_utils::cairo_short_string_to_felt;
-use crate::utils::starknet_utils::starknet_keccak;
-use crate::utils::UfeHex;
-use crate::utils::{codegen::LegacyTypedParameter, serde_impls::u64_hex};
+use crate::codegen::LegacyFunctionAbiType;
+use crate::codegen::LegacyStructMember;
+use crate::contract::errors::CompressProgramError;
+use crate::contract::JsonError;
+use crate::crypto::compute_hash_on_elements;
+use crate::starknet_utils::cairo_short_string_to_felt;
+use crate::starknet_utils::starknet_keccak;
+use crate::unsigned_field_element::UfeHex;
+use crate::{codegen::LegacyTypedParameter, serde_impls::u64_hex};
 #[cfg(feature = "std")]
 use flate2::{write::GzEncoder, Compression};
 use serde::{

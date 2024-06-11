@@ -4,17 +4,18 @@ use std::{any::Any, error::Error, fmt::Debug};
 
 use crate::{
     transports::MaybePendingBlockWithTxHashes,
-    utils::{
+    {
         codegen::{
             FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
             SimulationFlagForEstimateFee,
         },
-        BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult,
+        models::{BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult},
     },
 };
 
 use super::{
-    codegen::StarknetError, BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction,
+    codegen::StarknetError,
+    models::{BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction},
 };
 
 #[auto_impl(&, Box, Arc)]

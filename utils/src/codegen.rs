@@ -1,12 +1,12 @@
-use super::serde_impls::NumAsHex;
-use super::{
+use crate::byte_array::base64;
+use crate::models::BroadcastedDeclareTransaction;
+use crate::models::{
     BlockId, BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction,
     BroadcastedTransaction, TransactionTrace,
 };
+use crate::serde_impls::NumAsHex;
 use crate::transports::ExecuteInvocation;
-use crate::utils::byte_array::base64;
-use crate::utils::unsigned_field_element::UfeHex;
-use crate::utils::BroadcastedDeclareTransaction;
+use crate::unsigned_field_element::UfeHex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
 use starknet_crypto::FieldElement;
