@@ -43,3 +43,4 @@ log = "0.4.19"
 starknet-signers = "0.8.0"
 sha3 = { version = "0.10.7", default-features = false }
 colored = "2.1.0"
+flate2 = "1.0.30"

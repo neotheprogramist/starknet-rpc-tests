@@ -1,5 +1,6 @@
 #[cfg(feature = "std")]
 use crate::types::{contract::CompressProgramError, CompressedLegacyContractClass};
+use crate::utils::codegen::CompressedLegacyContractClass;
 use crate::utils::codegen::FunctionStateMutability;
 use crate::utils::codegen::LegacyContractAbiEntry;
 use crate::utils::codegen::LegacyContractEntryPoint;
@@ -9,9 +10,11 @@ use crate::utils::codegen::LegacyEventAbiType;
 use crate::utils::codegen::LegacyFunctionAbiEntry;
 use crate::utils::codegen::LegacyStructAbiEntry;
 use crate::utils::codegen::LegacyStructAbiType;
+use flate2::{write::GzEncoder, Compression};
 
 use crate::utils::codegen::LegacyFunctionAbiType;
 use crate::utils::codegen::LegacyStructMember;
+use crate::utils::contract::errors::CompressProgramError;
 use crate::utils::contract::JsonError;
 use crate::utils::crypto::compute_hash_on_elements;
 use crate::utils::utils::cairo_short_string_to_felt;
@@ -478,7 +481,6 @@ impl LegacyContractClass {
         Ok(starknet_keccak(serialized.as_bytes()))
     }
 
-    #[cfg(feature = "std")]
     pub fn compress(&self) -> Result<CompressedLegacyContractClass, CompressProgramError> {
         Ok(CompressedLegacyContractClass {
             program: self.program.compress()?,
@@ -495,7 +497,6 @@ impl LegacyContractClass {
 }
 
 impl LegacyProgram {
-    #[cfg(feature = "std")]
     pub fn compress(&self) -> Result<Vec<u8>, CompressProgramError> {
         use std::io::Write;
 

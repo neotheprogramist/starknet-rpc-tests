@@ -289,7 +289,11 @@ mod errors {
         PcOutOfRange(PcOutOfRangeError),
         Json(JsonError),
     }
-
+    #[derive(Debug)]
+    pub enum CompressProgramError {
+        Json(JsonError),
+        Io(std::io::Error),
+    }
     #[derive(Debug)]
     pub struct JsonError {
         pub(crate) message: String,
@@ -312,7 +316,6 @@ mod errors {
         pub pc: u64,
     }
 
-    #[cfg(feature = "std")]
     impl std::error::Error for ComputeClassHashError {}
 
     impl Display for ComputeClassHashError {
