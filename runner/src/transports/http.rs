@@ -1,9 +1,9 @@
-use async_trait::async_trait;
-use log::trace;
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
 
 use super::{JsonRpcMethod, JsonRpcResponse, JsonRpcTransport};
+
+use tracing::debug;
 
 #[derive(Debug)]
 pub struct HttpTransport {
@@ -60,8 +60,6 @@ impl HttpTransport {
     }
 }
 
-#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
-#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl JsonRpcTransport for HttpTransport {
     type Error = HttpTransportError;
 
@@ -82,7 +80,7 @@ impl JsonRpcTransport for HttpTransport {
         };
 
         let request_body = serde_json::to_string(&request_body).map_err(Self::Error::Json)?;
-        trace!("Sending request via JSON-RPC: {}", request_body);
+        debug!("Sending request via JSON-RPC: {}", request_body);
 
         let mut request = self
             .client
@@ -96,7 +94,7 @@ impl JsonRpcTransport for HttpTransport {
         let response = request.send().await.map_err(Self::Error::Reqwest)?;
 
         let response_body = response.text().await.map_err(Self::Error::Reqwest)?;
-        trace!("Response from JSON-RPC: {}", response_body);
+        debug!("Response from JSON-RPC: {}", response_body);
 
         let parsed_response = serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
 
