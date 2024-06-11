@@ -9,38 +9,34 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [workspace.dependencies]
-reqwest = { version = "0.12", features = ["json"] }
-tokio = { version = "1", features = ["full"] }
-
-starknet = { git = "https://github.com/xJonathanLEI/starknet-rs", rev = "d980869" }
-thiserror = "1.0.59"
-url = "2.5.0"
-regex = "1.10.4"
-clap = { version = "4.5.4", features = ["derive", "env"] }
-serde = { version = "1.0.160", default-features = false, features = ["derive"] }
-serde_json = { version = "1.0.96", default-features = false, features = [
+async-trait = "0.1.80"
+auto_impl = "1.2.0"
+base64 = { version = "0.22.1", default-features = false, features = ["alloc"] }
+clap = { version = "4.5.7", features = ["derive", "env"] }
+colored = "2.1.0"
+hex-literal = "0.4.1"
+log = "0.4.21"
+regex = "1.10.5"
+reqwest = { version = "0.12.4", features = ["json"] }
+serde = { version = "1.0.203", default-features = false, features = ["derive"] }
+serde_json = { version = "1.0.117", default-features = false, features = [
     "alloc",
     "raw_value",
 ] }
-serde_with = { version = "2.3.2", default-features = false, features = [
-    "alloc",
-    "macros",
-] }
-
-starknet-crypto = "0.6.2"
-
 serde_json_pythonic = { version = "0.1.2", default-features = false, features = [
     "alloc",
     "raw_value",
 ] }
-hex-literal = "0.4.1"
-tracing = "0.1.40"
-base64 = { version = "0.21.0", default-features = false, features = ["alloc"] }
-async-trait = "0.1.68"
-auto_impl = "1.0.1"
-log = "0.4.19"
+serde_with = { version = "3.8.1", default-features = false, features = [
+    "alloc",
+    "macros",
+] }
+sha3 = { version = "0.10.8", default-features = false }
 
+starknet-crypto = "0.6.2"
 starknet-signers = "0.8.0"
-sha3 = { version = "0.10.7", default-features = false }
-colored = "2.1.0"
+thiserror = "1.0.61"
+tokio = { version = "1.38.0", features = ["full"] }
+tracing = "0.1.40"
+url = "2.5.1"
 flate2 = "1.0.30"

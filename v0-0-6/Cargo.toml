@@ -5,6 +5,3 @@ edition.workspace = true
 
 [dependencies]
 serde.workspace = true
-
-[lib]
-path = "src/lib.rs"
