@@ -1,9 +1,11 @@
+use crate::errors::RequestOrParseError;
 use crate::v0_0_5::account_balance::AccountBalanceResponseV0_0_5;
 use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
 use clap::Parser;
 use colored::*;
-use reqwest::{Client, Error};
+use reqwest::Client;
 use tracing::info;
+use url::Url;
 
 #[derive(Parser, Debug, Clone)]
 pub enum Version {
@@ -32,17 +34,22 @@ pub struct AccountBalanceParams {
 pub async fn account_balance(
     account_balance_params: &AccountBalanceParams,
     version: &Version,
-    url: &str,
-) -> Result<(), Error> {
+    base_url: Url,
+) -> Result<(), RequestOrParseError> {
     let client = Client::new();
-    let url = format!(
-        "{}/account_balance?address={}&unit={}&block_tag={}",
-        url,
-        account_balance_params.address,
-        account_balance_params.unit,
-        account_balance_params.block_tag
-    );
-    let res = client.get(&url).send().await?;
+    let account_balance_url = match base_url.join("account_balance") {
+        Ok(url) => url,
+        Err(e) => return Err(e.into()),
+    };
+    let res = client
+        .get(account_balance_url)
+        .query(&[
+            ("address", &account_balance_params.address),
+            ("unit", &account_balance_params.unit),
+            ("block_tag", &account_balance_params.block_tag),
+        ])
+        .send()
+        .await?;
     match version {
         Version::V0_0_5 => {
             let account_balance_response = res.json::<AccountBalanceResponseV0_0_5>().await;
