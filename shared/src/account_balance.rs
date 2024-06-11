@@ -2,10 +2,41 @@ use crate::v0_0_5::account_balance::AccountBalanceResponseV0_0_5;
 use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
 use clap::Parser;
 use colored::*;
-use reqwest::{Client, Error};
+use reqwest::Client;
 use tracing::info;
 use url::Url;
 
+use std::error::Error as StdError;
+use std::fmt;
+
+#[derive(Debug)]
+pub enum RequestOrParseError {
+    Reqwest(reqwest::Error),
+    Url(url::ParseError),
+}
+
+impl fmt::Display for RequestOrParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            RequestOrParseError::Reqwest(e) => write!(f, "{}", e),
+            RequestOrParseError::Url(e) => write!(f, "{}", e),
+        }
+    }
+}
+
+impl StdError for RequestOrParseError {}
+
+impl From<reqwest::Error> for RequestOrParseError {
+    fn from(err: reqwest::Error) -> RequestOrParseError {
+        RequestOrParseError::Reqwest(err)
+    }
+}
+
+impl From<url::ParseError> for RequestOrParseError {
+    fn from(err: url::ParseError) -> RequestOrParseError {
+        RequestOrParseError::Url(err)
+    }
+}
 #[derive(Parser, Debug, Clone)]
 pub enum Version {
     V0_0_6,
@@ -34,11 +65,14 @@ pub async fn account_balance(
     account_balance_params: &AccountBalanceParams,
     version: &Version,
     base_url: Url,
-) -> Result<(), Error> {
+) -> Result<(), RequestOrParseError> {
     let client = Client::new();
-
+    let account_balance_url = match base_url.join("account_balance") {
+        Ok(url) => url,
+        Err(e) => return Err(e.into()),
+    };
     let res = client
-        .get(base_url.join("account_balance").unwrap())
+        .get(account_balance_url)
         .query(&[
             ("address", &account_balance_params.address),
             ("unit", &account_balance_params.unit),
