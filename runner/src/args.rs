@@ -9,6 +9,12 @@ pub struct Args {
     pub sender_address: FieldElement,
 
     #[arg(long, short, env)]
+    pub account_address: FieldElement,
+
+    #[arg(long, short, env)]
+    pub private_key: FieldElement,
+
+    #[arg(long, short, env)]
     pub vers: Version,
 
     #[arg(long, short, env)]

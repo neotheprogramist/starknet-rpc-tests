@@ -15,6 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         unit: "WEI".to_string(),
         block_tag: "latest".to_string(),
     };
+
     account_balance(&account_balance_params, &_args.vers, &_args.url).await?;
 
     Ok(())
