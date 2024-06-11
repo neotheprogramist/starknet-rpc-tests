@@ -3,6 +3,7 @@ use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
 use clap::Parser;
 use colored::*;
 use reqwest::{Client, Error};
+use tracing::info;
 
 #[derive(Parser, Debug, Clone)]
 pub enum Version {
@@ -46,15 +47,15 @@ pub async fn account_balance(
         Version::V0_0_5 => {
             let account_balance_response = res.json::<AccountBalanceResponseV0_0_5>().await;
             match account_balance_response {
-                Ok(_) => println!("{}", "COMPATIBLE".green()),
-                Err(_) => println!("{}", "INCOMPATIBLE".red()),
+                Ok(_) => info!("{}", "COMPATIBLE".green()),
+                Err(_) => info!("{}", "INCOMPATIBLE".red()),
             }
         }
         Version::V0_0_6 => {
             let account_balance_response = res.json::<AccountBalanceResponseV0_0_6>().await;
             match account_balance_response {
-                Ok(_) => println!("{}", "COMPATIBLE".green()),
-                Err(_) => println!("{}", "INCOMPATIBLE".red()),
+                Ok(_) => info!("{}", "COMPATIBLE".green()),
+                Err(_) => info!("{}", "INCOMPATIBLE".red()),
             }
         }
     };
