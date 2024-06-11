@@ -27,7 +27,7 @@ impl std::str::FromStr for Version {
 }
 
 pub struct AccountBalanceParams {
-    pub address: FieldElement,
+    pub address: String,
     pub unit: String,
     pub block_tag: String,
 }
