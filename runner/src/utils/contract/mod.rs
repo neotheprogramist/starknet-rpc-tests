@@ -27,6 +27,7 @@ const PREFIX_COMPILED_CLASS_V1: FieldElement = FieldElement::from_mont([
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 #[allow(clippy::large_enum_variant)]
+#[allow(clippy::enum_variant_names)]
 pub enum ContractArtifact {
     SierraClass(SierraClass),
     CompiledClass(CompiledClass),
@@ -289,14 +290,11 @@ mod errors {
         PcOutOfRange(PcOutOfRangeError),
         Json(JsonError),
     }
-
-    #[cfg(feature = "std")]
     #[derive(Debug)]
     pub enum CompressProgramError {
         Json(JsonError),
         Io(std::io::Error),
     }
-
     #[derive(Debug)]
     pub struct JsonError {
         pub(crate) message: String,
@@ -319,7 +317,6 @@ mod errors {
         pub pc: u64,
     }
 
-    #[cfg(feature = "std")]
     impl std::error::Error for ComputeClassHashError {}
 
     impl Display for ComputeClassHashError {
@@ -330,19 +327,6 @@ mod errors {
                 Self::InvalidBytecodeSegment(inner) => write!(f, "{}", inner),
                 Self::PcOutOfRange(inner) => write!(f, "{}", inner),
                 Self::Json(inner) => write!(f, "json serialization error: {}", inner),
-            }
-        }
-    }
-
-    #[cfg(feature = "std")]
-    impl std::error::Error for CompressProgramError {}
-
-    #[cfg(feature = "std")]
-    impl Display for CompressProgramError {
-        fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-            match self {
-                Self::Json(inner) => write!(f, "json serialization error: {}", inner),
-                Self::Io(inner) => write!(f, "compression io error: {}", inner),
             }
         }
     }
@@ -402,7 +386,7 @@ pub use errors::CompressProgramError;
 
 use super::{
     codegen::{EntryPointsByType, SierraEntryPoint},
-    utils::{
+    starknet_utils::{
         cairo_short_string_to_felt, normalize_address, starknet_keccak, CairoShortStringToFeltError,
     },
 };
