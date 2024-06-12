@@ -1,5 +1,5 @@
 use rand::{rngs::StdRng, Rng, RngCore, SeedableRng};
-use starknet_crypto::{FieldElement, SignError};
+use starknet_crypto::FieldElement;
 use starknet_signers::{LocalWallet, SigningKey};
 use std::sync::Arc;
 use utils::{
@@ -8,13 +8,12 @@ use utils::{
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
         Account, AccountError, ConnectedAccount,
     },
-    codegen::{BlockTag, StarknetError},
+    codegen::BlockTag,
     contract::factory::ContractFactory,
     errors::{parse_class_hash_from_error, RunnerError},
-    models::{BlockId, InvokeTransactionResult, JsonRpcError},
+    models::{BlockId, InvokeTransactionResult},
     provider::{Provider, ProviderError},
     starknet_utils::{create_jsonrpc_client, get_compiled_contract, get_selector_from_name},
-    transports::JsonRpcClientError,
 };
 
 #[tokio::test]
