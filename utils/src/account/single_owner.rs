@@ -145,13 +145,11 @@ where
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
         let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
-        println!("TX HASH STARKNET  {}", tx_hash);
         let signature = self
             .signer
             .sign_hash(&tx_hash)
             .await
             .map_err(SignError::Signer)?;
-        println!("Signature STARKNET {}", signature);
         Ok(vec![signature.r, signature.s])
     }
 

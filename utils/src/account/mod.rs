@@ -39,14 +39,6 @@ const PREFIX_DECLARE: FieldElement = FieldElement::from_mont([
     191557713328401194,
 ]);
 
-/// 2 ^ 128 + 1
-const QUERY_VERSION_ONE: FieldElement = FieldElement::from_mont([
-    18446744073700081633,
-    17407,
-    18446744073709551584,
-    576460752142433776,
-]);
-
 /// 2 ^ 128 + 2
 const QUERY_VERSION_TWO: FieldElement = FieldElement::from_mont([
     18446744073700081601,
@@ -183,14 +175,6 @@ impl RawDeclarationV3 {
     }
 }
 
-/// Cairo string for "invoke"
-const PREFIX_INVOKE: FieldElement = FieldElement::from_mont([
-    18443034532770911073,
-    18446744073709551615,
-    18446744073709551615,
-    513398556346534256,
-]);
-
 #[auto_impl(&, Box, Arc)]
 pub trait ExecutionEncoder {
     fn encode_calls(&self, calls: &[Call]) -> Vec<FieldElement>;
@@ -200,6 +184,7 @@ pub trait ExecutionEncoder {
 /// signer or provider. Account implementations that come with an active connection to the network
 /// should also implement [ConnectedAccount] for useful functionalities like estimating fees and
 /// sending transactions.
+#[allow(async_fn_in_trait)]
 pub trait Account: ExecutionEncoder + Sized {
     type SignError: Error + Send + Sync;
 
@@ -283,6 +268,7 @@ pub trait Account: ExecutionEncoder + Sized {
 /// An [Account] implementation that also comes with a [Provider]. Functionalities that require a
 /// connection to the sequencer or node are offloaded to this trait to keep the base [Account]
 /// clean and flexible.
+#[allow(async_fn_in_trait)]
 pub trait ConnectedAccount: Account {
     type Provider: Provider + Sync;
 

@@ -1,3 +1,5 @@
+use regex::Regex;
+use starknet_crypto::FieldElement;
 use thiserror::Error;
 use url::ParseError;
 
@@ -27,4 +29,18 @@ pub enum RunnerError {
 
     #[error("Request failed: {0}")]
     ReqwestError(#[from] reqwest::Error),
+}
+pub fn parse_class_hash_from_error(error_msg: &str) -> FieldElement {
+    tracing::info!("Error message: {}", error_msg);
+    let re = Regex::new(r#"StarkFelt\("(0x[a-fA-F0-9]+)"\)"#).unwrap();
+
+    // Attempt to capture the class hash
+    if let Some(captures) = re.captures(error_msg) {
+        if let Some(contract_address) = captures.get(1) {
+            return FieldElement::from_hex_be(contract_address.as_str())
+                .expect("Failed to parse class hash");
+        }
+    }
+
+    panic!("Failed to extract class hash from error message");
 }

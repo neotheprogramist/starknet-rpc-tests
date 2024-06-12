@@ -2,7 +2,6 @@ mod args;
 
 use args::Args;
 use clap::Parser;
-mod tests;
 use shared::account_balance::{account_balance, AccountBalanceParams};
 
 #[tokio::main]

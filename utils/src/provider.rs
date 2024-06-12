@@ -17,7 +17,7 @@ use super::{
     codegen::StarknetError,
     models::{BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction},
 };
-
+#[allow(async_fn_in_trait)]
 #[auto_impl(&, Box, Arc)]
 pub trait Provider {
     // /// Returns the version of the Starknet JSON-RPC specification being used

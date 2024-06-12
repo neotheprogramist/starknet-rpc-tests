@@ -550,7 +550,6 @@ where
                 .await
                 .map_err(AccountError::Provider)?,
         };
-
         // Resolves fee settings
         let (gas, gas_price) = match (self.gas, self.gas_price) {
             (Some(gas), Some(gas_price)) => (gas, gas_price),
