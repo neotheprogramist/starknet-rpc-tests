@@ -4,6 +4,7 @@ use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
 use clap::Parser;
 use colored::*;
 use reqwest::Client;
+use serde::Serialize;
 use starknet_crypto::FieldElement;
 use tracing::info;
 use url::Url;
@@ -26,8 +27,10 @@ impl std::str::FromStr for Version {
     }
 }
 
+#[derive(Serialize)]
 pub struct AccountBalanceParams {
-    pub address: String,
+    #[serde(serialize_with = "crate::serialize_felt_to_hex::serialize_field_element")]
+    pub address: FieldElement,
     pub unit: String,
     pub block_tag: String,
 }
@@ -44,11 +47,7 @@ pub async fn account_balance(
     };
     let res = client
         .get(account_balance_url)
-        .query(&[
-            ("address", &account_balance_params.address),
-            ("unit", &account_balance_params.unit),
-            ("block_tag", &account_balance_params.block_tag),
-        ])
+        .query(account_balance_params)
         .send()
         .await?;
     match version {
