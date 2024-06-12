@@ -37,7 +37,6 @@ async fn jsonrpc_get_nonce() {
     );
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
     account.get_nonce().await.unwrap();
-    account.get_nonce().await.unwrap();
     let nonce: FieldElement = account.get_nonce().await.unwrap();
     assert_eq!(nonce, FieldElement::ZERO)
 }
