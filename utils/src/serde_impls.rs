@@ -314,7 +314,6 @@ mod enum_ser_impls {
     use crate::models::TransactionTrace;
     use crate::transports::ExecuteInvocation;
 
-
     impl Serialize for Transaction {
         fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
             match self {
