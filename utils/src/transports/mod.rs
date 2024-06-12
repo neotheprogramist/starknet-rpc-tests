@@ -27,6 +27,7 @@ use crate::{
 use serde_with::serde_as;
 use std::fmt::Debug;
 
+#[allow(async_fn_in_trait)]
 #[auto_impl(&, Box, Arc)]
 pub trait JsonRpcTransport {
     type Error: Error + Send + Sync;
