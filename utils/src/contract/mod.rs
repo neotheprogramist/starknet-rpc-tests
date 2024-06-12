@@ -5,6 +5,7 @@ use serde_with::serde_as;
 use crate::codegen::FlattenedSierraClass;
 use starknet_crypto::{poseidon_hash_many, FieldElement, PoseidonHasher};
 use std::boxed;
+pub mod factory;
 /// Module containing types related to artifacts of contracts compiled with a Cairo 0.x compiler.
 pub mod legacy;
 use crate::unsigned_field_element::UfeHex;

@@ -314,6 +314,19 @@ pub struct ExecutionV1<'a, A> {
     max_fee: Option<FieldElement>,
     fee_estimate_multiplier: f64,
 }
+/// [RawExecution] but with an account associated.
+#[derive(Debug)]
+pub struct PreparedExecution<'a, A> {
+    account: &'a A,
+    inner: RawExecutionV3,
+}
+/// [Execution] but with `nonce` and `max_fee` already determined.
+#[derive(Debug)]
+pub struct RawExecution {
+    calls: Vec<Call>,
+    nonce: FieldElement,
+    max_fee: FieldElement,
+}
 
 /// Abstraction over `INVOKE` transactions from accounts for invoking contracts. This struct uses
 /// v3 `INVOKE` transactions under the hood, and hence pays transaction fees in STRK. To use v1

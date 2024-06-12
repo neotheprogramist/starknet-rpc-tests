@@ -21,9 +21,9 @@ use crate::{
 use super::{
     call::Call, Account, AccountError, ConnectedAccount, DeclarationV2, DeclarationV3,
     ExecutionEncoder, ExecutionV1, ExecutionV3, LegacyDeclaration, PreparedDeclarationV2,
-    PreparedDeclarationV3, PreparedExecutionV1, PreparedExecutionV3, PreparedLegacyDeclaration,
-    RawDeclarationV2, RawDeclarationV3, RawExecutionV1, RawExecutionV3, RawLegacyDeclaration,
-    PREFIX_DECLARE,
+    PreparedDeclarationV3, PreparedExecution, PreparedExecutionV1, PreparedExecutionV3,
+    PreparedLegacyDeclaration, RawDeclarationV2, RawDeclarationV3, RawExecution, RawExecutionV1,
+    RawExecutionV3, RawLegacyDeclaration, PREFIX_DECLARE,
 };
 #[derive(Debug, thiserror::Error)]
 #[error("Not all fields are prepared")]
@@ -550,7 +550,6 @@ where
                 .await
                 .map_err(AccountError::Provider)?,
         };
-
         // Resolves fee settings
         let (gas, gas_price) = match (self.gas, self.gas_price) {
             (Some(gas), Some(gas_price)) => (gas, gas_price),
