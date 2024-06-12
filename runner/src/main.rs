@@ -13,7 +13,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
 
     let account_balance_params = AccountBalanceParams {
-        address: args.account_address.to_string(),
+        address: args.account_address,
         unit: "WEI".to_string(),
         block_tag: "latest".to_string(),
     };
