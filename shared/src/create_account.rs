@@ -1,5 +1,8 @@
+use crate::mint::{mint, MintParams};
+use rand::Rng;
 use starknet_crypto::{pedersen_hash, FieldElement};
 use starknet_signers::SigningKey;
+use url::Url;
 
 // Cairo string of "STARKNET_CONTRACT_ADDRESS"
 const CONTRACT_ADDRESS_PREFIX: FieldElement = FieldElement::from_mont([
@@ -16,28 +19,35 @@ pub struct AccountConfiguration {
     pub public_key: FieldElement,
 }
 
-pub fn create_account() {
+pub async fn create_account(base_url: &Url) {
     let key = SigningKey::from_random();
-    println!("Private Key: {:?}", &key.secret_scalar());
-    println!("Public Key: {:?}", &key.verifying_key().scalar());
 
     let salt = SigningKey::from_random().secret_scalar();
-    println!("Salt: {:?}", &salt);
 
     let class_hash = FieldElement::from_hex_be(
         "0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
     )
     .unwrap();
-    println!("Class Hash: {:?}", &class_hash);
 
     let account_configuration = AccountConfiguration {
         class_hash,
         salt,
         public_key: key.verifying_key().scalar(),
     };
-    println!("Account Configuration: {:?}", &account_configuration);
+
     let deployed_address = get_contract_address(&account_configuration);
-    println!("Deployed Address: {:?}", &deployed_address);
+
+    let mut rng = rand::thread_rng();
+    let mint_params = MintParams {
+        address: deployed_address,
+        amount: rng.gen_range(u64::MAX as u128..u128::MAX),
+    };
+
+    let mint_response = match mint(&mint_params, base_url).await {
+        Ok(mint_response) => mint_response,
+        Err(e) => panic!("Error minting: {:?}", e),
+    };
+    println!("Mint Response: {:?}", mint_response);
 }
 
 pub fn get_contract_address(account_configuration: &AccountConfiguration) -> FieldElement {

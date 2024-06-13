@@ -16,3 +16,4 @@ v0-0-6 = { path = "../v0-0-6" }
 starknet-crypto.workspace = true
 starknet-signers.workspace = true
 prefix-hex.workspace = true
+rand.workspace = true

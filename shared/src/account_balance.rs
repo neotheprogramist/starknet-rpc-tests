@@ -38,7 +38,7 @@ pub struct AccountBalanceParams {
 pub async fn account_balance(
     account_balance_params: &AccountBalanceParams,
     version: &Version,
-    base_url: Url,
+    base_url: &Url,
 ) -> Result<(), RequestOrParseError> {
     let client = Client::new();
     let account_balance_url = match base_url.join("account_balance") {

@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         unit: "WEI".to_string(),
         block_tag: "latest".to_string(),
     };
-    account_balance(&account_balance_params, &args.vers, args.url).await?;
-    create_account();
+    account_balance(&account_balance_params, &args.vers, &args.url).await?;
+    create_account(&args.url).await;
     Ok(())
 }
