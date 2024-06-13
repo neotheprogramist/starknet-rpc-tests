@@ -1,4 +1,11 @@
-#[starknet::interface]
+use generator_error::GeneratorError;
+use utils::{build_contract_with_scarb, modify_contract_enum, write_contract_to_file};
+
+pub mod generator_error;
+pub mod utils;
+
+fn main() -> Result<(), GeneratorError> {
+    let sample_contract = r#"#[starknet::interface]
 pub trait IHelloStarknet<TContractState> {
     fn increase_balance(ref self: TContractState, amount: felt252);
     fn get_balance(self: @TContractState) -> BalanceResult;
@@ -8,9 +15,7 @@ pub trait IHelloStarknet<TContractState> {
 pub enum BalanceResult {
     Positive,
     Zero,
-    Negative,
-    Overdrawn
-
+    Negative
 }
 
 #[starknet::contract]
@@ -39,4 +44,20 @@ mod HelloStarknet {
         }
     }
 }
+"#;
 
+    let new_enum = r#"
+    Positive,
+    Zero,
+    Negative,
+    Overdrawn
+"#;
+
+    let modified_contract = modify_contract_enum(sample_contract, new_enum);
+    let contract_path = "./example/src/lib.cairo";
+    let package = "example";
+    write_contract_to_file(&modified_contract, contract_path)?;
+    build_contract_with_scarb(package)?;
+
+    Ok(())
+}
