@@ -2,7 +2,6 @@ use rand::{rngs::StdRng, Rng, RngCore, SeedableRng};
 use starknet_crypto::FieldElement;
 use starknet_signers::{LocalWallet, SigningKey};
 use std::sync::Arc;
-use tracing::field::Field;
 use utils::{
     account::{
         call::Call,
@@ -310,7 +309,7 @@ async fn jsonrpc_invoke() {
     .await;
 
     let amount = FieldElement::from_hex_be("0x10").unwrap();
-    let result = account
+    account
         .execute_v3(vec![Call {
             to: contract_address,
             selector: get_selector_from_name("increase_balance").unwrap(),

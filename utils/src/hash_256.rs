@@ -107,27 +107,27 @@ impl FromStr for Hash256 {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let value = s.trim_start_matches("0x");
-
         let hex_chars_len = value.len();
         let expected_hex_length = HASH_256_BYTE_COUNT * 2;
 
-        let parsed_bytes: [u8; HASH_256_BYTE_COUNT] = if hex_chars_len == expected_hex_length {
-            let mut buffer = [0u8; HASH_256_BYTE_COUNT];
-            hex::decode_to_slice(value, &mut buffer).map_err(|_| FromHexError::InvalidHexString)?;
-            buffer
-        } else if hex_chars_len < expected_hex_length {
-            let mut padded_hex = str::repeat("0", expected_hex_length - hex_chars_len);
-            padded_hex.push_str(value);
+        match hex_chars_len {
+            len if len == expected_hex_length => {
+                let mut buffer = [0u8; HASH_256_BYTE_COUNT];
+                hex::decode_to_slice(value, &mut buffer)
+                    .map_err(|_| FromHexError::InvalidHexString)?;
+                Ok(buffer.into())
+            }
+            len if len < expected_hex_length => {
+                let mut padded_hex = str::repeat("0", expected_hex_length - len);
+                padded_hex.push_str(value);
 
-            let mut buffer = [0u8; HASH_256_BYTE_COUNT];
-            hex::decode_to_slice(&padded_hex, &mut buffer)
-                .map_err(|_| FromHexError::InvalidHexString)?;
-            buffer
-        } else {
-            return Err(FromHexError::UnexpectedLength);
-        };
-
-        Ok(parsed_bytes.into())
+                let mut buffer = [0u8; HASH_256_BYTE_COUNT];
+                hex::decode_to_slice(&padded_hex, &mut buffer)
+                    .map_err(|_| FromHexError::InvalidHexString)?;
+                Ok(buffer.into())
+            }
+            _ => Err(FromHexError::UnexpectedLength),
+        }
     }
 }
 
