@@ -311,6 +311,7 @@ mod enum_ser_impls {
     use crate::models::DeclareTransaction;
     use crate::models::InvokeTransaction;
     use crate::models::Transaction;
+    use crate::models::TransactionReceipt;
     use crate::models::TransactionTrace;
     use crate::transports::ExecuteInvocation;
 
@@ -390,6 +391,18 @@ mod enum_ser_impls {
             match self {
                 Self::V1(variant) => variant.serialize(serializer),
                 Self::V3(variant) => variant.serialize(serializer),
+            }
+        }
+    }
+
+    impl Serialize for TransactionReceipt {
+        fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+            match self {
+                Self::Invoke(variant) => variant.serialize(serializer),
+                Self::L1Handler(variant) => variant.serialize(serializer),
+                Self::Declare(variant) => variant.serialize(serializer),
+                Self::Deploy(variant) => variant.serialize(serializer),
+                Self::DeployAccount(variant) => variant.serialize(serializer),
             }
         }
     }

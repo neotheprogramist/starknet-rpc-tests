@@ -3,14 +3,12 @@ use starknet_crypto::FieldElement;
 use std::{any::Any, error::Error, fmt::Debug};
 
 use crate::{
-    transports::MaybePendingBlockWithTxHashes,
-    {
-        codegen::{
-            FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
-            SimulationFlagForEstimateFee,
-        },
-        models::{BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult},
+    codegen::{
+        FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
+        SimulationFlagForEstimateFee, TransactionReceiptWithBlockInfo,
     },
+    models::{BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult},
+    transports::MaybePendingBlockWithTxHashes,
 };
 
 use super::{
@@ -93,13 +91,13 @@ pub trait Provider {
     // where
     //     B: AsRef<BlockId> + Send + Sync;
 
-    // /// Get the details of a transaction by a given block number and index
-    // async fn get_transaction_receipt<H>(
-    //     &self,
-    //     transaction_hash: H,
-    // ) -> Result<TransactionReceiptWithBlockInfo, ProviderError>
-    // where
-    //     H: AsRef<FieldElement> + Send + Sync;
+    /// Get the details of a transaction by a given block number and index
+    async fn get_transaction_receipt<H>(
+        &self,
+        transaction_hash: H,
+    ) -> Result<TransactionReceiptWithBlockInfo, ProviderError>
+    where
+        H: AsRef<FieldElement> + Send + Sync;
 
     // /// Get the contract class definition in the given block associated with the given hash
     // async fn get_class<B, H>(

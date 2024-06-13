@@ -6,11 +6,10 @@ pub trait IHelloStarknet<TContractState> {
 
 #[derive(Debug, PartialEq, Serde, Drop)]
 pub enum BalanceResult {
-    Positive,
     Zero,
+    Positive,
     Negative,
     Overdrawn
-
 }
 
 #[starknet::contract]
@@ -39,4 +38,3 @@ mod HelloStarknet {
         }
     }
 }
-

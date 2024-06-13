@@ -2,10 +2,12 @@ use crate::codegen::{
     BlockTag, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2,
     BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1,
     BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1,
-    BroadcastedInvokeTransactionV3, DeclareTransactionTrace, DeclareTransactionV0,
-    DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3,
-    DeployAccountTransactionTrace, DeployTransaction, InvokeTransactionTrace, InvokeTransactionV0,
-    InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionTrace,
+    BroadcastedInvokeTransactionV3, DeclareTransactionReceipt, DeclareTransactionTrace,
+    DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3,
+    DeployAccountTransactionReceipt, DeployAccountTransactionTrace, DeployTransaction,
+    DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt, InvokeTransactionTrace,
+    InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionReceipt,
+    L1HandlerTransactionTrace,
 };
 use crate::unsigned_field_element::UfeHex;
 
@@ -184,4 +186,24 @@ impl AsRef<BroadcastedInvokeTransaction> for BroadcastedInvokeTransaction {
     fn as_ref(&self) -> &BroadcastedInvokeTransaction {
         self
     }
+}
+impl AsRef<FunctionCall> for FunctionCall {
+    fn as_ref(&self) -> &FunctionCall {
+        self
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(tag = "type")]
+pub enum TransactionReceipt {
+    #[serde(rename = "INVOKE")]
+    Invoke(InvokeTransactionReceipt),
+    #[serde(rename = "L1_HANDLER")]
+    L1Handler(L1HandlerTransactionReceipt),
+    #[serde(rename = "DECLARE")]
+    Declare(DeclareTransactionReceipt),
+    #[serde(rename = "DEPLOY")]
+    Deploy(DeployTransactionReceipt),
+    #[serde(rename = "DEPLOY_ACCOUNT")]
+    DeployAccount(DeployAccountTransactionReceipt),
 }
