@@ -14,4 +14,5 @@ tracing.workspace = true
 v0-0-5 = { path = "../v0-0-5" }
 v0-0-6 = { path = "../v0-0-6" }
 starknet-crypto.workspace = true
+starknet-signers.workspace = true
 prefix-hex.workspace = true

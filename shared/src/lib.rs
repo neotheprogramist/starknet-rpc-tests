@@ -1,4 +1,5 @@
 pub mod account_balance;
+pub mod create_account;
 pub mod errors;
 pub mod serialize_felt_to_hex;
 pub use v0_0_5;

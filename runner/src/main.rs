@@ -4,6 +4,7 @@ use args::Args;
 use clap::Parser;
 mod tests;
 use shared::account_balance::{account_balance, AccountBalanceParams};
+use shared::create_account::create_account;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -19,5 +20,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         block_tag: "latest".to_string(),
     };
     account_balance(&account_balance_params, &args.vers, args.url).await?;
+    create_account();
     Ok(())
 }
