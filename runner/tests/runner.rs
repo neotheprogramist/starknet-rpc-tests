@@ -141,6 +141,68 @@ async fn jsonrpc_invoke() {
     tracing::debug!("TRANSACTION HASH {}", result.transaction_hash);
 }
 
+#[tokio::test]
+async fn test_increase_and_get_balance() {
+    let sender_address = FieldElement::from_hex_be(
+        "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+    )
+    .unwrap();
+
+    let signer = LocalWallet::from(SigningKey::from_secret_scalar(
+        FieldElement::from_hex_be("0x71d7bb07b9a64f6f78ac4c816aff4da9").unwrap(),
+    ));
+    let chain_id = FieldElement::from_hex_be("0x534e5f5345504f4c4941").unwrap();
+    let mut account = SingleOwnerAccount::new(
+        create_jsonrpc_client(),
+        signer,
+        sender_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+
+    // Step 1: Declare the contract
+    let class_hash = declare_contract_v3(
+        &account,
+        "../target/dev/example_HelloStarknet.contract_class.json",
+        "../target/dev/example_HelloStarknet.compiled_contract_class.json",
+    )
+    .await
+    .unwrap();
+
+    // Step 2: Deploy the contract
+    let deploy_result = deploy_contract_v3(&account, class_hash).await;
+    let contract_address = deploy_result.transaction_hash;
+
+    // Step 3: Invoke the `increase_balance` function
+    let increase_amount = FieldElement::from_dec_str("10").unwrap();
+    let result = account
+        .execute_v3(vec![Call {
+            to: contract_address,
+            selector: get_selector_from_name("increase_balance").unwrap(),
+            calldata: vec![increase_amount],
+        }])
+        .gas(200000)
+        .gas_price(500000000000000)
+        .send()
+        .await
+        .unwrap();
+
+    // Step 4: Call the `get_balance` function and assert the balance
+    let call_result: Vec<FieldElement> = account
+        .execute_v3(Call {
+            to: contract_address,
+            selector: get_selector_from_name("get_balance").unwrap(),
+            calldata: vec![],
+        })
+        .await
+        .unwrap();
+
+    // The expected balance result is `Positive` which should be encoded as a specific FieldElement
+    let expected_balance = FieldElement::from_dec_str("1").unwrap(); // Assuming `Positive` is encoded as `1`
+    assert_eq!(call_result[0], expected_balance);
+}
+
 pub async fn declare_contract_v3<P: Provider + Send + Sync>(
     account: &SingleOwnerAccount<P, LocalWallet>,
     sierra_path: &str,
