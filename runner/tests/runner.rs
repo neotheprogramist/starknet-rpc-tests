@@ -17,7 +17,10 @@ use utils::{
         MaybePendingStateUpdate, TransactionReceipt,
     },
     provider::{Provider, ProviderError},
-    starknet_utils::{create_jsonrpc_client, get_compiled_contract, get_selector_from_name},
+    starknet_utils::{
+        create_jsonrpc_client, get_compiled_contract, get_selector_from_name,
+        get_storage_var_address,
+    },
     transports::{http::HttpTransport, JsonRpcClient, MaybePendingBlockWithTxHashes},
 };
 
@@ -120,6 +123,33 @@ async fn jsonrpc_get_state_update() {
     };
 
     assert_eq!(state_update.new_root, FieldElement::ZERO);
+}
+
+#[tokio::test]
+async fn jsonrpc_get_storage_at() {
+    let rpc_client = create_jsonrpc_client();
+
+    // Checks L2 ETH balance via storage taking advantage of implementation detail
+    let eth_balance = rpc_client
+        .get_storage_at(
+            FieldElement::from_hex_be(
+                "049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+            )
+            .unwrap(),
+            get_storage_var_address(
+                "ERC20_balances",
+                &[FieldElement::from_hex_be(
+                    "03f47d3911396b6d579fd7848cf576286ab6f96dda977915d6c7b10f3dd2315b",
+                )
+                .unwrap()],
+            )
+            .unwrap(),
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await
+        .unwrap();
+
+    assert_eq!(eth_balance, FieldElement::ZERO);
 }
 
 #[tokio::test]

@@ -56,17 +56,17 @@ pub trait Provider {
     where
         B: AsRef<BlockId> + Send + Sync;
 
-    // /// Get the value of the storage at the given address and key
-    // async fn get_storage_at<A, K, B>(
-    //     &self,
-    //     contract_address: A,
-    //     key: K,
-    //     block_id: B,
-    // ) -> Result<FieldElement, ProviderError>
-    // where
-    //     A: AsRef<FieldElement> + Send + Sync,
-    //     K: AsRef<FieldElement> + Send + Sync,
-    //     B: AsRef<BlockId> + Send + Sync;
+    /// Get the value of the storage at the given address and key
+    async fn get_storage_at<A, K, B>(
+        &self,
+        contract_address: A,
+        key: K,
+        block_id: B,
+    ) -> Result<FieldElement, ProviderError>
+    where
+        A: AsRef<FieldElement> + Send + Sync,
+        K: AsRef<FieldElement> + Send + Sync,
+        B: AsRef<BlockId> + Send + Sync;
 
     // /// Gets the transaction status (possibly reflecting that the tx is still in
     // /// the mempool, or dropped from it)
