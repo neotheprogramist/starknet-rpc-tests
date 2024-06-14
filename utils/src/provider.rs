@@ -18,8 +18,8 @@ use super::{
 #[allow(async_fn_in_trait)]
 #[auto_impl(&, Box, Arc)]
 pub trait Provider {
-    // /// Returns the version of the Starknet JSON-RPC specification being used
-    // async fn spec_version(&self) -> Result<String, ProviderError>;
+    /// Returns the version of the Starknet JSON-RPC specification being used
+    async fn spec_version(&self) -> Result<String, ProviderError>;
 
     /// Get block information with transaction hashes given the block id
     async fn get_block_with_tx_hashes<B>(

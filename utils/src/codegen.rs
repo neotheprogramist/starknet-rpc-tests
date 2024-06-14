@@ -4187,3 +4187,25 @@ impl<'de> Deserialize<'de> for GetTransactionReceiptRequest {
         }
     }
 }
+/// Request for method starknet_specVersion
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SpecVersionRequest;
+
+impl Serialize for SpecVersionRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeSeq;
+
+        let seq = serializer.serialize_seq(Some(0))?;
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for SpecVersionRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let elements = Vec::<()>::deserialize(deserializer)?;
+        if !elements.is_empty() {
+            return Err(serde::de::Error::custom("invalid sequence length"));
+        }
+        Ok(Self)
+    }
+}

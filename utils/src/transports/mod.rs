@@ -15,8 +15,8 @@ use crate::{
         GetTransactionReceiptRequest, GetTransactionReceiptRequestRef, NoTraceAvailableErrorData,
         PendingBlockWithTxHashes, ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
         SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
-        SimulationFlagForEstimateFee, StarknetError, TransactionExecutionErrorData,
-        TransactionReceiptWithBlockInfo,
+        SimulationFlagForEstimateFee, SpecVersionRequest, StarknetError,
+        TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
     },
     models::{
         BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
@@ -51,8 +51,8 @@ pub struct JsonRpcClient<T> {
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum JsonRpcMethod {
-    // #[serde(rename = "starknet_specVersion")]
-    // SpecVersion,
+    #[serde(rename = "starknet_specVersion")]
+    SpecVersion,
     #[serde(rename = "starknet_getBlockWithTxHashes")]
     GetBlockWithTxHashes,
     // #[serde(rename = "starknet_getBlockWithTxs")]
@@ -124,7 +124,7 @@ pub enum JsonRpcRequestData {
     AddDeployAccountTransaction(AddDeployAccountTransactionRequest),
     Call(CallRequest),
     GetNonce(GetNonceRequest),
-    // SpecVersion(SpecVersionRequest),
+    SpecVersion(SpecVersionRequest),
     GetBlockWithTxHashes(GetBlockWithTxHashesRequest),
     // GetBlockWithTxs(GetBlockWithTxsRequest),
     // GetBlockWithReceipts(GetBlockWithReceiptsRequest),
@@ -232,11 +232,11 @@ impl<T> Provider for JsonRpcClient<T>
 where
     T: 'static + JsonRpcTransport + Sync + Send,
 {
-    // /// Returns the version of the Starknet JSON-RPC specification being used
-    // async fn spec_version(&self) -> Result<String, ProviderError> {
-    //     self.send_request(JsonRpcMethod::SpecVersion, SpecVersionRequest)
-    //         .await
-    // }
+    /// Returns the version of the Starknet JSON-RPC specification being used
+    async fn spec_version(&self) -> Result<String, ProviderError> {
+        self.send_request(JsonRpcMethod::SpecVersion, SpecVersionRequest)
+            .await
+    }
 
     /// Get block information with transaction hashes given the block id
     async fn get_block_with_tx_hashes<B>(
@@ -742,10 +742,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
 
         let raw_request = RawRequest::deserialize(deserializer)?;
         let request_data = match raw_request.method {
-            // JsonRpcMethod::SpecVersion => JsonRpcRequestData::SpecVersion(
-            //     serde_json::from_value::<SpecVersionRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::SpecVersion => JsonRpcRequestData::SpecVersion(
+                serde_json::from_value::<SpecVersionRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             JsonRpcMethod::GetBlockWithTxHashes => JsonRpcRequestData::GetBlockWithTxHashes(
                 serde_json::from_value::<GetBlockWithTxHashesRequest>(raw_request.params)
                     .map_err(error_mapper)?,
