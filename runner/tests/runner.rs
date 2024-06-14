@@ -12,7 +12,10 @@ use utils::{
     contract::factory::ContractFactory,
     errors::{parse_class_hash_from_error, RunnerError},
     execution_result::ExecutionResult,
-    models::{BlockId, InvokeTransactionResult, MaybePendingBlockWithTxs, TransactionReceipt},
+    models::{
+        BlockId, InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
+        MaybePendingStateUpdate, TransactionReceipt,
+    },
     provider::{Provider, ProviderError},
     starknet_utils::{create_jsonrpc_client, get_compiled_contract, get_selector_from_name},
     transports::{http::HttpTransport, JsonRpcClient, MaybePendingBlockWithTxHashes},
@@ -83,6 +86,40 @@ async fn jsonrpc_get_block_with_txs() {
     };
 
     assert_eq!(block.block_number, 0);
+}
+
+#[tokio::test]
+async fn jsonrpc_get_block_with_receipts() {
+    let rpc_client = create_jsonrpc_client();
+
+    let block = rpc_client
+        .get_block_with_receipts(BlockId::Tag(BlockTag::Latest))
+        .await
+        .unwrap();
+
+    let block = match block {
+        MaybePendingBlockWithReceipts::Block(block) => block,
+        _ => panic!("unexpected block response type"),
+    };
+
+    assert_eq!(block.block_number, 0);
+}
+
+#[tokio::test]
+async fn jsonrpc_get_state_update() {
+    let rpc_client = create_jsonrpc_client();
+
+    let state_update = rpc_client
+        .get_state_update(BlockId::Tag(BlockTag::Latest))
+        .await
+        .unwrap();
+
+    let state_update = match state_update {
+        MaybePendingStateUpdate::Update(value) => value,
+        _ => panic!("unexpected data type"),
+    };
+
+    assert_eq!(state_update.new_root, FieldElement::ZERO);
 }
 
 #[tokio::test]
