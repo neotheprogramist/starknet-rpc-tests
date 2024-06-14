@@ -19,6 +19,15 @@ use utils::{
 };
 
 #[tokio::test]
+async fn jsonrpc_spec_version() {
+    let rpc_client = create_jsonrpc_client();
+
+    let version = rpc_client.spec_version().await.unwrap();
+
+    assert_eq!(version, "0.7.1");
+}
+
+#[tokio::test]
 async fn jsonrpc_get_nonce() {
     let sender_address = FieldElement::from_hex_be(
         "0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1",
