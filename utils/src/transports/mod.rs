@@ -12,9 +12,11 @@ use crate::{
         CallRequest, CallRequestRef, ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef,
         FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithTxHashesRequest,
         GetBlockWithTxHashesRequestRef, GetNonceRequest, GetNonceRequestRef,
-        NoTraceAvailableErrorData, PendingBlockWithTxHashes, ResourcePrice, RevertedInvocation,
-        SimulateTransactionsRequest, SimulateTransactionsRequestRef, SimulatedTransaction,
-        SimulationFlag, SimulationFlagForEstimateFee, StarknetError, TransactionExecutionErrorData,
+        GetTransactionReceiptRequest, GetTransactionReceiptRequestRef, NoTraceAvailableErrorData,
+        PendingBlockWithTxHashes, ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
+        SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
+        SimulationFlagForEstimateFee, StarknetError, TransactionExecutionErrorData,
+        TransactionReceiptWithBlockInfo,
     },
     models::{
         BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
@@ -42,7 +44,7 @@ pub trait JsonRpcTransport {
         R: DeserializeOwned;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct JsonRpcClient<T> {
     transport: T,
 }
@@ -67,8 +69,8 @@ pub enum JsonRpcMethod {
     // GetTransactionByHash,
     // #[serde(rename = "starknet_getTransactionByBlockIdAndIndex")]
     // GetTransactionByBlockIdAndIndex,
-    // #[serde(rename = "starknet_getTransactionReceipt")]
-    // GetTransactionReceipt,
+    #[serde(rename = "starknet_getTransactionReceipt")]
+    GetTransactionReceipt,
     // #[serde(rename = "starknet_getClass")]
     // GetClass,
     // #[serde(rename = "starknet_getClassHashAt")]
@@ -131,7 +133,7 @@ pub enum JsonRpcRequestData {
     // GetTransactionStatus(GetTransactionStatusRequest),
     // GetTransactionByHash(GetTransactionByHashRequest),
     // GetTransactionByBlockIdAndIndex(GetTransactionByBlockIdAndIndexRequest),
-    // GetTransactionReceipt(GetTransactionReceiptRequest),
+    GetTransactionReceipt(GetTransactionReceiptRequest),
     // GetClass(GetClassRequest),
     // GetClassHashAt(GetClassHashAtRequest),
     // GetClassAt(GetClassAtRequest),
@@ -383,22 +385,22 @@ where
     //     .await
     // }
 
-    // /// Get the details of a transaction by a given block number and index
-    // async fn get_transaction_receipt<H>(
-    //     &self,
-    //     transaction_hash: H,
-    // ) -> Result<TransactionReceiptWithBlockInfo, ProviderError>
-    // where
-    //     H: AsRef<FieldElement> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::GetTransactionReceipt,
-    //         GetTransactionReceiptRequestRef {
-    //             transaction_hash: transaction_hash.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    /// Get the details of a transaction by a given block number and index
+    async fn get_transaction_receipt<H>(
+        &self,
+        transaction_hash: H,
+    ) -> Result<TransactionReceiptWithBlockInfo, ProviderError>
+    where
+        H: AsRef<FieldElement> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetTransactionReceipt,
+            GetTransactionReceiptRequestRef {
+                transaction_hash: transaction_hash.as_ref(),
+            },
+        )
+        .await
+    }
 
     // /// Get the contract class definition in the given block associated with the given hash
     // async fn get_class<B, H>(
@@ -780,10 +782,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
             //         .map_err(error_mapper)?,
             //     )
             // }
-            // JsonRpcMethod::GetTransactionReceipt => JsonRpcRequestData::GetTransactionReceipt(
-            //     serde_json::from_value::<GetTransactionReceiptRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::GetTransactionReceipt => JsonRpcRequestData::GetTransactionReceipt(
+                serde_json::from_value::<GetTransactionReceiptRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::GetClass => JsonRpcRequestData::GetClass(
             //     serde_json::from_value::<GetClassRequest>(raw_request.params)
             //         .map_err(error_mapper)?,

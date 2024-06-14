@@ -1,9 +1,13 @@
 use crate::byte_array::base64;
+use crate::execution_result::ExecutionResult;
+use crate::hash_256::Hash256;
 use crate::models::BroadcastedDeclareTransaction;
+use crate::models::TransactionReceipt;
 use crate::models::{
     BlockId, BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction,
     BroadcastedTransaction, TransactionTrace,
 };
+use crate::receipt_block::ReceiptBlock;
 use crate::serde_impls::NumAsHex;
 use crate::transports::ExecuteInvocation;
 use crate::unsigned_field_element::UfeHex;
@@ -11,6 +15,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
 use starknet_crypto::FieldElement;
 use std::sync;
+
 /// Request for method starknet_estimateFee
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EstimateFeeRequest {
@@ -3542,5 +3547,643 @@ impl<'de> Deserialize<'de> for BroadcastedDeclareTransactionV1 {
             contract_class: OwnedPtr::new(tagged.contract_class),
             is_query,
         })
+    }
+}
+
+/// Transaction receipt with block info.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TransactionReceiptWithBlockInfo {
+    #[serde(flatten)]
+    pub receipt: TransactionReceipt,
+    #[serde(flatten)]
+    pub block: ReceiptBlock,
+}
+/// Invoke transaction receipt.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InvokeTransactionReceipt {
+    /// The hash identifying the transaction
+    pub transaction_hash: FieldElement,
+    /// The fee that was charged by the sequencer
+    pub actual_fee: FeePayment,
+    /// Finality status of the tx
+    pub finality_status: TransactionFinalityStatus,
+    /// Messages sent
+    pub messages_sent: Vec<MsgToL1>,
+    /// The events emitted as part of this transaction
+    pub events: Vec<Event>,
+    /// The resources consumed by the transaction
+    pub execution_resources: ExecutionResources,
+    pub execution_result: ExecutionResult,
+}
+
+/// L1 handler transaction receipt.
+///
+/// Receipt for L1 handler transaction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct L1HandlerTransactionReceipt {
+    /// The message hash as it appears on the L1 core contract
+    pub message_hash: Hash256,
+    /// The hash identifying the transaction
+    pub transaction_hash: FieldElement,
+    /// The fee that was charged by the sequencer
+    pub actual_fee: FeePayment,
+    /// Finality status of the tx
+    pub finality_status: TransactionFinalityStatus,
+    /// Messages sent
+    pub messages_sent: Vec<MsgToL1>,
+    /// The events emitted as part of this transaction
+    pub events: Vec<Event>,
+    /// The resources consumed by the transaction
+    pub execution_resources: ExecutionResources,
+    pub execution_result: ExecutionResult,
+}
+
+/// Declare transaction receipt.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeclareTransactionReceipt {
+    /// The hash identifying the transaction
+    pub transaction_hash: FieldElement,
+    /// The fee that was charged by the sequencer
+    pub actual_fee: FeePayment,
+    /// Finality status of the tx
+    pub finality_status: TransactionFinalityStatus,
+    /// Messages sent
+    pub messages_sent: Vec<MsgToL1>,
+    /// The events emitted as part of this transaction
+    pub events: Vec<Event>,
+    /// The resources consumed by the transaction
+    pub execution_resources: ExecutionResources,
+    pub execution_result: ExecutionResult,
+}
+
+/// Deploy transaction receipt.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeployTransactionReceipt {
+    /// The hash identifying the transaction
+    pub transaction_hash: FieldElement,
+    /// The fee that was charged by the sequencer
+    pub actual_fee: FeePayment,
+    /// Finality status of the tx
+    pub finality_status: TransactionFinalityStatus,
+    /// Messages sent
+    pub messages_sent: Vec<MsgToL1>,
+    /// The events emitted as part of this transaction
+    pub events: Vec<Event>,
+    /// The resources consumed by the transaction
+    pub execution_resources: ExecutionResources,
+    pub execution_result: ExecutionResult,
+    /// The address of the deployed contract
+    pub contract_address: FieldElement,
+}
+
+/// Deploy account transaction receipt.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DeployAccountTransactionReceipt {
+    /// The hash identifying the transaction
+    pub transaction_hash: FieldElement,
+    /// The fee that was charged by the sequencer
+    pub actual_fee: FeePayment,
+    /// Finality status of the tx
+    pub finality_status: TransactionFinalityStatus,
+    /// Messages sent
+    pub messages_sent: Vec<MsgToL1>,
+    /// The events emitted as part of this transaction
+    pub events: Vec<Event>,
+    /// The resources consumed by the transaction
+    pub execution_resources: ExecutionResources,
+    pub execution_result: ExecutionResult,
+    /// The address of the deployed contract
+    pub contract_address: FieldElement,
+}
+
+impl Serialize for InvokeTransactionReceipt {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            pub r#type: &'a str,
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+            pub actual_fee: &'a FeePayment,
+            pub finality_status: &'a TransactionFinalityStatus,
+            pub messages_sent: &'a [MsgToL1],
+            pub events: &'a [Event],
+            pub execution_resources: &'a ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: &'a ExecutionResult,
+        }
+
+        let r#type = "INVOKE";
+
+        let tagged = Tagged {
+            r#type,
+            transaction_hash: &self.transaction_hash,
+            actual_fee: &self.actual_fee,
+            finality_status: &self.finality_status,
+            messages_sent: &self.messages_sent,
+            events: &self.events,
+            execution_resources: &self.execution_resources,
+            execution_result: &self.execution_result,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for InvokeTransactionReceipt {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct Tagged {
+            pub r#type: Option<String>,
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+            pub actual_fee: FeePayment,
+            pub finality_status: TransactionFinalityStatus,
+            pub messages_sent: Vec<MsgToL1>,
+            pub events: Vec<Event>,
+            pub execution_resources: ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: ExecutionResult,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "INVOKE" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            transaction_hash: tagged.transaction_hash,
+            actual_fee: tagged.actual_fee,
+            finality_status: tagged.finality_status,
+            messages_sent: tagged.messages_sent,
+            events: tagged.events,
+            execution_resources: tagged.execution_resources,
+            execution_result: tagged.execution_result,
+        })
+    }
+}
+
+impl Serialize for L1HandlerTransactionReceipt {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            pub r#type: &'a str,
+            pub message_hash: &'a Hash256,
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+            pub actual_fee: &'a FeePayment,
+            pub finality_status: &'a TransactionFinalityStatus,
+            pub messages_sent: &'a [MsgToL1],
+            pub events: &'a [Event],
+            pub execution_resources: &'a ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: &'a ExecutionResult,
+        }
+
+        let r#type = "L1_HANDLER";
+
+        let tagged = Tagged {
+            r#type,
+            message_hash: &self.message_hash,
+            transaction_hash: &self.transaction_hash,
+            actual_fee: &self.actual_fee,
+            finality_status: &self.finality_status,
+            messages_sent: &self.messages_sent,
+            events: &self.events,
+            execution_resources: &self.execution_resources,
+            execution_result: &self.execution_result,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for L1HandlerTransactionReceipt {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct Tagged {
+            pub r#type: Option<String>,
+            pub message_hash: Hash256,
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+            pub actual_fee: FeePayment,
+            pub finality_status: TransactionFinalityStatus,
+            pub messages_sent: Vec<MsgToL1>,
+            pub events: Vec<Event>,
+            pub execution_resources: ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: ExecutionResult,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "L1_HANDLER" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            message_hash: tagged.message_hash,
+            transaction_hash: tagged.transaction_hash,
+            actual_fee: tagged.actual_fee,
+            finality_status: tagged.finality_status,
+            messages_sent: tagged.messages_sent,
+            events: tagged.events,
+            execution_resources: tagged.execution_resources,
+            execution_result: tagged.execution_result,
+        })
+    }
+}
+
+impl Serialize for DeclareTransactionReceipt {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            pub r#type: &'a str,
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+            pub actual_fee: &'a FeePayment,
+            pub finality_status: &'a TransactionFinalityStatus,
+            pub messages_sent: &'a [MsgToL1],
+            pub events: &'a [Event],
+            pub execution_resources: &'a ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: &'a ExecutionResult,
+        }
+
+        let r#type = "DECLARE";
+
+        let tagged = Tagged {
+            r#type,
+            transaction_hash: &self.transaction_hash,
+            actual_fee: &self.actual_fee,
+            finality_status: &self.finality_status,
+            messages_sent: &self.messages_sent,
+            events: &self.events,
+            execution_resources: &self.execution_resources,
+            execution_result: &self.execution_result,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for DeclareTransactionReceipt {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct Tagged {
+            pub r#type: Option<String>,
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+            pub actual_fee: FeePayment,
+            pub finality_status: TransactionFinalityStatus,
+            pub messages_sent: Vec<MsgToL1>,
+            pub events: Vec<Event>,
+            pub execution_resources: ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: ExecutionResult,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "DECLARE" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            transaction_hash: tagged.transaction_hash,
+            actual_fee: tagged.actual_fee,
+            finality_status: tagged.finality_status,
+            messages_sent: tagged.messages_sent,
+            events: tagged.events,
+            execution_resources: tagged.execution_resources,
+            execution_result: tagged.execution_result,
+        })
+    }
+}
+
+impl Serialize for DeployTransactionReceipt {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+            pub actual_fee: &'a FeePayment,
+            pub finality_status: &'a TransactionFinalityStatus,
+            pub messages_sent: &'a [MsgToL1],
+            pub events: &'a [Event],
+            pub execution_resources: &'a ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: &'a ExecutionResult,
+            pub r#type: &'a str,
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: &'a FieldElement,
+        }
+
+        let r#type = "DEPLOY";
+
+        let tagged = Tagged {
+            transaction_hash: &self.transaction_hash,
+            actual_fee: &self.actual_fee,
+            finality_status: &self.finality_status,
+            messages_sent: &self.messages_sent,
+            events: &self.events,
+            execution_resources: &self.execution_resources,
+            execution_result: &self.execution_result,
+            r#type,
+            contract_address: &self.contract_address,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for DeployTransactionReceipt {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct Tagged {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+            pub actual_fee: FeePayment,
+            pub finality_status: TransactionFinalityStatus,
+            pub messages_sent: Vec<MsgToL1>,
+            pub events: Vec<Event>,
+            pub execution_resources: ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: ExecutionResult,
+            pub r#type: Option<String>,
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: FieldElement,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "DEPLOY" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            transaction_hash: tagged.transaction_hash,
+            actual_fee: tagged.actual_fee,
+            finality_status: tagged.finality_status,
+            messages_sent: tagged.messages_sent,
+            events: tagged.events,
+            execution_resources: tagged.execution_resources,
+            execution_result: tagged.execution_result,
+            contract_address: tagged.contract_address,
+        })
+    }
+}
+
+impl Serialize for DeployAccountTransactionReceipt {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        struct Tagged<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+            pub actual_fee: &'a FeePayment,
+            pub finality_status: &'a TransactionFinalityStatus,
+            pub messages_sent: &'a [MsgToL1],
+            pub events: &'a [Event],
+            pub execution_resources: &'a ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: &'a ExecutionResult,
+            pub r#type: &'a str,
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: &'a FieldElement,
+        }
+
+        let r#type = "DEPLOY_ACCOUNT";
+
+        let tagged = Tagged {
+            transaction_hash: &self.transaction_hash,
+            actual_fee: &self.actual_fee,
+            finality_status: &self.finality_status,
+            messages_sent: &self.messages_sent,
+            events: &self.events,
+            execution_resources: &self.execution_resources,
+            execution_result: &self.execution_result,
+            r#type,
+            contract_address: &self.contract_address,
+        };
+
+        Tagged::serialize(&tagged, serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for DeployAccountTransactionReceipt {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct Tagged {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+            pub actual_fee: FeePayment,
+            pub finality_status: TransactionFinalityStatus,
+            pub messages_sent: Vec<MsgToL1>,
+            pub events: Vec<Event>,
+            pub execution_resources: ExecutionResources,
+            #[serde(flatten)]
+            pub execution_result: ExecutionResult,
+            pub r#type: Option<String>,
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: FieldElement,
+        }
+
+        let tagged = Tagged::deserialize(deserializer)?;
+
+        if let Some(tag_field) = &tagged.r#type {
+            if tag_field != "DEPLOY_ACCOUNT" {
+                return Err(serde::de::Error::custom("invalid `type` value"));
+            }
+        }
+
+        Ok(Self {
+            transaction_hash: tagged.transaction_hash,
+            actual_fee: tagged.actual_fee,
+            finality_status: tagged.finality_status,
+            messages_sent: tagged.messages_sent,
+            events: tagged.events,
+            execution_resources: tagged.execution_resources,
+            execution_result: tagged.execution_result,
+            contract_address: tagged.contract_address,
+        })
+    }
+}
+/// Fee payment.
+///
+/// Fee payment info as it appears in receipts.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct FeePayment {
+    /// Amount paid
+    #[serde_as(as = "UfeHex")]
+    pub amount: FieldElement,
+    /// Units in which the fee is given
+    pub unit: PriceUnit,
+}
+/// Execution status.
+///
+/// The execution status of the transaction.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TransactionExecutionStatus {
+    #[serde(rename = "SUCCEEDED")]
+    Succeeded,
+    #[serde(rename = "REVERTED")]
+    Reverted,
+}
+/// Event.
+///
+/// A Starknet event.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct Event {
+    /// From address
+    #[serde_as(as = "UfeHex")]
+    pub from_address: FieldElement,
+    /// Keys
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub keys: Vec<FieldElement>,
+    /// Data
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub data: Vec<FieldElement>,
+}
+/// Message to L1.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct MsgToL1 {
+    /// The address of the L2 contract sending the message
+    #[serde_as(as = "UfeHex")]
+    pub from_address: FieldElement,
+    /// The target L1 address the message is sent to
+    #[serde_as(as = "UfeHex")]
+    pub to_address: FieldElement,
+    /// The payload of the message
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub payload: Vec<FieldElement>,
+}
+
+/// Finality status.
+///
+/// The finality status of the transaction.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TransactionFinalityStatus {
+    #[serde(rename = "ACCEPTED_ON_L2")]
+    AcceptedOnL2,
+    #[serde(rename = "ACCEPTED_ON_L1")]
+    AcceptedOnL1,
+}
+/// Request for method starknet_getTransactionReceipt
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetTransactionReceiptRequest {
+    pub transaction_hash: FieldElement,
+}
+
+/// Reference version of [GetTransactionReceiptRequest].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetTransactionReceiptRequestRef<'a> {
+    pub transaction_hash: &'a FieldElement,
+}
+
+impl Serialize for GetTransactionReceiptRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            transaction_hash: &self.transaction_hash,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'a> Serialize for GetTransactionReceiptRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            transaction_hash: self.transaction_hash,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for GetTransactionReceiptRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+        }
+
+        #[serde_as]
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                transaction_hash: field0.transaction_hash,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                transaction_hash: object.transaction_hash,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
     }
 }

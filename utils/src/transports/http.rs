@@ -5,7 +5,7 @@ use super::{JsonRpcMethod, JsonRpcResponse, JsonRpcTransport};
 
 use tracing::debug;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HttpTransport {
     client: Client,
     url: Url,
