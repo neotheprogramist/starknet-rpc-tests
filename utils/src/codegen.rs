@@ -4791,3 +4791,97 @@ impl<'de> Deserialize<'de> for GetStorageAtRequest {
         }
     }
 }
+/// Request for method starknet_getTransactionStatus
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetTransactionStatusRequest {
+    pub transaction_hash: FieldElement,
+}
+
+impl Serialize for GetTransactionStatusRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            transaction_hash: &self.transaction_hash,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for GetTransactionStatusRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+        }
+
+        #[serde_as]
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: FieldElement,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                transaction_hash: field0.transaction_hash,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                transaction_hash: object.transaction_hash,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
+/// Reference version of [GetTransactionStatusRequest].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetTransactionStatusRequestRef<'a> {
+    pub transaction_hash: &'a FieldElement,
+}
+
+impl<'a> Serialize for GetTransactionStatusRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub transaction_hash: &'a FieldElement,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            transaction_hash: self.transaction_hash,
+        })?;
+
+        seq.end()
+    }
+}

@@ -8,13 +8,13 @@ use utils::{
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
         Account, AccountError, ConnectedAccount,
     },
-    codegen::{BlockTag, FunctionCall},
+    codegen::{BlockTag, FunctionCall, TransactionExecutionStatus},
     contract::factory::ContractFactory,
     errors::{parse_class_hash_from_error, RunnerError},
     execution_result::ExecutionResult,
     models::{
         BlockId, InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
-        MaybePendingStateUpdate, TransactionReceipt,
+        MaybePendingStateUpdate, TransactionReceipt, TransactionStatus,
     },
     provider::{Provider, ProviderError},
     starknet_utils::{
@@ -150,6 +150,49 @@ async fn jsonrpc_get_storage_at() {
         .unwrap();
 
     assert_eq!(eth_balance, FieldElement::ZERO);
+}
+
+#[tokio::test]
+async fn jsonrpc_get_transaction_status_succeeded() {
+    let rpc_client: JsonRpcClient<HttpTransport> = create_jsonrpc_client();
+    let sender_address = FieldElement::from_hex_be(
+        "0x4d8bb41636b42d3c69039f3537333581cc19356a0c93904fa3e569498c23ad0",
+    )
+    .unwrap();
+
+    let signer = LocalWallet::from(SigningKey::from_secret_scalar(
+        FieldElement::from_hex_be("0xb467066159b295a7667b633d6bdaabac").unwrap(),
+    ));
+    let chain_id = FieldElement::from_hex_be("0x534e5f5345504f4c4941").unwrap();
+    let mut account = SingleOwnerAccount::new(
+        rpc_client.clone(),
+        signer,
+        sender_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+
+    // Step 1: Declare the contract
+    let class_hash = declare_contract_v3(
+        &account,
+        "../target/dev/example_HelloStarknet.contract_class.json",
+        "../target/dev/example_HelloStarknet.compiled_contract_class.json",
+    )
+    .await
+    .unwrap();
+
+    // Step 2: Deploy the contract
+    let deploy_result = deploy_contract_v3(&account, class_hash).await;
+    let status = rpc_client
+        .get_transaction_status(deploy_result.transaction_hash)
+        .await
+        .unwrap();
+
+    match status {
+        TransactionStatus::AcceptedOnL2(TransactionExecutionStatus::Succeeded) => {}
+        _ => panic!("unexpected transaction status"),
+    }
 }
 
 #[tokio::test]

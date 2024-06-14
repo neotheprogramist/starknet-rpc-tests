@@ -1,14 +1,5 @@
 use crate::codegen::{
-    BlockTag, BlockWithReceipts, BlockWithTxs, BroadcastedDeclareTransactionV1,
-    BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
-    BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
-    BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionReceipt,
-    DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2,
-    DeclareTransactionV3, DeployAccountTransactionReceipt, DeployAccountTransactionTrace,
-    DeployTransaction, DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt,
-    InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3,
-    L1HandlerTransactionReceipt, L1HandlerTransactionTrace, PendingBlockWithReceipts,
-    PendingBlockWithTxs, PendingStateUpdate, ResourcePrice, StateUpdate, TransactionWithReceipt,
+    BlockTag, BlockWithReceipts, BlockWithTxs, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionReceipt, DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3, DeployAccountTransactionReceipt, DeployAccountTransactionTrace, DeployTransaction, DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt, InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionReceipt, L1HandlerTransactionTrace, PendingBlockWithReceipts, PendingBlockWithTxs, PendingStateUpdate, ResourcePrice, SequencerTransactionStatus, StateUpdate, TransactionExecutionStatus, TransactionWithReceipt
 };
 use crate::unsigned_field_element::UfeHex;
 
@@ -240,4 +231,21 @@ impl MaybePendingBlockWithReceipts {
 pub enum MaybePendingStateUpdate {
     Update(StateUpdate),
     PendingUpdate(PendingStateUpdate),
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TransactionStatus {
+    Received,
+    Rejected,
+    AcceptedOnL2(TransactionExecutionStatus),
+    AcceptedOnL1(TransactionExecutionStatus),
+}
+impl TransactionStatus {
+    pub fn finality_status(&self) -> SequencerTransactionStatus {
+        match self {
+            TransactionStatus::Received => SequencerTransactionStatus::Received,
+            TransactionStatus::Rejected => SequencerTransactionStatus::Rejected,
+            TransactionStatus::AcceptedOnL2(_) => SequencerTransactionStatus::AcceptedOnL2,
+            TransactionStatus::AcceptedOnL1(_) => SequencerTransactionStatus::AcceptedOnL1,
+        }
+    }
 }

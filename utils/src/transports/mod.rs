@@ -15,7 +15,8 @@ use crate::{
         GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequest, GetBlockWithTxsRequestRef,
         GetNonceRequest, GetNonceRequestRef, GetStateUpdateRequest, GetStateUpdateRequestRef,
         GetStorageAtRequest, GetStorageAtRequestRef, GetTransactionReceiptRequest,
-        GetTransactionReceiptRequestRef, NoTraceAvailableErrorData, PendingBlockWithTxHashes,
+        GetTransactionReceiptRequestRef, GetTransactionStatusRequest,
+        GetTransactionStatusRequestRef, NoTraceAvailableErrorData, PendingBlockWithTxHashes,
         ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
         SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, SpecVersionRequest, StarknetError,
@@ -25,7 +26,7 @@ use crate::{
         BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
         BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult,
         InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
-        MaybePendingStateUpdate,
+        MaybePendingStateUpdate, TransactionStatus,
     },
     provider::{Provider, ProviderError, ProviderImplError},
     unsigned_field_element::UfeHex,
@@ -67,8 +68,8 @@ pub enum JsonRpcMethod {
     GetStateUpdate,
     #[serde(rename = "starknet_getStorageAt")]
     GetStorageAt,
-    // #[serde(rename = "starknet_getTransactionStatus")]
-    // GetTransactionStatus,
+    #[serde(rename = "starknet_getTransactionStatus")]
+    GetTransactionStatus,
     // #[serde(rename = "starknet_getTransactionByHash")]
     // GetTransactionByHash,
     // #[serde(rename = "starknet_getTransactionByBlockIdAndIndex")]
@@ -134,7 +135,7 @@ pub enum JsonRpcRequestData {
     GetBlockWithReceipts(GetBlockWithReceiptsRequest),
     GetStateUpdate(GetStateUpdateRequest),
     GetStorageAt(GetStorageAtRequest),
-    // GetTransactionStatus(GetTransactionStatusRequest),
+    GetTransactionStatus(GetTransactionStatusRequest),
     // GetTransactionByHash(GetTransactionByHashRequest),
     // GetTransactionByBlockIdAndIndex(GetTransactionByBlockIdAndIndexRequest),
     GetTransactionReceipt(GetTransactionReceiptRequest),
@@ -335,23 +336,23 @@ where
             .0)
     }
 
-    // /// Gets the transaction status (possibly reflecting that the tx is still in
-    // /// the mempool, or dropped from it)
-    // async fn get_transaction_status<H>(
-    //     &self,
-    //     transaction_hash: H,
-    // ) -> Result<TransactionStatus, ProviderError>
-    // where
-    //     H: AsRef<FieldElement> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::GetTransactionStatus,
-    //         GetTransactionStatusRequestRef {
-    //             transaction_hash: transaction_hash.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    /// Gets the transaction status (possibly reflecting that the tx is still in
+    /// the mempool, or dropped from it)
+    async fn get_transaction_status<H>(
+        &self,
+        transaction_hash: H,
+    ) -> Result<TransactionStatus, ProviderError>
+    where
+        H: AsRef<FieldElement> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetTransactionStatus,
+            GetTransactionStatusRequestRef {
+                transaction_hash: transaction_hash.as_ref(),
+            },
+        )
+        .await
+    }
 
     // /// Get the details and status of a submitted transaction
     // async fn get_transaction_by_hash<H>(
@@ -770,10 +771,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                 serde_json::from_value::<GetStorageAtRequest>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
-            // JsonRpcMethod::GetTransactionStatus => JsonRpcRequestData::GetTransactionStatus(
-            //     serde_json::from_value::<GetTransactionStatusRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::GetTransactionStatus => JsonRpcRequestData::GetTransactionStatus(
+                serde_json::from_value::<GetTransactionStatusRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::GetTransactionByHash => JsonRpcRequestData::GetTransactionByHash(
             //     serde_json::from_value::<GetTransactionByHashRequest>(raw_request.params)
             //         .map_err(error_mapper)?,
