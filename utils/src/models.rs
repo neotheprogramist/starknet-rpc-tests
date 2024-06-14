@@ -1,5 +1,15 @@
 use crate::codegen::{
-    BlockTag, BlockWithReceipts, BlockWithTxs, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionReceipt, DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3, DeployAccountTransactionReceipt, DeployAccountTransactionTrace, DeployTransaction, DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt, InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionReceipt, L1HandlerTransactionTrace, PendingBlockWithReceipts, PendingBlockWithTxs, PendingStateUpdate, ResourcePrice, SequencerTransactionStatus, StateUpdate, TransactionExecutionStatus, TransactionWithReceipt
+    BlockTag, BlockWithReceipts, BlockWithTxs, BroadcastedDeclareTransactionV1,
+    BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
+    BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
+    BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionReceipt,
+    DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2,
+    DeclareTransactionV3, DeployAccountTransactionReceipt, DeployAccountTransactionTrace,
+    DeployTransaction, DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt,
+    InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3,
+    L1HandlerTransactionReceipt, L1HandlerTransactionTrace, PendingBlockWithReceipts,
+    PendingBlockWithTxs, PendingStateUpdate, ResourcePrice, SequencerTransactionStatus,
+    StateUpdate, TransactionExecutionStatus, TransactionWithReceipt,
 };
 use crate::unsigned_field_element::UfeHex;
 
