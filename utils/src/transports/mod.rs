@@ -14,8 +14,9 @@ use crate::{
         GetBlockWithReceiptsRequestRef, GetBlockWithTxHashesRequest,
         GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequest, GetBlockWithTxsRequestRef,
         GetNonceRequest, GetNonceRequestRef, GetStateUpdateRequest, GetStateUpdateRequestRef,
-        GetTransactionReceiptRequest, GetTransactionReceiptRequestRef, NoTraceAvailableErrorData,
-        PendingBlockWithTxHashes, ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
+        GetStorageAtRequest, GetStorageAtRequestRef, GetTransactionReceiptRequest,
+        GetTransactionReceiptRequestRef, NoTraceAvailableErrorData, PendingBlockWithTxHashes,
+        ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
         SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, SpecVersionRequest, StarknetError,
         TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
@@ -64,8 +65,8 @@ pub enum JsonRpcMethod {
     GetBlockWithReceipts,
     #[serde(rename = "starknet_getStateUpdate")]
     GetStateUpdate,
-    // #[serde(rename = "starknet_getStorageAt")]
-    // GetStorageAt,
+    #[serde(rename = "starknet_getStorageAt")]
+    GetStorageAt,
     // #[serde(rename = "starknet_getTransactionStatus")]
     // GetTransactionStatus,
     // #[serde(rename = "starknet_getTransactionByHash")]
@@ -132,7 +133,7 @@ pub enum JsonRpcRequestData {
     GetBlockWithTxs(GetBlockWithTxsRequest),
     GetBlockWithReceipts(GetBlockWithReceiptsRequest),
     GetStateUpdate(GetStateUpdateRequest),
-    // GetStorageAt(GetStorageAtRequest),
+    GetStorageAt(GetStorageAtRequest),
     // GetTransactionStatus(GetTransactionStatusRequest),
     // GetTransactionByHash(GetTransactionByHashRequest),
     // GetTransactionByBlockIdAndIndex(GetTransactionByBlockIdAndIndexRequest),
@@ -309,30 +310,30 @@ where
         .await
     }
 
-    // /// Get the value of the storage at the given address and key
-    // async fn get_storage_at<A, K, B>(
-    //     &self,
-    //     contract_address: A,
-    //     key: K,
-    //     block_id: B,
-    // ) -> Result<FieldElement, ProviderError>
-    // where
-    //     A: AsRef<FieldElement> + Send + Sync,
-    //     K: AsRef<FieldElement> + Send + Sync,
-    //     B: AsRef<BlockId> + Send + Sync,
-    // {
-    //     Ok(self
-    //         .send_request::<_, Felt>(
-    //             JsonRpcMethod::GetStorageAt,
-    //             GetStorageAtRequestRef {
-    //                 contract_address: contract_address.as_ref(),
-    //                 key: key.as_ref(),
-    //                 block_id: block_id.as_ref(),
-    //             },
-    //         )
-    //         .await?
-    //         .0)
-    // }
+    /// Get the value of the storage at the given address and key
+    async fn get_storage_at<A, K, B>(
+        &self,
+        contract_address: A,
+        key: K,
+        block_id: B,
+    ) -> Result<FieldElement, ProviderError>
+    where
+        A: AsRef<FieldElement> + Send + Sync,
+        K: AsRef<FieldElement> + Send + Sync,
+        B: AsRef<BlockId> + Send + Sync,
+    {
+        Ok(self
+            .send_request::<_, Felt>(
+                JsonRpcMethod::GetStorageAt,
+                GetStorageAtRequestRef {
+                    contract_address: contract_address.as_ref(),
+                    key: key.as_ref(),
+                    block_id: block_id.as_ref(),
+                },
+            )
+            .await?
+            .0)
+    }
 
     // /// Gets the transaction status (possibly reflecting that the tx is still in
     // /// the mempool, or dropped from it)
@@ -765,10 +766,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                 serde_json::from_value::<GetStateUpdateRequest>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
-            // JsonRpcMethod::GetStorageAt => JsonRpcRequestData::GetStorageAt(
-            //     serde_json::from_value::<GetStorageAtRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::GetStorageAt => JsonRpcRequestData::GetStorageAt(
+                serde_json::from_value::<GetStorageAtRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::GetTransactionStatus => JsonRpcRequestData::GetTransactionStatus(
             //     serde_json::from_value::<GetTransactionStatusRequest>(raw_request.params)
             //         .map_err(error_mapper)?,

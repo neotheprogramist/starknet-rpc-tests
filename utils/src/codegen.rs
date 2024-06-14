@@ -4621,3 +4621,173 @@ impl<'de> Deserialize<'de> for GetStateUpdateRequest {
         }
     }
 }
+/// Reference version of [GetStorageAtRequest].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetStorageAtRequestRef<'a> {
+    pub contract_address: &'a FieldElement,
+    pub key: &'a FieldElement,
+    pub block_id: &'a BlockId,
+}
+
+impl<'a> Serialize for GetStorageAtRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: &'a FieldElement,
+        }
+
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub key: &'a FieldElement,
+        }
+
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field2<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            contract_address: self.contract_address,
+        })?;
+        seq.serialize_element(&Field1 { key: self.key })?;
+        seq.serialize_element(&Field2 {
+            block_id: self.block_id,
+        })?;
+
+        seq.end()
+    }
+}
+/// Request for method starknet_getStorageAt
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetStorageAtRequest {
+    /// The address of the contract to read from
+    pub contract_address: FieldElement,
+    /// The key to the storage value for the given contract
+    pub key: FieldElement,
+    /// The hash of the requested block, or number (height) of the requested block, or a block tag
+    pub block_id: BlockId,
+}
+
+impl Serialize for GetStorageAtRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: &'a FieldElement,
+        }
+
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub key: &'a FieldElement,
+        }
+
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field2<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            contract_address: &self.contract_address,
+        })?;
+        seq.serialize_element(&Field1 { key: &self.key })?;
+        seq.serialize_element(&Field2 {
+            block_id: &self.block_id,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for GetStorageAtRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: FieldElement,
+            #[serde_as(as = "UfeHex")]
+            pub key: FieldElement,
+            pub block_id: BlockId,
+        }
+
+        #[serde_as]
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: FieldElement,
+        }
+
+        #[serde_as]
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field1 {
+            #[serde_as(as = "UfeHex")]
+            pub key: FieldElement,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field2 {
+            pub block_id: BlockId,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field2 = serde_json::from_value::<Field2>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+            let field1 = serde_json::from_value::<Field1>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                contract_address: field0.contract_address,
+                key: field1.key,
+                block_id: field2.block_id,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                contract_address: object.contract_address,
+                key: object.key,
+                block_id: object.block_id,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
