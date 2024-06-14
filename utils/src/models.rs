@@ -1,5 +1,5 @@
 use crate::codegen::{
-    BlockTag, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2,
+    BlockTag, BlockWithTxs, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2,
     BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1,
     BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1,
     BroadcastedInvokeTransactionV3, DeclareTransactionReceipt, DeclareTransactionTrace,
@@ -7,7 +7,7 @@ use crate::codegen::{
     DeployAccountTransactionReceipt, DeployAccountTransactionTrace, DeployTransaction,
     DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt, InvokeTransactionTrace,
     InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionReceipt,
-    L1HandlerTransactionTrace,
+    L1HandlerTransactionTrace, PendingBlockWithTxs,
 };
 use crate::unsigned_field_element::UfeHex;
 
@@ -206,4 +206,10 @@ pub enum TransactionReceipt {
     Deploy(DeployTransactionReceipt),
     #[serde(rename = "DEPLOY_ACCOUNT")]
     DeployAccount(DeployAccountTransactionReceipt),
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum MaybePendingBlockWithTxs {
+    Block(BlockWithTxs),
+    PendingBlock(PendingBlockWithTxs),
 }

@@ -7,7 +7,10 @@ use crate::{
         FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, TransactionReceiptWithBlockInfo,
     },
-    models::{BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult},
+    models::{
+        BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult,
+        MaybePendingBlockWithTxs,
+    },
     transports::MaybePendingBlockWithTxHashes,
 };
 
@@ -29,13 +32,13 @@ pub trait Provider {
     where
         B: AsRef<BlockId> + Send + Sync;
 
-    // /// Get block information with full transactions given the block id
-    // async fn get_block_with_txs<B>(
-    //     &self,
-    //     block_id: B,
-    // ) -> Result<MaybePendingBlockWithTxs, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync;
+    /// Get block information with full transactions given the block id
+    async fn get_block_with_txs<B>(
+        &self,
+        block_id: B,
+    ) -> Result<MaybePendingBlockWithTxs, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync;
 
     // /// Get block information with full transactions and receipts given the block id
     // async fn get_block_with_receipts<B>(
