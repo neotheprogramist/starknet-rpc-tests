@@ -11,9 +11,10 @@ use crate::{
         AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockWithTxHashes,
         CallRequest, CallRequestRef, ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef,
         FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithTxHashesRequest,
-        GetBlockWithTxHashesRequestRef, GetNonceRequest, GetNonceRequestRef,
-        GetTransactionReceiptRequest, GetTransactionReceiptRequestRef, NoTraceAvailableErrorData,
-        PendingBlockWithTxHashes, ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
+        GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequest, GetBlockWithTxsRequestRef,
+        GetNonceRequest, GetNonceRequestRef, GetTransactionReceiptRequest,
+        GetTransactionReceiptRequestRef, NoTraceAvailableErrorData, PendingBlockWithTxHashes,
+        ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
         SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, SpecVersionRequest, StarknetError,
         TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
@@ -21,7 +22,7 @@ use crate::{
     models::{
         BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
         BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult,
-        InvokeTransactionResult,
+        InvokeTransactionResult, MaybePendingBlockWithTxs,
     },
     provider::{Provider, ProviderError, ProviderImplError},
     unsigned_field_element::UfeHex,
@@ -55,8 +56,8 @@ pub enum JsonRpcMethod {
     SpecVersion,
     #[serde(rename = "starknet_getBlockWithTxHashes")]
     GetBlockWithTxHashes,
-    // #[serde(rename = "starknet_getBlockWithTxs")]
-    // GetBlockWithTxs,
+    #[serde(rename = "starknet_getBlockWithTxs")]
+    GetBlockWithTxs,
     // #[serde(rename = "starknet_getBlockWithReceipts")]
     // GetBlockWithReceipts,
     // #[serde(rename = "starknet_getStateUpdate")]
@@ -126,7 +127,7 @@ pub enum JsonRpcRequestData {
     GetNonce(GetNonceRequest),
     SpecVersion(SpecVersionRequest),
     GetBlockWithTxHashes(GetBlockWithTxHashesRequest),
-    // GetBlockWithTxs(GetBlockWithTxsRequest),
+    GetBlockWithTxs(GetBlockWithTxsRequest),
     // GetBlockWithReceipts(GetBlockWithReceiptsRequest),
     // GetStateUpdate(GetStateUpdateRequest),
     // GetStorageAt(GetStorageAtRequest),
@@ -255,22 +256,22 @@ where
         .await
     }
 
-    // /// Get block information with full transactions given the block id
-    // async fn get_block_with_txs<B>(
-    //     &self,
-    //     block_id: B,
-    // ) -> Result<MaybePendingBlockWithTxs, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::GetBlockWithTxs,
-    //         GetBlockWithTxsRequestRef {
-    //             block_id: block_id.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    /// Get block information with full transactions given the block id
+    async fn get_block_with_txs<B>(
+        &self,
+        block_id: B,
+    ) -> Result<MaybePendingBlockWithTxs, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetBlockWithTxs,
+            GetBlockWithTxsRequestRef {
+                block_id: block_id.as_ref(),
+            },
+        )
+        .await
+    }
 
     // /// Get block information with full transactions and receipts given the block id
     // async fn get_block_with_receipts<B>(
@@ -750,10 +751,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                 serde_json::from_value::<GetBlockWithTxHashesRequest>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
-            // JsonRpcMethod::GetBlockWithTxs => JsonRpcRequestData::GetBlockWithTxs(
-            //     serde_json::from_value::<GetBlockWithTxsRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::GetBlockWithTxs => JsonRpcRequestData::GetBlockWithTxs(
+                serde_json::from_value::<GetBlockWithTxsRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::GetBlockWithReceipts => JsonRpcRequestData::GetBlockWithReceipts(
             //     serde_json::from_value::<GetBlockWithReceiptsRequest>(raw_request.params)
             //         .map_err(error_mapper)?,

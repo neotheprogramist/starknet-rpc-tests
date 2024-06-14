@@ -12,10 +12,10 @@ use utils::{
     contract::factory::ContractFactory,
     errors::{parse_class_hash_from_error, RunnerError},
     execution_result::ExecutionResult,
-    models::{BlockId, InvokeTransactionResult, TransactionReceipt},
+    models::{BlockId, InvokeTransactionResult, MaybePendingBlockWithTxs, TransactionReceipt},
     provider::{Provider, ProviderError},
     starknet_utils::{create_jsonrpc_client, get_compiled_contract, get_selector_from_name},
-    transports::{http::HttpTransport, JsonRpcClient},
+    transports::{http::HttpTransport, JsonRpcClient, MaybePendingBlockWithTxHashes},
 };
 
 #[tokio::test]
@@ -50,6 +50,39 @@ async fn jsonrpc_get_nonce() {
     let nonce: FieldElement = account.get_nonce().await.unwrap();
 
     assert_eq!(nonce, FieldElement::ZERO)
+}
+
+#[tokio::test]
+async fn jsonrpc_get_block_with_tx_hashes() {
+    let rpc_client = create_jsonrpc_client();
+
+    let block = rpc_client
+        .get_block_with_tx_hashes(BlockId::Tag(BlockTag::Latest))
+        .await
+        .unwrap();
+
+    let block = match block {
+        MaybePendingBlockWithTxHashes::Block(block) => block,
+        _ => panic!("unexpected block response type"),
+    };
+    assert_eq!(block.block_number, 0);
+}
+
+#[tokio::test]
+async fn jsonrpc_get_block_with_txs() {
+    let rpc_client = create_jsonrpc_client();
+
+    let block = rpc_client
+        .get_block_with_txs(BlockId::Tag(BlockTag::Latest))
+        .await
+        .unwrap();
+
+    let block = match block {
+        MaybePendingBlockWithTxs::Block(block) => block,
+        _ => panic!("unexpected block response type"),
+    };
+
+    assert_eq!(block.block_number, 0);
 }
 
 #[tokio::test]
