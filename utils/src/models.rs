@@ -1,13 +1,14 @@
 use crate::codegen::{
-    BlockTag, BlockWithTxs, BroadcastedDeclareTransactionV1, BroadcastedDeclareTransactionV2,
-    BroadcastedDeclareTransactionV3, BroadcastedDeployAccountTransactionV1,
-    BroadcastedDeployAccountTransactionV3, BroadcastedInvokeTransactionV1,
-    BroadcastedInvokeTransactionV3, DeclareTransactionReceipt, DeclareTransactionTrace,
-    DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2, DeclareTransactionV3,
-    DeployAccountTransactionReceipt, DeployAccountTransactionTrace, DeployTransaction,
-    DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt, InvokeTransactionTrace,
-    InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransactionReceipt,
-    L1HandlerTransactionTrace, PendingBlockWithTxs,
+    BlockTag, BlockWithReceipts, BlockWithTxs, BroadcastedDeclareTransactionV1,
+    BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
+    BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
+    BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionReceipt,
+    DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2,
+    DeclareTransactionV3, DeployAccountTransactionReceipt, DeployAccountTransactionTrace,
+    DeployTransaction, DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt,
+    InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3,
+    L1HandlerTransactionReceipt, L1HandlerTransactionTrace, PendingBlockWithReceipts,
+    PendingBlockWithTxs, PendingStateUpdate, ResourcePrice, StateUpdate, TransactionWithReceipt,
 };
 use crate::unsigned_field_element::UfeHex;
 
@@ -212,4 +213,31 @@ pub enum TransactionReceipt {
 pub enum MaybePendingBlockWithTxs {
     Block(BlockWithTxs),
     PendingBlock(PendingBlockWithTxs),
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum MaybePendingBlockWithReceipts {
+    Block(BlockWithReceipts),
+    PendingBlock(PendingBlockWithReceipts),
+}
+impl MaybePendingBlockWithReceipts {
+    pub fn transactions(&self) -> &[TransactionWithReceipt] {
+        match self {
+            MaybePendingBlockWithReceipts::Block(block) => &block.transactions,
+            MaybePendingBlockWithReceipts::PendingBlock(block) => &block.transactions,
+        }
+    }
+
+    pub fn l1_gas_price(&self) -> &ResourcePrice {
+        match self {
+            MaybePendingBlockWithReceipts::Block(block) => &block.l1_gas_price,
+            MaybePendingBlockWithReceipts::PendingBlock(block) => &block.l1_gas_price,
+        }
+    }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum MaybePendingStateUpdate {
+    Update(StateUpdate),
+    PendingUpdate(PendingStateUpdate),
 }

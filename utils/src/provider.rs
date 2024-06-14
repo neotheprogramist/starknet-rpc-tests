@@ -9,7 +9,7 @@ use crate::{
     },
     models::{
         BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult,
-        MaybePendingBlockWithTxs,
+        MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
     },
     transports::MaybePendingBlockWithTxHashes,
 };
@@ -40,21 +40,21 @@ pub trait Provider {
     where
         B: AsRef<BlockId> + Send + Sync;
 
-    // /// Get block information with full transactions and receipts given the block id
-    // async fn get_block_with_receipts<B>(
-    //     &self,
-    //     block_id: B,
-    // ) -> Result<MaybePendingBlockWithReceipts, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync;
+    /// Get block information with full transactions and receipts given the block id
+    async fn get_block_with_receipts<B>(
+        &self,
+        block_id: B,
+    ) -> Result<MaybePendingBlockWithReceipts, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync;
 
-    // /// Get the information about the result of executing the requested block
-    // async fn get_state_update<B>(
-    //     &self,
-    //     block_id: B,
-    // ) -> Result<MaybePendingStateUpdate, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync;
+    /// Get the information about the result of executing the requested block
+    async fn get_state_update<B>(
+        &self,
+        block_id: B,
+    ) -> Result<MaybePendingStateUpdate, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync;
 
     // /// Get the value of the storage at the given address and key
     // async fn get_storage_at<A, K, B>(
