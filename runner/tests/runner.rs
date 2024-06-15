@@ -13,8 +13,9 @@ use utils::{
     errors::{parse_class_hash_from_error, RunnerError},
     execution_result::ExecutionResult,
     models::{
-        BlockId, InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
-        MaybePendingStateUpdate, TransactionReceipt, TransactionStatus,
+        BlockId, DeclareTransaction, InvokeTransaction, InvokeTransactionResult,
+        MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+        Transaction, TransactionReceipt, TransactionStatus,
     },
     provider::{Provider, ProviderError},
     starknet_utils::{
@@ -173,7 +174,6 @@ async fn jsonrpc_get_transaction_status_succeeded() {
     );
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    // Step 1: Declare the contract
     let class_hash = declare_contract_v3(
         &account,
         "../target/dev/example_HelloStarknet.contract_class.json",
@@ -193,6 +193,112 @@ async fn jsonrpc_get_transaction_status_succeeded() {
         TransactionStatus::AcceptedOnL2(TransactionExecutionStatus::Succeeded) => {}
         _ => panic!("unexpected transaction status"),
     }
+}
+
+#[tokio::test]
+async fn jsonrpc_get_transaction_by_hash_invoke_v1() {
+    let rpc_client = create_jsonrpc_client();
+    let (account, contract_address) = decalare_and_deploy(
+        "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1",
+        "0x57b2f8431c772e647712ae93cc616638",
+        "0x534e5f5345504f4c4941",
+        "../target/dev/example_HelloStarknet.contract_class.json",
+        "../target/dev/example_HelloStarknet.compiled_contract_class.json",
+    )
+    .await;
+    let amount = FieldElement::from_hex_be("0x10").unwrap();
+    let invoke_v1_result = account
+        .execute_v1(vec![Call {
+            to: contract_address,
+            selector: get_selector_from_name("increase_balance").unwrap(),
+            calldata: vec![amount],
+        }])
+        .send()
+        .await
+        .unwrap();
+
+    let tx = rpc_client
+        .get_transaction_by_hash(invoke_v1_result.transaction_hash)
+        .await
+        .unwrap();
+
+    let tx = match tx {
+        Transaction::Invoke(InvokeTransaction::V1(tx)) => tx,
+        _ => panic!("unexpected tx response type"),
+    };
+
+    assert!(tx.sender_address > FieldElement::ZERO);
+}
+
+#[tokio::test]
+async fn jsonrpc_get_transaction_by_hash_l1_handler() {
+    let rpc_client = create_jsonrpc_client();
+
+    let tx = rpc_client
+        .get_transaction_by_hash(
+            FieldElement::from_hex_be(
+                "0785c2ada3f53fbc66078d47715c27718f92e6e48b96372b36e5197de69b82b5",
+            )
+            .unwrap(),
+        )
+        .await
+        .unwrap();
+
+    let tx = match tx {
+        Transaction::L1Handler(tx) => tx,
+        _ => panic!("unexpected tx response type"),
+    };
+
+    assert!(tx.entry_point_selector > FieldElement::ZERO);
+}
+
+//Network rerun needed for test to succeed, declaration can only occur once
+#[tokio::test]
+async fn jsonrpc_get_transaction_by_hash_declare_v3() {
+    let rpc_client = create_jsonrpc_client();
+    let sender_address = FieldElement::from_hex_be(
+        "0x3736286f1050d4ba816b4d56d15d80ca74c1752c4e847243f1da726c36e06f",
+    )
+    .unwrap();
+
+    let signer = LocalWallet::from(SigningKey::from_secret_scalar(
+        FieldElement::from_hex_be("0xa56597ba3378fa9e6440ea9ae0cf2865").unwrap(),
+    ));
+    let chain_id = FieldElement::from_hex_be("0x534e5f5345504f4c4941").unwrap();
+    let mut account = SingleOwnerAccount::new(
+        create_jsonrpc_client(),
+        signer,
+        sender_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(
+        "../target/dev/sample_SampleStarknet.contract_class.json",
+        "../target/dev/sample_SampleStarknet.compiled_contract_class.json",
+    )
+    .await
+    .unwrap();
+
+    let declare_result = account
+        .declare_v3(Arc::new(flattened_sierra_class), compiled_class_hash)
+        .gas(200000)
+        .gas_price(500000000000000)
+        .send()
+        .await
+        .unwrap();
+
+    let tx = rpc_client
+        .get_transaction_by_hash(declare_result.transaction_hash)
+        .await
+        .unwrap();
+
+    let tx = match tx {
+        Transaction::Declare(DeclareTransaction::V3(tx)) => tx,
+        _ => panic!("unexpected tx response type"),
+    };
+
+    assert!(tx.sender_address > FieldElement::ZERO);
 }
 
 #[tokio::test]
@@ -286,7 +392,6 @@ async fn test_increase_and_get_balance() {
     );
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    // Step 1: Declare the contract
     let class_hash = declare_contract_v3(
         &account,
         "../target/dev/example_HelloStarknet.contract_class.json",
@@ -295,11 +400,9 @@ async fn test_increase_and_get_balance() {
     .await
     .unwrap();
 
-    // Step 2: Deploy the contract
     let deploy_result = deploy_contract_v3(&account, class_hash).await;
     let contract_address = deploy_result.transaction_hash;
 
-    // Step 3: Invoke the `increase_balance` function
     let increase_amount = FieldElement::from_dec_str("10").unwrap();
     account
         .execute_v3(vec![Call {
@@ -313,7 +416,6 @@ async fn test_increase_and_get_balance() {
         .await
         .unwrap();
 
-    // Step 4: Call the `get_balance` function and assert the balance
     let call_result: Vec<FieldElement> = client
         .call(
             FunctionCall {
@@ -329,7 +431,6 @@ async fn test_increase_and_get_balance() {
         .await
         .expect("failed to call contract");
 
-    // The expected balance result is `Positive` which should be encoded as a specific FieldElement
     let expected_balance = FieldElement::from_dec_str("1").unwrap(); // Assuming `Positive` is encoded as `1`
     assert_eq!(call_result[0], expected_balance);
 }
@@ -355,7 +456,6 @@ async fn jsonrpc_call() {
     );
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    // Step 1: Declare the contract
     let class_hash = declare_contract_v3(
         &account,
         "../target/dev/example_HelloStarknet.contract_class.json",
@@ -364,10 +464,8 @@ async fn jsonrpc_call() {
     .await
     .unwrap();
 
-    // Step 2: Deploy the contract
     let deploy_result = deploy_contract_v3(&account, class_hash).await;
 
-    // Step 3: Get contract address
     let receipt = client
         .get_transaction_receipt(deploy_result.transaction_hash)
         .await
@@ -419,7 +517,6 @@ async fn jsonrpc_get_transaction_receipt_deploy() {
     );
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    // Step 1: Declare the contract
     let class_hash = declare_contract_v3(
         &account,
         "../target/dev/example_HelloStarknet.contract_class.json",
@@ -428,7 +525,6 @@ async fn jsonrpc_get_transaction_receipt_deploy() {
     .await
     .unwrap();
 
-    // Step 2: Deploy the contract
     let deploy_result = deploy_contract_v3(&account, class_hash).await;
 
     let receipt = client
@@ -580,29 +676,6 @@ pub async fn declare_contract_v3<P: Provider + Send + Sync>(
     }
 }
 
-pub async fn invoke_v3<P: Provider + Send + Sync>(
-    account: &SingleOwnerAccount<P, LocalWallet>,
-    to: FieldElement,
-    method: &str,
-) -> InvokeTransactionResult {
-    let result = account
-        .execute_v3(vec![Call {
-            to,
-            selector: get_selector_from_name(method).unwrap(),
-            calldata: vec![
-                FieldElement::from_hex_be("0x1234").unwrap(),
-                FieldElement::ONE,
-                FieldElement::ZERO,
-            ],
-        }])
-        .gas(200000)
-        .gas_price(500000000000000)
-        .send()
-        .await
-        .unwrap();
-
-    result
-}
 pub async fn deploy_contract_v3<P: Provider + Send + Sync>(
     account: &SingleOwnerAccount<P, LocalWallet>,
     class_hash: FieldElement,
@@ -611,7 +684,6 @@ pub async fn deploy_contract_v3<P: Provider + Send + Sync>(
     let mut salt_buffer = [0u8; 32];
     let mut rng = StdRng::from_entropy();
     rng.fill_bytes(&mut salt_buffer[1..]);
-
     let result = factory
         .deploy_v3(
             vec![],

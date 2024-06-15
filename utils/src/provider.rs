@@ -10,7 +10,7 @@ use crate::{
     models::{
         BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult,
         MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-        TransactionStatus,
+        Transaction, TransactionStatus,
     },
     transports::MaybePendingBlockWithTxHashes,
 };
@@ -78,13 +78,13 @@ pub trait Provider {
     where
         H: AsRef<FieldElement> + Send + Sync;
 
-    // /// Get the details and status of a submitted transaction
-    // async fn get_transaction_by_hash<H>(
-    //     &self,
-    //     transaction_hash: H,
-    // ) -> Result<Transaction, ProviderError>
-    // where
-    //     H: AsRef<FieldElement> + Send + Sync;
+    /// Get the details and status of a submitted transaction
+    async fn get_transaction_by_hash<H>(
+        &self,
+        transaction_hash: H,
+    ) -> Result<Transaction, ProviderError>
+    where
+        H: AsRef<FieldElement> + Send + Sync;
 
     // /// Get the details of a transaction by a given block id and index
     // async fn get_transaction_by_block_id_and_index<B>(

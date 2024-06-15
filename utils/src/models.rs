@@ -5,8 +5,9 @@ use crate::codegen::{
     BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionReceipt,
     DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2,
     DeclareTransactionV3, DeployAccountTransactionReceipt, DeployAccountTransactionTrace,
-    DeployTransaction, DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt,
-    InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3,
+    DeployAccountTransactionV1, DeployAccountTransactionV3, DeployTransaction,
+    DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt, InvokeTransactionTrace,
+    InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransaction,
     L1HandlerTransactionReceipt, L1HandlerTransactionTrace, PendingBlockWithReceipts,
     PendingBlockWithTxs, PendingStateUpdate, ResourcePrice, SequencerTransactionStatus,
     StateUpdate, TransactionExecutionStatus, TransactionWithReceipt,
@@ -139,16 +140,23 @@ pub struct DeployTransactionResult {
 pub enum Transaction {
     #[serde(rename = "INVOKE")]
     Invoke(InvokeTransaction),
-    // #[serde(rename = "L1_HANDLER")]
-    // L1Handler(L1HandlerTransaction),
+    #[serde(rename = "L1_HANDLER")]
+    L1Handler(L1HandlerTransaction),
     #[serde(rename = "DECLARE")]
     Declare(DeclareTransaction),
     #[serde(rename = "DEPLOY")]
     Deploy(DeployTransaction),
-    // #[serde(rename = "DEPLOY_ACCOUNT")]
-    // DeployAccount(DeployAccountTransaction),
+    #[serde(rename = "DEPLOY_ACCOUNT")]
+    DeployAccount(DeployAccountTransaction),
 }
-
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[serde(tag = "version")]
+pub enum DeployAccountTransaction {
+    #[serde(rename = "0x1")]
+    V1(DeployAccountTransactionV1),
+    #[serde(rename = "0x3")]
+    V3(DeployAccountTransactionV3),
+}
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 #[serde(tag = "version")]
 pub enum InvokeTransaction {
@@ -256,6 +264,14 @@ impl TransactionStatus {
             TransactionStatus::Rejected => SequencerTransactionStatus::Rejected,
             TransactionStatus::AcceptedOnL2(_) => SequencerTransactionStatus::AcceptedOnL2,
             TransactionStatus::AcceptedOnL1(_) => SequencerTransactionStatus::AcceptedOnL1,
+        }
+    }
+}
+impl DeployAccountTransaction {
+    pub fn transaction_hash(&self) -> &FieldElement {
+        match self {
+            DeployAccountTransaction::V1(tx) => &tx.transaction_hash,
+            DeployAccountTransaction::V3(tx) => &tx.transaction_hash,
         }
     }
 }
