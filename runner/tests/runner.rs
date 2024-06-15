@@ -13,9 +13,9 @@ use utils::{
     errors::{parse_class_hash_from_error, RunnerError},
     execution_result::ExecutionResult,
     models::{
-        BlockId, DeclareTransaction, DeployAccountTransaction, InvokeTransaction,
-        InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
-        MaybePendingStateUpdate, Transaction, TransactionReceipt, TransactionStatus,
+        BlockId, DeclareTransaction, InvokeTransaction, InvokeTransactionResult,
+        MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+        Transaction, TransactionReceipt, TransactionStatus,
     },
     provider::{Provider, ProviderError},
     starknet_utils::{
@@ -218,9 +218,7 @@ async fn jsonrpc_get_transaction_by_hash_invoke_v1() {
         .unwrap();
 
     let tx = rpc_client
-        .get_transaction_by_hash(
-            invoke_v1_result.transaction_hash,
-        )
+        .get_transaction_by_hash(invoke_v1_result.transaction_hash)
         .await
         .unwrap();
 
@@ -254,7 +252,6 @@ async fn jsonrpc_get_transaction_by_hash_l1_handler() {
     assert!(tx.entry_point_selector > FieldElement::ZERO);
 }
 
-
 //Network rerun needed for test to succeed, declaration can only occur once
 #[tokio::test]
 async fn jsonrpc_get_transaction_by_hash_declare_v3() {
@@ -276,19 +273,23 @@ async fn jsonrpc_get_transaction_by_hash_declare_v3() {
         ExecutionEncoding::New,
     );
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
-    let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract( "../target/dev/sample_SampleStarknet.contract_class.json", "../target/dev/sample_SampleStarknet.compiled_contract_class.json").await.unwrap();
+    let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(
+        "../target/dev/sample_SampleStarknet.contract_class.json",
+        "../target/dev/sample_SampleStarknet.compiled_contract_class.json",
+    )
+    .await
+    .unwrap();
 
     let declare_result = account
         .declare_v3(Arc::new(flattened_sierra_class), compiled_class_hash)
         .gas(200000)
         .gas_price(500000000000000)
-        .send().await.unwrap();
+        .send()
+        .await
+        .unwrap();
 
     let tx = rpc_client
-        .get_transaction_by_hash(
-            declare_result.transaction_hash,
-        )
+        .get_transaction_by_hash(declare_result.transaction_hash)
         .await
         .unwrap();
 
@@ -675,52 +676,6 @@ pub async fn declare_contract_v3<P: Provider + Send + Sync>(
     }
 }
 
-
-
-pub async fn invoke_v3<P: Provider + Send + Sync>(
-    account: &SingleOwnerAccount<P, LocalWallet>,
-    to: FieldElement,
-    method: &str,
-) -> InvokeTransactionResult {
-    let result = account
-        .execute_v3(vec![Call {
-            to,
-            selector: get_selector_from_name(method).unwrap(),
-            calldata: vec![
-                FieldElement::from_hex_be("0x1234").unwrap(),
-            ],
-        }])
-        .gas(200000)
-        .gas_price(500000000000000)
-        .send()
-        .await
-        .unwrap();
-
-    result
-}
-
-
-pub async fn invoke_v1<P: Provider + Send + Sync>(
-    account: &SingleOwnerAccount<P, LocalWallet>,
-    to: FieldElement,
-    method: &str,
-) -> InvokeTransactionResult {
-    let result = account
-        .execute_v1(vec![Call {
-            to,
-            selector: get_selector_from_name(method).unwrap(),
-            calldata: vec![
-                FieldElement::from_hex_be("0x1234").unwrap(),
-                FieldElement::ONE,
-                FieldElement::ZERO,
-            ],
-        }])
-        .send()
-        .await
-        .unwrap();
-
-    result
-}
 pub async fn deploy_contract_v3<P: Provider + Send + Sync>(
     account: &SingleOwnerAccount<P, LocalWallet>,
     class_hash: FieldElement,
