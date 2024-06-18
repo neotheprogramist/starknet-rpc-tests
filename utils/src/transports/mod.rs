@@ -760,6 +760,10 @@ where
         todo!()
     }
 
+    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
     // /// Retrieve traces for all transactions in the given block.
     // async fn trace_block_transactions<B>(
     //     &self,

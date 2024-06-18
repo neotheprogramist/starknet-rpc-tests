@@ -2,6 +2,7 @@ use super::{DevnetClientError, DevnetError};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 use starknet_crypto::FieldElement;
+use std::fmt::LowerHex;
 use std::{any::Any, error::Error};
 use tracing::debug;
 use utils::codegen::BlockTag;
@@ -22,6 +23,11 @@ pub enum DevnetMethod {
     GetAccountBalance,
     #[serde(rename = "config")]
     Config,
+}
+#[derive(Debug, Serialize)]
+struct MintRequest {
+    amount: u128,
+    address: String,
 }
 
 #[allow(unused)]
@@ -45,6 +51,22 @@ where
         let params = format!("address={:#x}&unit={}&block_tag={}", address, unit, tag);
 
         self.send_get_request("account_balance", Some(params)).await
+    }
+
+    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError> {
+        // let req_body = Body::from(
+        //     json!({
+        //         "address": format!("{address:#x}"),
+        //         "amount": mint_amount
+        //     })
+        //     .to_string(),
+        // );
+        let req = MintRequest {
+            address: format!("{address:#x}"),
+            amount: mint_amount,
+        };
+
+        self.send_post_request("mint", &req).await
     }
     async fn spec_version(&self) -> Result<String, ProviderError> {
         todo!()
@@ -342,10 +364,11 @@ impl DevnetTransport for HttpTransport {
         let request_body = serde_json::to_string(body).map_err(Self::Error::Json)?;
 
         debug!("Sending request via JSON-RPC: {}", request_body);
+        let uri: String = format!("{}{}", self.url, method);
 
         let mut request = self
             .client
-            .post(self.url.clone())
+            .post(uri)
             .body(request_body)
             .header("Content-Type", "application/json");
         for (name, value) in self.headers.iter() {

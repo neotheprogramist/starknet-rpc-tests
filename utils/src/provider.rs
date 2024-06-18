@@ -306,6 +306,7 @@ pub trait Provider {
     }
 
     async fn get_config(&self) -> Result<Value, ProviderError>;
+    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError>;
     async fn get_account_balance(
         &self,
         address: FieldElement,

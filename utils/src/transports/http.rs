@@ -110,13 +110,10 @@ impl JsonRpcTransport for HttpTransport {
         R: DeserializeOwned,
     {
         let request_body = serde_json::to_string(body).map_err(Self::Error::Json)?;
-        debug!("Sending request via JSON-RPC: {}", request_body);
+        let url = self.url.join(method).map_err(HttpTransportError::Parse)?;
+        debug!("Sending GET request to URL: {}", url);
 
-        let mut request = self
-            .client
-            .post(self.url.clone())
-            .body(request_body)
-            .header("Content-Type", "application/json");
+        let mut request = self.client.post(self.url.clone()).body(request_body);
         for (name, value) in self.headers.iter() {
             request = request.header(name, value);
         }

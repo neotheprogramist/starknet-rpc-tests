@@ -79,5 +79,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
+    match account.provider().mint(contract_address, 1000).await {
+        Ok(config) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", config);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+
     Ok(())
 }
