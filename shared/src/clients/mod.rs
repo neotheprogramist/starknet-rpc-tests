@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::Display};
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 pub mod devnet_client;
 

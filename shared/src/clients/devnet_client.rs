@@ -1,17 +1,16 @@
-use std::{any::Any, error::Error};
-
 use super::{DevnetClientError, DevnetError};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 use starknet_crypto::FieldElement;
-use tracing::{debug, field::Field};
+use std::{any::Any, error::Error};
+use tracing::debug;
 use utils::codegen::BlockTag;
 use utils::{
     codegen::{
         ContractErrorData, NoTraceAvailableErrorData, StarknetError, TransactionExecutionErrorData,
     },
     models::FeeUnit,
-    provider::{Config, Provider, ProviderError, ProviderImplError},
+    provider::{Provider, ProviderError, ProviderImplError},
     transports::{
         http::{HttpTransport, HttpTransportError},
         JsonRpcClientError,
@@ -331,7 +330,7 @@ pub trait DevnetTransport {
     where
         R: DeserializeOwned;
 }
-
+#[allow(unused)]
 impl DevnetTransport for HttpTransport {
     type Error = HttpTransportError;
 
@@ -403,6 +402,7 @@ pub struct DevnetClient<T> {
     transport: T,
 }
 
+#[allow(unused)]
 impl<T> DevnetClient<T>
 where
     T: 'static + DevnetTransport + Send + Sync,

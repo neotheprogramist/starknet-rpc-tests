@@ -10,7 +10,7 @@ use crate::{
         AddDeployAccountTransactionRequest, AddDeployAccountTransactionRequestRef,
         AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockTag, BlockWithTxHashes,
         CallRequest, CallRequestRef, ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef,
-        FeeEstimate, FeePayment, FunctionCall, FunctionInvocation, GetBlockWithReceiptsRequest,
+        FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithReceiptsRequest,
         GetBlockWithReceiptsRequestRef, GetBlockWithTxHashesRequest,
         GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequest, GetBlockWithTxsRequestRef,
         GetNonceRequest, GetNonceRequestRef, GetStateUpdateRequest, GetStateUpdateRequestRef,
@@ -24,7 +24,10 @@ use crate::{
         TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
     },
     models::{
-        BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult, FeeUnit, InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate, Transaction, TransactionStatus
+        BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
+        BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult, FeeUnit,
+        InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
+        MaybePendingStateUpdate, Transaction, TransactionStatus,
     },
     provider::{Provider, ProviderError, ProviderImplError},
     unsigned_field_element::UfeHex,
@@ -214,6 +217,7 @@ impl<T> JsonRpcClient<T> {
     }
 }
 
+#[allow(unused)]
 impl<T> JsonRpcClient<T>
 where
     T: 'static + JsonRpcTransport + Send + Sync,
@@ -262,6 +266,7 @@ where
     }
 }
 
+#[allow(unused)]
 impl<T> Provider for JsonRpcClient<T>
 where
     T: 'static + JsonRpcTransport + Sync + Send,

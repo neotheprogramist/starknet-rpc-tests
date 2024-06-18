@@ -62,6 +62,7 @@ impl HttpTransport {
     }
 }
 
+#[allow(unused)]
 impl JsonRpcTransport for HttpTransport {
     type Error = HttpTransportError;
 

@@ -44,18 +44,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .unwrap();
     let chain_id = FieldElement::from_hex_be("0x534e5f5345504f4c4941").unwrap();
     let encoding = ExecutionEncoding::New;
-    let account: SingleOwnerAccount<DevnetClient<HttpTransport>, LocalWallet>;
 
-    match &args.vers {
+    let account = match &args.vers {
         Version::V0_0_5 => {
             let devnet_v5_url = Url::parse("http://localhost:5051")?;
             let client = DevnetClient::new(HttpTransport::new(devnet_v5_url));
-            account = SingleOwnerAccount::new(client, signer, address, chain_id, encoding);
+            SingleOwnerAccount::new(client, signer, address, chain_id, encoding)
         }
         Version::V0_0_6 => {
             let devnet_v6_url = Url::parse("http://localhost:5050")?;
             let client = DevnetClient::new(HttpTransport::new(devnet_v6_url));
-            account = SingleOwnerAccount::new(client, signer, address, chain_id, encoding);
+            SingleOwnerAccount::new(client, signer, address, chain_id, encoding)
         }
     };
 
