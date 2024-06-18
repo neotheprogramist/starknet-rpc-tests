@@ -304,10 +304,11 @@ pub trait Provider {
             Err(ProviderError::ArrayLengthMismatch)
         }
     }
+    async fn set_time(&self, time: u64, generate_block: bool) -> Result<Value, ProviderError>;
+    async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError>;
 
     async fn get_config(&self) -> Result<Value, ProviderError>;
     async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError>;
-
     async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError>;
     async fn get_account_balance(
         &self,

@@ -767,6 +767,13 @@ where
     async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError> {
         todo!()
     }
+    async fn set_time(&self, time: u64, generate_block: bool) -> Result<Value, ProviderError>{
+        todo!()
+
+    }
+    async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError>{
+        todo!()
+    }
 
     // /// Retrieve traces for all transactions in the given block.
     // async fn trace_block_transactions<B>(

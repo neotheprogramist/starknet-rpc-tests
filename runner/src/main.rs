@@ -28,13 +28,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let args = Args::parse();
 
-    // let account_balance_params = AccountBalanceParams {
-    //     address: args.account_address,
-    //     unit: "WEI".to_string(),
-    //     block_tag: "latest".to_string(),
-    // };
-    // account_balance(&account_balance_params, &args.vers, args.url).await?;
-
     let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(
         FieldElement::from_hex_be("0xe1406455b7d66b1690803be066cbe5e").unwrap(),
     ));
@@ -58,16 +51,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
     match account.provider().get_predeployed_accounts().await {
-        Ok(config) => {
+        Ok(value) => {
             info!("{}", "COMPATIBLE".green());
-            println!("{:?}", config);
+            println!("{:?}", value);
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
     match account.provider().get_config().await {
-        Ok(config) => {
+        Ok(value) => {
             info!("{}", "COMPATIBLE".green());
-            println!("{:?}", config);
+            println!("{:?}", value);
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
@@ -79,16 +72,31 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .get_account_balance(contract_address, FeeUnit::WEI, BlockTag::Latest)
         .await
     {
-        Ok(config) => {
+        Ok(value) => {
             info!("{}", "COMPATIBLE".green());
-            println!("{:?}", config);
+            println!("{:?}", value);
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
     match account.provider().mint(contract_address, 1000).await {
-        Ok(config) => {
+        Ok(value) => {
             info!("{}", "COMPATIBLE".green());
-            println!("{:?}", config);
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+    match account.provider().set_time(100, false).await {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+
+    match account.provider().increase_time(1000).await {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }

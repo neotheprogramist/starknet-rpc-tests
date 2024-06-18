@@ -28,27 +28,21 @@ struct MintRequest {
     amount: u128,
     address: String,
 }
+#[derive(Debug, Serialize)]
+struct IncreaseTimeRequest {
+    time: u64,
+}
+#[derive(Debug, Serialize)]
+struct SetTimeRequest {
+    time: u64,
+    generate_block: bool,
+}
 
 #[allow(unused)]
 impl<Q> Provider for DevnetClient<Q>
 where
     Q: 'static + DevnetTransport + Sync + Send,
 {
-    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError> {
-        // let req_body = Body::from(
-        //     json!({
-        //         "address": format!("{address:#x}"),
-        //         "amount": mint_amount
-        //     })
-        //     .to_string(),
-        // );
-        let req = MintRequest {
-            address: format!("{address:#x}"),
-            amount: mint_amount,
-        };
-
-        self.send_post_request("mint", &req).await
-    }
     async fn spec_version(&self) -> Result<String, ProviderError> {
         todo!()
     }
@@ -229,6 +223,29 @@ where
         let params = format!("address={:#x}&unit={}&block_tag={}", address, unit, tag);
 
         self.send_get_request("account_balance", Some(params)).await
+    }
+
+    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError> {
+        let req = MintRequest {
+            address: format!("{address:#x}"),
+            amount: mint_amount,
+        };
+
+        self.send_post_request("mint", &req).await
+    }
+
+    async fn set_time(&self, time: u64, generate_block: bool) -> Result<Value, ProviderError> {
+        let req = SetTimeRequest {
+            time,
+            generate_block,
+        };
+        self.send_post_request("set_time", &req).await
+    }
+    async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError> {
+        let req = IncreaseTimeRequest {
+            time: increase_time,
+        };
+        self.send_post_request("increase_time", &req).await
     }
 }
 
