@@ -275,3 +275,17 @@ impl DeployAccountTransaction {
         }
     }
 }
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub enum FeeUnit {
+    WEI,
+    FRI,
+}
+
+impl std::fmt::Display for FeeUnit {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(match self {
+            FeeUnit::WEI => "WEI",
+            FeeUnit::FRI => "FRI",
+        })
+    }
+}

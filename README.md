@@ -59,3 +59,4 @@ Rename starkner-devnet v5
 ```bash
 mv ~/.cargo/bin/starknet-devnet ~/.cargo/bin/starknet-devnet-0.0.5
 ```
+ 

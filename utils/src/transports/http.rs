@@ -1,8 +1,7 @@
+use super::{JsonRpcMethod, JsonRpcResponse, JsonRpcTransport};
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
 use url::ParseError;
-
-use super::{JsonRpcMethod, JsonRpcResponse, JsonRpcTransport};
 
 use tracing::debug;
 
@@ -19,6 +18,7 @@ pub enum HttpTransportError {
     Reqwest(reqwest::Error),
     Json(serde_json::Error),
     Parse(ParseError),
+    Serde(serde_urlencoded::ser::Error),
 }
 
 #[derive(Debug, Serialize)]

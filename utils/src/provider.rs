@@ -1,14 +1,15 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use starknet_crypto::FieldElement;
 use std::{any::Any, error::Error, fmt::Debug};
 
 use crate::{
     codegen::{
-        FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
+        BlockTag, FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, TransactionReceiptWithBlockInfo,
     },
     models::{
-        BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult,
+        BroadcastedTransaction, DeclareTransactionResult, FeeUnit, InvokeTransactionResult,
         MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
         Transaction, TransactionStatus,
     },
@@ -304,7 +305,13 @@ pub trait Provider {
         }
     }
 
-    async fn get_config(&self) -> Result<Config, ProviderError>;
+    async fn get_config(&self) -> Result<Value, ProviderError>;
+    async fn get_account_balance(
+        &self,
+        address: FieldElement,
+        unit: FeeUnit,
+        block_tag: BlockTag,
+    ) -> Result<Value, ProviderError>;
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {

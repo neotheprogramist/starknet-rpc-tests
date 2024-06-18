@@ -13,10 +13,13 @@ use utils::{
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
         ConnectedAccount,
     },
+    codegen::BlockTag,
+    models::FeeUnit,
     provider::Provider,
     transports::http::HttpTransport,
 };
-
+pub const PREDEPLOYED_ACCOUNT_ADDRESS: &str =
+    "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1";
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
@@ -64,5 +67,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
 
+    let contract_address = FieldElement::from_hex_be(PREDEPLOYED_ACCOUNT_ADDRESS).unwrap();
+
+    match account
+        .provider()
+        .get_account_balance(contract_address, FeeUnit::WEI, BlockTag::Latest)
+        .await
+    {
+        Ok(config) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", config);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
     Ok(())
 }

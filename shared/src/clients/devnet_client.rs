@@ -2,18 +2,21 @@ use std::{any::Any, error::Error};
 
 use super::{DevnetClientError, DevnetError};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use tracing::debug;
+use serde_json::Value;
+use starknet_crypto::FieldElement;
+use tracing::{debug, field::Field};
+use utils::codegen::BlockTag;
 use utils::{
     codegen::{
         ContractErrorData, NoTraceAvailableErrorData, StarknetError, TransactionExecutionErrorData,
     },
+    models::FeeUnit,
     provider::{Config, Provider, ProviderError, ProviderImplError},
     transports::{
         http::{HttpTransport, HttpTransportError},
         JsonRpcClientError,
     },
 };
-
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub enum DevnetMethod {
     #[serde(rename = "get_account_balance")]
@@ -27,10 +30,23 @@ impl<Q> Provider for DevnetClient<Q>
 where
     Q: 'static + DevnetTransport + Sync + Send,
 {
-    async fn get_config(&self) -> Result<Config, ProviderError> {
-        self.send_get_request("/config").await
+    async fn get_config(&self) -> Result<Value, ProviderError> {
+        self.send_get_request("config", Option::None).await
     }
+    async fn get_account_balance(
+        &self,
+        address: FieldElement,
+        unit: FeeUnit,
+        block_tag: BlockTag,
+    ) -> Result<Value, ProviderError> {
+        let tag = match block_tag {
+            BlockTag::Latest => "latest",
+            BlockTag::Pending => "pending",
+        };
+        let params = format!("address={:#x}&unit={}&block_tag={}", address, unit, tag);
 
+        self.send_get_request("account_balance", Some(params)).await
+    }
     async fn spec_version(&self) -> Result<String, ProviderError> {
         todo!()
     }
@@ -307,7 +323,11 @@ pub trait DevnetTransport {
         Q: Serialize,
         R: DeserializeOwned;
 
-    async fn send_get_request<R>(&self, method: &str) -> Result<R, Self::Error>
+    async fn send_get_request<R>(
+        &self,
+        method: &str,
+        query: Option<String>,
+    ) -> Result<R, Self::Error>
     where
         R: DeserializeOwned;
 }
@@ -343,14 +363,19 @@ impl DevnetTransport for HttpTransport {
         Ok(parsed_response)
     }
 
-    async fn send_get_request<R>(&self, method: &str) -> Result<R, Self::Error>
+    async fn send_get_request<R>(
+        &self,
+        method: &str,
+        query: Option<String>,
+    ) -> Result<R, Self::Error>
     where
         R: DeserializeOwned,
     {
-        let url = self.url.join(method).map_err(HttpTransportError::Parse)?;
-        debug!("Sending GET request to URL: {}", url);
+        let uri = format!("{}{}?{}", self.url, method, query.unwrap_or("".into()));
 
-        let mut request = self.client.get(url);
+        debug!("Sending GET request to URL: {}", uri);
+
+        let mut request = self.client.get(uri);
         for (name, value) in self.headers.iter() {
             request = request.header(name, value);
         }
@@ -393,13 +418,17 @@ where
             .await
             .map_err(JsonRpcClientError::TransportError)?)
     }
-    async fn send_get_request<R>(&self, method: &str) -> Result<R, ProviderError>
+    async fn send_get_request<R>(
+        &self,
+        method: &str,
+        query: Option<String>,
+    ) -> Result<R, ProviderError>
     where
         R: DeserializeOwned,
     {
         Ok(self
             .transport
-            .send_get_request(method)
+            .send_get_request(method, query)
             .await
             .map_err(JsonRpcClientError::TransportError)?)
     }

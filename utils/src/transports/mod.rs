@@ -1,5 +1,6 @@
 use auto_impl::auto_impl;
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize, Serializer};
+use serde_json::Value;
 use starknet_crypto::FieldElement;
 use std::{any::Any, error::Error, fmt::Display};
 pub mod http;
@@ -7,9 +8,9 @@ use crate::{
     codegen::{
         AddDeclareTransactionRequest, AddDeclareTransactionRequestRef,
         AddDeployAccountTransactionRequest, AddDeployAccountTransactionRequestRef,
-        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockWithTxHashes,
+        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockTag, BlockWithTxHashes,
         CallRequest, CallRequestRef, ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef,
-        FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithReceiptsRequest,
+        FeeEstimate, FeePayment, FunctionCall, FunctionInvocation, GetBlockWithReceiptsRequest,
         GetBlockWithReceiptsRequestRef, GetBlockWithTxHashesRequest,
         GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequest, GetBlockWithTxsRequestRef,
         GetNonceRequest, GetNonceRequestRef, GetStateUpdateRequest, GetStateUpdateRequestRef,
@@ -23,10 +24,7 @@ use crate::{
         TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
     },
     models::{
-        BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
-        BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult,
-        InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
-        MaybePendingStateUpdate, Transaction, TransactionStatus,
+        BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult, FeeUnit, InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate, Transaction, TransactionStatus
     },
     provider::{Provider, ProviderError, ProviderImplError},
     unsigned_field_element::UfeHex,
@@ -743,11 +741,18 @@ where
         .await
     }
 
-    async fn get_config(&self) -> Result<crate::provider::Config, ProviderError> {
-        let result = self
-            .send_get_request::<crate::provider::Config>("/config")
-            .await?;
+    async fn get_config(&self) -> Result<Value, ProviderError> {
+        let result = self.send_get_request::<Value>("/config").await?;
         Ok(result)
+    }
+
+    async fn get_account_balance(
+        &self,
+        address: FieldElement,
+        unit: FeeUnit,
+        block_tag: BlockTag,
+    ) -> Result<Value, ProviderError> {
+        todo!()
     }
 
     // /// Retrieve traces for all transactions in the given block.
