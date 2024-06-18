@@ -1,7 +1,6 @@
 use auto_impl::auto_impl;
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize, Serializer};
 use starknet_crypto::FieldElement;
-
 use std::{any::Any, error::Error, fmt::Display};
 pub mod http;
 use crate::{
@@ -47,6 +46,15 @@ pub trait JsonRpcTransport {
     ) -> Result<JsonRpcResponse<R>, Self::Error>
     where
         P: Serialize + Send + Sync,
+        R: DeserializeOwned;
+
+    async fn send_post_request<R, Q>(&self, method: &str, body: &Q) -> Result<R, Self::Error>
+    where
+        Q: Serialize,
+        R: DeserializeOwned;
+
+    async fn send_get_request<R>(&self, method: &str) -> Result<R, Self::Error>
+    where
         R: DeserializeOwned;
 }
 
@@ -231,6 +239,28 @@ where
                 })
             }
         }
+    }
+
+    async fn send_post_request<R, Q>(&self, method: &str, body: &Q) -> Result<R, ProviderError>
+    where
+        Q: Serialize,
+        R: DeserializeOwned,
+    {
+        Ok(self
+            .transport
+            .send_post_request(method, body)
+            .await
+            .map_err(JsonRpcClientError::TransportError)?)
+    }
+    async fn send_get_request<R>(&self, method: &str) -> Result<R, ProviderError>
+    where
+        R: DeserializeOwned,
+    {
+        Ok(self
+            .transport
+            .send_get_request(method)
+            .await
+            .map_err(JsonRpcClientError::TransportError)?)
     }
 }
 
@@ -711,6 +741,13 @@ where
             },
         )
         .await
+    }
+
+    async fn get_config(&self) -> Result<crate::provider::Config, ProviderError> {
+        let result = self
+            .send_get_request::<crate::provider::Config>("/config")
+            .await?;
+        Ok(result)
     }
 
     // /// Retrieve traces for all transactions in the given block.

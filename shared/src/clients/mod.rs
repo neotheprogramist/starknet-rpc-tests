@@ -3,8 +3,6 @@ use std::{error::Error, fmt::Display};
 use serde::{Deserialize, Serialize};
 
 pub mod devnet_client;
-pub mod devnet_provider;
-
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
     seed: u64,

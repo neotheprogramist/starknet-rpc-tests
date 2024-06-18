@@ -1,10 +1,10 @@
 use crate::account_balance::Version;
 use crate::clients::devnet_client::DevnetClient;
-use crate::clients::devnet_provider::DevnetProvider;
 use crate::errors::RequestOrParseError;
 use colored::Colorize;
 use tracing::info;
 use url::Url;
+use utils::provider::Provider;
 use utils::transports::http::HttpTransport;
 
 pub async fn get_config(version: &Version) -> Result<(), RequestOrParseError> {

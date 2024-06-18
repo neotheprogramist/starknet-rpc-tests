@@ -246,7 +246,7 @@ pub fn normalize_address(address: FieldElement) -> FieldElement {
 
 #[allow(dead_code)]
 pub fn create_jsonrpc_client() -> JsonRpcClient<HttpTransport> {
-    let rpc_url = std::env::var("STARKNET_RPC").unwrap_or("http://localhost:5050/".into());
+    let rpc_url: String = std::env::var("STARKNET_RPC").unwrap_or("http://localhost:5050/".into());
     JsonRpcClient::new(HttpTransport::new(url::Url::parse(&rpc_url).unwrap()))
 }
 

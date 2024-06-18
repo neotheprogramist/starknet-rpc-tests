@@ -1,18 +1,17 @@
 use std::{any::Any, error::Error};
 
+use super::{DevnetClientError, DevnetError};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use tracing::debug;
 use utils::{
     codegen::{
         ContractErrorData, NoTraceAvailableErrorData, StarknetError, TransactionExecutionErrorData,
     },
-    provider::ProviderError,
-    transports::http::{HttpTransport, HttpTransportError},
-};
-
-use super::{
-    devnet_provider::{DevnetProvider, DevnetProviderError, ProviderImplError},
-    Config, DevnetClientError, DevnetError,
+    provider::{Config, Provider, ProviderError, ProviderImplError},
+    transports::{
+        http::{HttpTransport, HttpTransportError},
+        JsonRpcClientError,
+    },
 };
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -23,171 +22,182 @@ pub enum DevnetMethod {
     Config,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct DevnetResponse<T> {
-    result: T,
-}
-
-#[allow(async_fn_in_trait)]
-pub trait DevnetTransport {
-    type Error: Error + Send + Sync;
-
-    async fn send_post_request<P, R>(
-        &self,
-        method: DevnetMethod,
-        params: P,
-    ) -> Result<DevnetResponse<R>, Self::Error>
-    where
-        P: Serialize + Send + Sync,
-        R: DeserializeOwned;
-
-    async fn send_get_request<P, R>(&self, method: &str) -> Result<DevnetResponse<R>, Self::Error>
-    where
-        P: Serialize + Send + Sync,
-        R: DeserializeOwned;
-}
-
-#[derive(Debug, Serialize)]
-struct DevnetRequest<T> {
-    id: u64,
-    jsonrpc: &'static str,
-    method: DevnetMethod,
-    params: T,
-}
-
-impl DevnetTransport for HttpTransport {
-    type Error = HttpTransportError;
-
-    async fn send_post_request<P, R>(
-        &self,
-        method: DevnetMethod,
-        params: P,
-    ) -> Result<DevnetResponse<R>, Self::Error>
-    where
-        P: Serialize + Send,
-        R: DeserializeOwned,
-    {
-        let request_body = DevnetRequest {
-            id: 1,
-            jsonrpc: "2.0",
-            method,
-            params,
-        };
-
-        let request_body = serde_json::to_string(&request_body).map_err(Self::Error::Json)?;
-        debug!("Sending request via JSON-RPC: {}", request_body);
-
-        let mut request = self
-            .client
-            .post(self.url.clone())
-            .body(request_body)
-            .header("Content-Type", "application/json");
-        for (name, value) in self.headers.iter() {
-            request = request.header(name, value);
-        }
-
-        let response = request.send().await.map_err(Self::Error::Reqwest)?;
-
-        let response_body = response.text().await.map_err(Self::Error::Reqwest)?;
-        debug!("Response from JSON-RPC: {}", response_body);
-
-        let parsed_response = serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
-
-        Ok(parsed_response)
-    }
-
-    async fn send_get_request<P, R>(&self, method: &str) -> Result<DevnetResponse<R>, Self::Error>
-    where
-        P: Serialize + Send + Sync,
-        R: DeserializeOwned,
-    {
-        let url = self.url.join(method).map_err(HttpTransportError::Parse)?;
-        debug!("Sending GET request to URL: {}", url);
-
-        let mut request = self.client.get(url);
-        for (name, value) in self.headers.iter() {
-            request = request.header(name, value);
-        }
-
-        let response = request.send().await.map_err(HttpTransportError::Reqwest)?;
-
-        let response_body = response.text().await.map_err(HttpTransportError::Reqwest)?;
-        debug!("Response from GET request: {}", response_body);
-
-        let parsed_response =
-            serde_json::from_str(&response_body).map_err(HttpTransportError::Json)?;
-
-        Ok(parsed_response)
-    }
-}
-
-#[allow(dead_code)]
-impl<T> DevnetClient<T> {
-    pub fn new(transport: T) -> Self {
-        Self { transport }
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct DevnetClient<T> {
-    transport: T,
-}
-
-impl<T> DevnetClient<T>
+#[allow(unused)]
+impl<Q> Provider for DevnetClient<Q>
 where
-    T: 'static + DevnetTransport + Send + Sync,
-{
-    async fn send_post_request<P, R>(
-        &self,
-        method: DevnetMethod,
-        params: P,
-    ) -> Result<DevnetResponse<R>, DevnetProviderError>
-    where
-        P: Serialize + Send + Sync,
-        R: DeserializeOwned,
-    {
-        Ok(self
-            .transport
-            .send_get_request(method)
-            .await
-            .map_err(DevnetClientError::TransportError)?)
-    }
-    async fn send_get_request<P, R>(&self, method: &str) -> Result<Config, DevnetProviderError>
-    where
-        P: Serialize + Send + Sync,
-        R: DeserializeOwned,
-    {
-        Ok(self
-            .transport
-            .send_get_request(method)
-            .await
-            .map_err(DevnetClientError::TransportError)?)
-    }
-}
-
-impl<T> Provider for DevnetClient<T>
-where
-    T: 'static + DevnetTransport + Sync + Send,
+    Q: 'static + DevnetTransport + Sync + Send,
 {
     async fn get_config(&self) -> Result<Config, ProviderError> {
         self.send_get_request("/config").await
     }
+
+    async fn spec_version(&self) -> Result<String, ProviderError> {
+        todo!()
+    }
+
+    async fn get_block_with_tx_hashes<B>(
+        &self,
+        block_id: B,
+    ) -> Result<utils::transports::MaybePendingBlockWithTxHashes, ProviderError>
+    where
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn get_block_with_txs<B>(
+        &self,
+        block_id: B,
+    ) -> Result<utils::models::MaybePendingBlockWithTxs, ProviderError>
+    where
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn get_block_with_receipts<B>(
+        &self,
+        block_id: B,
+    ) -> Result<utils::models::MaybePendingBlockWithReceipts, ProviderError>
+    where
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn get_state_update<B>(
+        &self,
+        block_id: B,
+    ) -> Result<utils::models::MaybePendingStateUpdate, ProviderError>
+    where
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn get_storage_at<A, K, B>(
+        &self,
+        contract_address: A,
+        key: K,
+        block_id: B,
+    ) -> Result<starknet_crypto::FieldElement, ProviderError>
+    where
+        A: AsRef<starknet_crypto::FieldElement> + Send + Sync,
+        K: AsRef<starknet_crypto::FieldElement> + Send + Sync,
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn get_transaction_status<H>(
+        &self,
+        transaction_hash: H,
+    ) -> Result<utils::models::TransactionStatus, ProviderError>
+    where
+        H: AsRef<starknet_crypto::FieldElement> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn get_transaction_by_hash<H>(
+        &self,
+        transaction_hash: H,
+    ) -> Result<utils::models::Transaction, ProviderError>
+    where
+        H: AsRef<starknet_crypto::FieldElement> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn get_transaction_receipt<H>(
+        &self,
+        transaction_hash: H,
+    ) -> Result<utils::codegen::TransactionReceiptWithBlockInfo, ProviderError>
+    where
+        H: AsRef<starknet_crypto::FieldElement> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn call<R, B>(
+        &self,
+        request: R,
+        block_id: B,
+    ) -> Result<Vec<starknet_crypto::FieldElement>, ProviderError>
+    where
+        R: AsRef<utils::codegen::FunctionCall> + Send + Sync,
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn estimate_fee<R, S, B>(
+        &self,
+        request: R,
+        simulation_flags: S,
+        block_id: B,
+    ) -> Result<Vec<utils::codegen::FeeEstimate>, ProviderError>
+    where
+        R: AsRef<[utils::models::BroadcastedTransaction]> + Send + Sync,
+        S: AsRef<[utils::codegen::SimulationFlagForEstimateFee]> + Send + Sync,
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn get_nonce<B, A>(
+        &self,
+        block_id: B,
+        contract_address: A,
+    ) -> Result<starknet_crypto::FieldElement, ProviderError>
+    where
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+        A: AsRef<starknet_crypto::FieldElement> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn add_invoke_transaction<I>(
+        &self,
+        invoke_transaction: I,
+    ) -> Result<utils::models::InvokeTransactionResult, ProviderError>
+    where
+        I: AsRef<utils::models::BroadcastedInvokeTransaction> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn add_declare_transaction<D>(
+        &self,
+        declare_transaction: D,
+    ) -> Result<utils::models::DeclareTransactionResult, ProviderError>
+    where
+        D: AsRef<utils::models::BroadcastedDeclareTransaction> + Send + Sync,
+    {
+        todo!()
+    }
+
+    async fn simulate_transactions<B, T, S>(
+        &self,
+        block_id: B,
+        transactions: T,
+        simulation_flags: S,
+    ) -> Result<Vec<utils::codegen::SimulatedTransaction>, ProviderError>
+    where
+        B: AsRef<utils::models::BlockId> + Send + Sync,
+        T: AsRef<[utils::models::BroadcastedTransaction]> + Send + Sync,
+        S: AsRef<[utils::codegen::SimulationFlag]> + Send + Sync,
+    {
+        todo!();
+    }
 }
+
 impl<T> ProviderImplError for DevnetClientError<T>
 where
     T: 'static + Error + Send + Sync,
 {
     fn as_any(&self) -> &dyn Any {
         self
-    }
-}
-
-impl<T> From<DevnetClientError<T>> for DevnetProviderError
-where
-    T: 'static + Error + Send + Sync,
-{
-    fn from(value: DevnetClientError<T>) -> Self {
-        Self::Other(Box::new(value))
     }
 }
 
@@ -285,5 +295,112 @@ impl TryFrom<&DevnetError> for StarknetError {
             }
             _ => Err(DevnetConversionError::UnknownCode),
         }
+    }
+}
+
+#[allow(async_fn_in_trait)]
+pub trait DevnetTransport {
+    type Error: Error + Send + Sync;
+
+    async fn send_post_request<R, Q>(&self, method: &str, body: &Q) -> Result<R, Self::Error>
+    where
+        Q: Serialize,
+        R: DeserializeOwned;
+
+    async fn send_get_request<R>(&self, method: &str) -> Result<R, Self::Error>
+    where
+        R: DeserializeOwned;
+}
+
+impl DevnetTransport for HttpTransport {
+    type Error = HttpTransportError;
+
+    async fn send_post_request<R, Q>(&self, method: &str, body: &Q) -> Result<R, Self::Error>
+    where
+        Q: Serialize,
+        R: DeserializeOwned,
+    {
+        let request_body = serde_json::to_string(body).map_err(Self::Error::Json)?;
+
+        debug!("Sending request via JSON-RPC: {}", request_body);
+
+        let mut request = self
+            .client
+            .post(self.url.clone())
+            .body(request_body)
+            .header("Content-Type", "application/json");
+        for (name, value) in self.headers.iter() {
+            request = request.header(name, value);
+        }
+
+        let response = request.send().await.map_err(Self::Error::Reqwest)?;
+
+        let response_body = response.text().await.map_err(Self::Error::Reqwest)?;
+        debug!("Response from JSON-RPC: {}", response_body);
+
+        let parsed_response = serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
+
+        Ok(parsed_response)
+    }
+
+    async fn send_get_request<R>(&self, method: &str) -> Result<R, Self::Error>
+    where
+        R: DeserializeOwned,
+    {
+        let url = self.url.join(method).map_err(HttpTransportError::Parse)?;
+        debug!("Sending GET request to URL: {}", url);
+
+        let mut request = self.client.get(url);
+        for (name, value) in self.headers.iter() {
+            request = request.header(name, value);
+        }
+
+        let response = request.send().await.map_err(HttpTransportError::Reqwest)?;
+
+        let response_body = response.text().await.map_err(HttpTransportError::Reqwest)?;
+        debug!("Response from GET request: {}", response_body);
+        let parsed_response: R =
+            serde_json::from_str(&response_body).map_err(HttpTransportError::Json)?;
+
+        Ok(parsed_response)
+    }
+}
+
+#[allow(dead_code)]
+impl<T> DevnetClient<T> {
+    pub fn new(transport: T) -> Self {
+        Self { transport }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct DevnetClient<T> {
+    transport: T,
+}
+
+impl<T> DevnetClient<T>
+where
+    T: 'static + DevnetTransport + Send + Sync,
+{
+    async fn send_post_request<R, Q>(&self, method: &str, body: &Q) -> Result<R, ProviderError>
+    where
+        Q: Serialize,
+        R: DeserializeOwned,
+    {
+        Ok(self
+            .transport
+            .send_post_request(method, body)
+            .await
+            .map_err(JsonRpcClientError::TransportError)?)
+    }
+    async fn send_get_request<R>(&self, method: &str) -> Result<R, ProviderError>
+    where
+        R: DeserializeOwned,
+    {
+        Ok(self
+            .transport
+            .send_get_request(method)
+            .await
+            .map_err(JsonRpcClientError::TransportError)?)
     }
 }
