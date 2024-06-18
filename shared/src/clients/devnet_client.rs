@@ -2,7 +2,6 @@ use super::{DevnetClientError, DevnetError};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
 use starknet_crypto::FieldElement;
-use std::fmt::LowerHex;
 use std::{any::Any, error::Error};
 use tracing::debug;
 use utils::codegen::BlockTag;
@@ -35,24 +34,6 @@ impl<Q> Provider for DevnetClient<Q>
 where
     Q: 'static + DevnetTransport + Sync + Send,
 {
-    async fn get_config(&self) -> Result<Value, ProviderError> {
-        self.send_get_request("config", Option::None).await
-    }
-    async fn get_account_balance(
-        &self,
-        address: FieldElement,
-        unit: FeeUnit,
-        block_tag: BlockTag,
-    ) -> Result<Value, ProviderError> {
-        let tag = match block_tag {
-            BlockTag::Latest => "latest",
-            BlockTag::Pending => "pending",
-        };
-        let params = format!("address={:#x}&unit={}&block_tag={}", address, unit, tag);
-
-        self.send_get_request("account_balance", Some(params)).await
-    }
-
     async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError> {
         // let req_body = Body::from(
         //     json!({
@@ -226,6 +207,28 @@ where
         S: AsRef<[utils::codegen::SimulationFlag]> + Send + Sync,
     {
         todo!();
+    }
+
+    async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError> {
+        self.send_get_request("predeployed_accounts", Option::None)
+            .await
+    }
+    async fn get_config(&self) -> Result<Value, ProviderError> {
+        self.send_get_request("config", Option::None).await
+    }
+    async fn get_account_balance(
+        &self,
+        address: FieldElement,
+        unit: FeeUnit,
+        block_tag: BlockTag,
+    ) -> Result<Value, ProviderError> {
+        let tag = match block_tag {
+            BlockTag::Latest => "latest",
+            BlockTag::Pending => "pending",
+        };
+        let params = format!("address={:#x}&unit={}&block_tag={}", address, unit, tag);
+
+        self.send_get_request("account_balance", Some(params)).await
     }
 }
 

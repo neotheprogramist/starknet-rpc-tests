@@ -764,6 +764,10 @@ where
         todo!()
     }
 
+    async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
     // /// Retrieve traces for all transactions in the given block.
     // async fn trace_block_transactions<B>(
     //     &self,

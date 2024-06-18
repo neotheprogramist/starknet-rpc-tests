@@ -57,7 +57,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             SingleOwnerAccount::new(client, signer, address, chain_id, encoding)
         }
     };
-
+    match account.provider().get_predeployed_accounts().await {
+        Ok(config) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", config);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
     match account.provider().get_config().await {
         Ok(config) => {
             info!("{}", "COMPATIBLE".green());
