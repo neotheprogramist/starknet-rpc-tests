@@ -2,7 +2,9 @@ mod args;
 
 use args::Args;
 use clap::Parser;
-use shared::account_balance::{account_balance, AccountBalanceParams};
+use shared::
+    config::get_config
+;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -12,11 +14,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let args = Args::parse();
 
-    let account_balance_params = AccountBalanceParams {
-        address: args.account_address,
-        unit: "WEI".to_string(),
-        block_tag: "latest".to_string(),
-    };
-    account_balance(&account_balance_params, &args.vers, args.url).await?;
+    // let account_balance_params = AccountBalanceParams {
+    //     address: args.account_address,
+    //     unit: "WEI".to_string(),
+    //     block_tag: "latest".to_string(),
+    // };
+    // account_balance(&account_balance_params, &args.vers, args.url).await?;
+
+    let _res = get_config(&args.vers).await;
+
     Ok(())
 }

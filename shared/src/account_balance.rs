@@ -40,8 +40,8 @@ pub async fn account_balance(
     version: &Version,
     base_url: Url,
 ) -> Result<(), RequestOrParseError> {
-    let client = Client::new();
-    let account_balance_url = match base_url.join("account_balance") {
+    let client: Client = Client::new();
+    let account_balance_url = match base_url.join("VC") {
         Ok(url) => url,
         Err(e) => return Err(e.into()),
     };

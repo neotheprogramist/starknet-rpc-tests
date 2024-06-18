@@ -35,3 +35,27 @@ cargo run -p runner -- --vers <version> --url <url>
 
 example version: v5
 example url: "http://127.0.0.1:5050"
+
+
+
+# Setup different devnets versions 
+### V6
+```bash
+cargo install starknet-devnet --version 0.0.6
+```
+
+Rename starkner-devnet v6
+
+```bash
+mv ~/.cargo/bin/starknet-devnet ~/.cargo/bin/starknet-devnet-0.0.6
+```
+### V5
+```bash
+cargo install starknet-devnet --version 0.0.5
+```
+
+Rename starkner-devnet v5
+
+```bash
+mv ~/.cargo/bin/starknet-devnet ~/.cargo/bin/starknet-devnet-0.0.5
+```

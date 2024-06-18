@@ -1,5 +1,6 @@
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
+use url::ParseError;
 
 use super::{JsonRpcMethod, JsonRpcResponse, JsonRpcTransport};
 
@@ -7,9 +8,9 @@ use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct HttpTransport {
-    client: Client,
-    url: Url,
-    headers: Vec<(String, String)>,
+    pub client: Client,
+    pub url: Url,
+    pub headers: Vec<(String, String)>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -17,6 +18,7 @@ pub struct HttpTransport {
 pub enum HttpTransportError {
     Reqwest(reqwest::Error),
     Json(serde_json::Error),
+    Parse(ParseError),
 }
 
 #[derive(Debug, Serialize)]
