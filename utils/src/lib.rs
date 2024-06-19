@@ -5,6 +5,7 @@ pub mod codegen;
 pub mod contract;
 pub mod crypto;
 pub mod errors;
+pub mod eth_address;
 pub mod execution_result;
 pub mod hash_256;
 pub mod models;

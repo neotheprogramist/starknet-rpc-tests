@@ -9,9 +9,9 @@ use crate::codegen::{
     DeployTransaction, DeployTransactionReceipt, FlattenedSierraClass, FunctionCall,
     InvokeTransactionReceipt, InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1,
     InvokeTransactionV3, L1HandlerTransaction, L1HandlerTransactionReceipt,
-    L1HandlerTransactionTrace, PendingBlockWithReceipts, PendingBlockWithTxs, PendingStateUpdate,
-    ResourcePrice, SequencerTransactionStatus, StateUpdate, TransactionExecutionStatus,
-    TransactionWithReceipt,
+    L1HandlerTransactionTrace, MsgFromL1, PendingBlockWithReceipts, PendingBlockWithTxs,
+    PendingStateUpdate, ResourcePrice, SequencerTransactionStatus, StateUpdate,
+    TransactionExecutionStatus, TransactionWithReceipt,
 };
 use crate::unsigned_field_element::UfeHex;
 
@@ -282,4 +282,9 @@ impl std::fmt::Display for FeeUnit {
 pub enum ContractClass {
     Sierra(FlattenedSierraClass),
     Legacy(CompressedLegacyContractClass),
+}
+impl AsRef<MsgFromL1> for MsgFromL1 {
+    fn as_ref(&self) -> &MsgFromL1 {
+        self
+    }
 }

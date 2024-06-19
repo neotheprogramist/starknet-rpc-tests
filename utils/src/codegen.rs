@@ -1,4 +1,5 @@
 use crate::byte_array::base64;
+use crate::eth_address::EthAddress;
 use crate::execution_result::ExecutionResult;
 use crate::hash_256::Hash256;
 use crate::models::BroadcastedDeclareTransaction;
@@ -5566,5 +5567,409 @@ impl<'de> Deserialize<'de> for GetClassHashAtRequest {
         } else {
             Err(serde::de::Error::custom("invalid sequence length"))
         }
+    }
+}
+/// Request for method starknet_getClassAt
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetClassAtRequest {
+    /// The hash of the requested block, or number (height) of the requested block, or a block tag
+    pub block_id: BlockId,
+    /// The address of the contract whose class definition will be returned
+    pub contract_address: FieldElement,
+}
+/// Reference version of [GetClassAtRequest].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetClassAtRequestRef<'a> {
+    pub block_id: &'a BlockId,
+    pub contract_address: &'a FieldElement,
+}
+
+impl Serialize for GetClassAtRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: &'a FieldElement,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            block_id: &self.block_id,
+        })?;
+        seq.serialize_element(&Field1 {
+            contract_address: &self.contract_address,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'a> Serialize for GetClassAtRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: &'a FieldElement,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            block_id: self.block_id,
+        })?;
+        seq.serialize_element(&Field1 {
+            contract_address: self.contract_address,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for GetClassAtRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            pub block_id: BlockId,
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: FieldElement,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            pub block_id: BlockId,
+        }
+
+        #[serde_as]
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field1 {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: FieldElement,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field1 = serde_json::from_value::<Field1>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                block_id: field0.block_id,
+                contract_address: field1.contract_address,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                block_id: object.block_id,
+                contract_address: object.contract_address,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
+/// Request for method starknet_getBlockTransactionCount
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetBlockTransactionCountRequest {
+    /// The hash of the requested block, or number (height) of the requested block, or a block tag
+    pub block_id: BlockId,
+}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetBlockTransactionCountRequestRef<'a> {
+    pub block_id: &'a BlockId,
+}
+
+impl Serialize for GetBlockTransactionCountRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            block_id: &self.block_id,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'a> Serialize for GetBlockTransactionCountRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            block_id: self.block_id,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for GetBlockTransactionCountRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            pub block_id: BlockId,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            pub block_id: BlockId,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                block_id: field0.block_id,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                block_id: object.block_id,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
+/// Request for method starknet_blockNumber
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BlockNumberRequest;
+
+impl Serialize for BlockNumberRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeSeq;
+
+        let seq = serializer.serialize_seq(Some(0))?;
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for BlockNumberRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let elements = Vec::<()>::deserialize(deserializer)?;
+        if !elements.is_empty() {
+            return Err(serde::de::Error::custom("invalid sequence length"));
+        }
+        Ok(Self)
+    }
+}
+/// Message from L1.
+#[serde_as]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "no_unknown_fields", serde(deny_unknown_fields))]
+pub struct MsgFromL1 {
+    /// The address of the L1 contract sending the message
+    pub from_address: EthAddress,
+    /// The target L2 address the message is sent to
+    #[serde_as(as = "UfeHex")]
+    pub to_address: FieldElement,
+    /// The selector of the l1_handler in invoke in the target contract
+    #[serde_as(as = "UfeHex")]
+    pub entry_point_selector: FieldElement,
+    /// The payload of the message
+    #[serde_as(as = "Vec<UfeHex>")]
+    pub payload: Vec<FieldElement>,
+}
+/// Request for method starknet_estimateMessageFee
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EstimateMessageFeeRequest {
+    /// the message's parameters
+    pub message: MsgFromL1,
+    /// The hash of the requested block, or number (height) of the requested block, or a block tag,
+    /// for the block referencing the state or call the transaction on.
+    pub block_id: BlockId,
+}
+/// Reference version of [EstimateMessageFeeRequest].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EstimateMessageFeeRequestRef<'a> {
+    pub message: &'a MsgFromL1,
+    pub block_id: &'a BlockId,
+}
+
+impl Serialize for EstimateMessageFeeRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub message: &'a MsgFromL1,
+        }
+
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            message: &self.message,
+        })?;
+        seq.serialize_element(&Field1 {
+            block_id: &self.block_id,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'a> Serialize for EstimateMessageFeeRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub message: &'a MsgFromL1,
+        }
+
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            message: self.message,
+        })?;
+        seq.serialize_element(&Field1 {
+            block_id: self.block_id,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for EstimateMessageFeeRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            pub message: MsgFromL1,
+            pub block_id: BlockId,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            pub message: MsgFromL1,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field1 {
+            pub block_id: BlockId,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field1 = serde_json::from_value::<Field1>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                message: field0.message,
+                block_id: field1.block_id,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                message: object.message,
+                block_id: object.block_id,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
+/// Request for method starknet_chainId
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChainIdRequest;
+
+impl Serialize for ChainIdRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        use serde::ser::SerializeSeq;
+
+        let seq = serializer.serialize_seq(Some(0))?;
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for ChainIdRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let elements = Vec::<()>::deserialize(deserializer)?;
+        if !elements.is_empty() {
+            return Err(serde::de::Error::custom("invalid sequence length"));
+        }
+        Ok(Self)
     }
 }

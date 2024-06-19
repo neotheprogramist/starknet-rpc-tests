@@ -5,7 +5,7 @@ use std::{any::Any, error::Error, fmt::Debug};
 
 use crate::{
     codegen::{
-        BlockTag, FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
+        BlockTag, FeeEstimate, FunctionCall, MsgFromL1, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, TransactionReceiptWithBlockInfo,
     },
     models::{
@@ -123,20 +123,20 @@ pub trait Provider {
         B: AsRef<BlockId> + Send + Sync,
         A: AsRef<FieldElement> + Send + Sync;
 
-    // /// Get the contract class definition in the given block at the given address
-    // async fn get_class_at<B, A>(
-    //     &self,
-    //     block_id: B,
-    //     contract_address: A,
-    // ) -> Result<ContractClass, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    //     A: AsRef<FieldElement> + Send + Sync;
+    /// Get the contract class definition in the given block at the given address
+    async fn get_class_at<B, A>(
+        &self,
+        block_id: B,
+        contract_address: A,
+    ) -> Result<ContractClass, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        A: AsRef<FieldElement> + Send + Sync;
 
-    // /// Get the number of transactions in a block given a block id
-    // async fn get_block_transaction_count<B>(&self, block_id: B) -> Result<u64, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync;
+    /// Get the number of transactions in a block given a block id
+    async fn get_block_transaction_count<B>(&self, block_id: B) -> Result<u64, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync;
 
     /// Call a starknet function without creating a Starknet transaction
     async fn call<R, B>(&self, request: R, block_id: B) -> Result<Vec<FieldElement>, ProviderError>
@@ -156,23 +156,23 @@ pub trait Provider {
         S: AsRef<[SimulationFlagForEstimateFee]> + Send + Sync,
         B: AsRef<BlockId> + Send + Sync;
 
-    // async fn estimate_message_fee<M, B>(
-    //     &self,
-    //     message: M,
-    //     block_id: B,
-    // ) -> Result<FeeEstimate, ProviderError>
-    // where
-    //     M: AsRef<MsgFromL1> + Send + Sync,
-    //     B: AsRef<BlockId> + Send + Sync;
+    async fn estimate_message_fee<M, B>(
+        &self,
+        message: M,
+        block_id: B,
+    ) -> Result<FeeEstimate, ProviderError>
+    where
+        M: AsRef<MsgFromL1> + Send + Sync,
+        B: AsRef<BlockId> + Send + Sync;
 
-    // /// Get the most recent accepted block number
-    // async fn block_number(&self) -> Result<u64, ProviderError>;
+    /// Get the most recent accepted block number
+    async fn block_number(&self) -> Result<u64, ProviderError>;
 
     // /// Get the most recent accepted block hash and number
     // async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, ProviderError>;
 
-    // /// Return the currently configured Starknet chain id
-    // async fn chain_id(&self) -> Result<FieldElement, ProviderError>;
+    /// Return the currently configured Starknet chain id
+    async fn chain_id(&self) -> Result<FieldElement, ProviderError>;
 
     // /// Returns an object about the sync status, or false if the node is not synching
     // async fn syncing(&self) -> Result<SyncStatusType, ProviderError>;

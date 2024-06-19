@@ -8,18 +8,20 @@ use crate::{
     codegen::{
         AddDeclareTransactionRequest, AddDeclareTransactionRequestRef,
         AddDeployAccountTransactionRequest, AddDeployAccountTransactionRequestRef,
-        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockTag, BlockWithTxHashes,
-        CallRequest, CallRequestRef, ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef,
-        FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithReceiptsRequest,
-        GetBlockWithReceiptsRequestRef, GetBlockWithTxHashesRequest,
+        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockNumberRequest, BlockTag,
+        BlockWithTxHashes, CallRequest, CallRequestRef, ChainIdRequest, ContractErrorData,
+        EstimateFeeRequest, EstimateFeeRequestRef, EstimateMessageFeeRequest,
+        EstimateMessageFeeRequestRef, FeeEstimate, FunctionCall, FunctionInvocation,
+        GetBlockTransactionCountRequest, GetBlockTransactionCountRequestRef,
+        GetBlockWithReceiptsRequest, GetBlockWithReceiptsRequestRef, GetBlockWithTxHashesRequest,
         GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequest, GetBlockWithTxsRequestRef,
-        GetClassHashAtRequest, GetClassHashAtRequestRef, GetClassRequest, GetClassRequestRef,
-        GetNonceRequest, GetNonceRequestRef, GetStateUpdateRequest, GetStateUpdateRequestRef,
-        GetStorageAtRequest, GetStorageAtRequestRef, GetTransactionByHashRequest,
-        GetTransactionByHashRequestRef, GetTransactionReceiptRequest,
-        GetTransactionReceiptRequestRef, GetTransactionStatusRequest,
-        GetTransactionStatusRequestRef, NoTraceAvailableErrorData, PendingBlockWithTxHashes,
-        ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
+        GetClassAtRequest, GetClassAtRequestRef, GetClassHashAtRequest, GetClassHashAtRequestRef,
+        GetClassRequest, GetClassRequestRef, GetNonceRequest, GetNonceRequestRef,
+        GetStateUpdateRequest, GetStateUpdateRequestRef, GetStorageAtRequest,
+        GetStorageAtRequestRef, GetTransactionByHashRequest, GetTransactionByHashRequestRef,
+        GetTransactionReceiptRequest, GetTransactionReceiptRequestRef, GetTransactionStatusRequest,
+        GetTransactionStatusRequestRef, MsgFromL1, NoTraceAvailableErrorData,
+        PendingBlockWithTxHashes, ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
         SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, SpecVersionRequest, StarknetError,
         TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
@@ -91,22 +93,22 @@ pub enum JsonRpcMethod {
     GetClass,
     #[serde(rename = "starknet_getClassHashAt")]
     GetClassHashAt,
-    // #[serde(rename = "starknet_getClassAt")]
-    // GetClassAt,
-    // #[serde(rename = "starknet_getBlockTransactionCount")]
-    // GetBlockTransactionCount,
+    #[serde(rename = "starknet_getClassAt")]
+    GetClassAt,
+    #[serde(rename = "starknet_getBlockTransactionCount")]
+    GetBlockTransactionCount,
     #[serde(rename = "starknet_call")]
     Call,
     #[serde(rename = "starknet_estimateFee")]
     EstimateFee,
-    // #[serde(rename = "starknet_estimateMessageFee")]
-    // EstimateMessageFee,
-    // #[serde(rename = "starknet_blockNumber")]
-    // BlockNumber,
+    #[serde(rename = "starknet_estimateMessageFee")]
+    EstimateMessageFee,
+    #[serde(rename = "starknet_blockNumber")]
+    BlockNumber,
     // #[serde(rename = "starknet_blockHashAndNumber")]
     // BlockHashAndNumber,
-    // #[serde(rename = "starknet_chainId")]
-    // ChainId,
+    #[serde(rename = "starknet_chainId")]
+    ChainId,
     // #[serde(rename = "starknet_syncing")]
     // Syncing,
     // #[serde(rename = "starknet_getEvents")]
@@ -152,13 +154,13 @@ pub enum JsonRpcRequestData {
     GetTransactionReceipt(GetTransactionReceiptRequest),
     GetClass(GetClassRequest),
     GetClassHashAt(GetClassHashAtRequest),
-    // GetClassAt(GetClassAtRequest),
-    // GetBlockTransactionCount(GetBlockTransactionCountRequest),
+    GetClassAt(GetClassAtRequest),
+    GetBlockTransactionCount(GetBlockTransactionCountRequest),
     EstimateFee(EstimateFeeRequest),
-    // EstimateMessageFee(EstimateMessageFeeRequest),
-    // BlockNumber(BlockNumberRequest),
+    EstimateMessageFee(EstimateMessageFeeRequest),
+    BlockNumber(BlockNumberRequest),
     // BlockHashAndNumber(BlockHashAndNumberRequest),
-    // ChainId(ChainIdRequest),
+    ChainId(ChainIdRequest),
     // Syncing(SyncingRequest),
     // GetEvents(GetEventsRequest),
     //
@@ -484,39 +486,38 @@ where
             .0)
     }
 
-    /// Get the contract class definition in the given block at the given address
-    // async fn get_class_at<B, A>(
-    //     &self,
-    //     block_id: B,
-    //     contract_address: A,
-    // ) -> Result<ContractClass, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    //     A: AsRef<FieldElement> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::GetClassAt,
-    //         GetClassAtRequestRef {
-    //             block_id: block_id.as_ref(),
-    //             contract_address: contract_address.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    async fn get_class_at<B, A>(
+        &self,
+        block_id: B,
+        contract_address: A,
+    ) -> Result<ContractClass, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        A: AsRef<FieldElement> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetClassAt,
+            GetClassAtRequestRef {
+                block_id: block_id.as_ref(),
+                contract_address: contract_address.as_ref(),
+            },
+        )
+        .await
+    }
 
-    // /// Get the number of transactions in a block given a block id
-    // async fn get_block_transaction_count<B>(&self, block_id: B) -> Result<u64, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::GetBlockTransactionCount,
-    //         GetBlockTransactionCountRequestRef {
-    //             block_id: block_id.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    /// Get the number of transactions in a block given a block id
+    async fn get_block_transaction_count<B>(&self, block_id: B) -> Result<u64, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetBlockTransactionCount,
+            GetBlockTransactionCountRequestRef {
+                block_id: block_id.as_ref(),
+            },
+        )
+        .await
+    }
 
     /// Call a starknet function without creating a Starknet transaction
     async fn call<R, B>(&self, request: R, block_id: B) -> Result<Vec<FieldElement>, ProviderError>
@@ -559,31 +560,31 @@ where
         .await
     }
 
-    // /// Estimate the L2 fee of a message sent on L1
-    // async fn estimate_message_fee<M, B>(
-    //     &self,
-    //     message: M,
-    //     block_id: B,
-    // ) -> Result<FeeEstimate, ProviderError>
-    // where
-    //     M: AsRef<MsgFromL1> + Send + Sync,
-    //     B: AsRef<BlockId> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::EstimateMessageFee,
-    //         EstimateMessageFeeRequestRef {
-    //             message: message.as_ref(),
-    //             block_id: block_id.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    /// Estimate the L2 fee of a message sent on L1
+    async fn estimate_message_fee<M, B>(
+        &self,
+        message: M,
+        block_id: B,
+    ) -> Result<FeeEstimate, ProviderError>
+    where
+        M: AsRef<MsgFromL1> + Send + Sync,
+        B: AsRef<BlockId> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::EstimateMessageFee,
+            EstimateMessageFeeRequestRef {
+                message: message.as_ref(),
+                block_id: block_id.as_ref(),
+            },
+        )
+        .await
+    }
 
-    // /// Get the most recent accepted block number
-    // async fn block_number(&self) -> Result<u64, ProviderError> {
-    //     self.send_request(JsonRpcMethod::BlockNumber, BlockNumberRequest)
-    //         .await
-    // }
+    /// Get the most recent accepted block number
+    async fn block_number(&self) -> Result<u64, ProviderError> {
+        self.send_request(JsonRpcMethod::BlockNumber, BlockNumberRequest)
+            .await
+    }
 
     // /// Get the most recent accepted block hash and number
     // async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber, ProviderError> {
@@ -591,13 +592,13 @@ where
     //         .await
     // }
 
-    // /// Return the currently configured Starknet chain id
-    // async fn chain_id(&self) -> Result<FieldElement, ProviderError> {
-    //     Ok(self
-    //         .send_request::<_, Felt>(JsonRpcMethod::ChainId, ChainIdRequest)
-    //         .await?
-    //         .0)
-    // }
+    /// Return the currently configured Starknet chain id
+    async fn chain_id(&self) -> Result<FieldElement, ProviderError> {
+        Ok(self
+            .send_request::<_, Felt>(JsonRpcMethod::ChainId, ChainIdRequest)
+            .await?
+            .0)
+    }
 
     // /// Returns an object about the sync status, or false if the node is not synching
     // async fn syncing(&self) -> Result<SyncStatusType, ProviderError> {
@@ -869,16 +870,16 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                 serde_json::from_value::<GetClassHashAtRequest>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
-            // JsonRpcMethod::GetClassAt => JsonRpcRequestData::GetClassAt(
-            //     serde_json::from_value::<GetClassAtRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
-            // JsonRpcMethod::GetBlockTransactionCount => {
-            //     JsonRpcRequestData::GetBlockTransactionCount(
-            //         serde_json::from_value::<GetBlockTransactionCountRequest>(raw_request.params)
-            //             .map_err(error_mapper)?,
-            //     )
-            // }
+            JsonRpcMethod::GetClassAt => JsonRpcRequestData::GetClassAt(
+                serde_json::from_value::<GetClassAtRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
+            JsonRpcMethod::GetBlockTransactionCount => {
+                JsonRpcRequestData::GetBlockTransactionCount(
+                    serde_json::from_value::<GetBlockTransactionCountRequest>(raw_request.params)
+                        .map_err(error_mapper)?,
+                )
+            }
             JsonRpcMethod::Call => JsonRpcRequestData::Call(
                 serde_json::from_value::<CallRequest>(raw_request.params).map_err(error_mapper)?,
             ),
@@ -886,22 +887,22 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                 serde_json::from_value::<EstimateFeeRequest>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
-            // JsonRpcMethod::EstimateMessageFee => JsonRpcRequestData::EstimateMessageFee(
-            //     serde_json::from_value::<EstimateMessageFeeRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
-            // JsonRpcMethod::BlockNumber => JsonRpcRequestData::BlockNumber(
-            //     serde_json::from_value::<BlockNumberRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::EstimateMessageFee => JsonRpcRequestData::EstimateMessageFee(
+                serde_json::from_value::<EstimateMessageFeeRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
+            JsonRpcMethod::BlockNumber => JsonRpcRequestData::BlockNumber(
+                serde_json::from_value::<BlockNumberRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::BlockHashAndNumber => JsonRpcRequestData::BlockHashAndNumber(
             //     serde_json::from_value::<BlockHashAndNumberRequest>(raw_request.params)
             //         .map_err(error_mapper)?,
             // ),
-            // JsonRpcMethod::ChainId => JsonRpcRequestData::ChainId(
-            //     serde_json::from_value::<ChainIdRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::ChainId => JsonRpcRequestData::ChainId(
+                serde_json::from_value::<ChainIdRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::Syncing => JsonRpcRequestData::Syncing(
             //     serde_json::from_value::<SyncingRequest>(raw_request.params)
             //         .map_err(error_mapper)?,
