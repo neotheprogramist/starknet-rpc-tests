@@ -5,19 +5,21 @@ use starknet_crypto::FieldElement;
 use std::{any::Any, error::Error};
 use tracing::debug;
 use utils::codegen::{
-    AddDeclareTransactionRequestRef, AddInvokeTransactionRequestRef, BlockTag, CallRequestRef,
-    EstimateFeeRequestRef, FeeEstimate, FunctionCall, GetBlockWithReceiptsRequestRef,
-    GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequestRef, GetClassHashAtRequestRef,
-    GetClassRequestRef, GetNonceRequestRef, GetStateUpdateRequestRef, GetStorageAtRequestRef,
-    GetTransactionByHashRequestRef, GetTransactionReceiptRequestRef,
-    GetTransactionStatusRequestRef, SimulateTransactionsRequestRef, SimulatedTransaction,
-    SimulationFlag, SimulationFlagForEstimateFee, SpecVersionRequest,
+    AddDeclareTransactionRequestRef, AddInvokeTransactionRequestRef, BlockNumberRequest, BlockTag,
+    CallRequestRef, ChainIdRequest, EstimateFeeRequestRef, EstimateMessageFeeRequestRef,
+    FeeEstimate, FunctionCall, GetBlockTransactionCountRequestRef, GetBlockWithReceiptsRequestRef,
+    GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequestRef, GetClassAtRequestRef,
+    GetClassHashAtRequestRef, GetClassRequestRef, GetNonceRequestRef, GetStateUpdateRequestRef,
+    GetStorageAtRequestRef, GetTransactionByHashRequestRef, GetTransactionReceiptRequestRef,
+    GetTransactionStatusRequestRef, MsgFromL1, SimulateTransactionsRequestRef,
+    SimulatedTransaction, SimulationFlag, SimulationFlagForEstimateFee, SpecVersionRequest,
     TransactionReceiptWithBlockInfo,
 };
 use utils::models::{
     BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
-    DeclareTransactionResult, InvokeTransactionResult, MaybePendingBlockWithReceipts,
-    MaybePendingBlockWithTxs, MaybePendingStateUpdate, Transaction, TransactionStatus,
+    ContractClass, DeclareTransactionResult, InvokeTransactionResult,
+    MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate, Transaction,
+    TransactionStatus,
 };
 use utils::transports::{
     Felt, FeltArray, JsonRpcMethod, JsonRpcResponse, MaybePendingBlockWithTxHashes,
@@ -264,6 +266,30 @@ where
         .await
     }
 
+    async fn estimate_message_fee<M, B>(
+        &self,
+        message: M,
+        block_id: B,
+    ) -> Result<FeeEstimate, ProviderError>
+    where
+        M: AsRef<MsgFromL1> + Send + Sync,
+        B: AsRef<BlockId> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::EstimateMessageFee,
+            EstimateMessageFeeRequestRef {
+                message: message.as_ref(),
+                block_id: block_id.as_ref(),
+            },
+        )
+        .await
+    }
+    async fn chain_id(&self) -> Result<FieldElement, ProviderError> {
+        Ok(self
+            .send_request::<_, Felt>(JsonRpcMethod::ChainId, ChainIdRequest)
+            .await?
+            .0)
+    }
     async fn get_nonce<B, A>(
         &self,
         block_id: B,
@@ -412,6 +438,43 @@ where
             },
         )
         .await
+    }
+    async fn get_class_at<B, A>(
+        &self,
+        block_id: B,
+        contract_address: A,
+    ) -> Result<ContractClass, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        A: AsRef<FieldElement> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetClassAt,
+            GetClassAtRequestRef {
+                block_id: block_id.as_ref(),
+                contract_address: contract_address.as_ref(),
+            },
+        )
+        .await
+    }
+
+    async fn get_block_transaction_count<B>(&self, block_id: B) -> Result<u64, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetBlockTransactionCount,
+            GetBlockTransactionCountRequestRef {
+                block_id: block_id.as_ref(),
+            },
+        )
+        .await
+    }
+
+    /// Get the most recent accepted block number
+    async fn block_number(&self) -> Result<u64, ProviderError> {
+        self.send_request(JsonRpcMethod::BlockNumber, BlockNumberRequest)
+            .await
     }
 }
 

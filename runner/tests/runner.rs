@@ -8,9 +8,10 @@ use utils::{
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
         Account, AccountError, ConnectedAccount,
     },
-    codegen::{BlockTag, FunctionCall, TransactionExecutionStatus},
+    codegen::{BlockTag, FunctionCall, MsgFromL1, TransactionExecutionStatus},
     contract::factory::ContractFactory,
     errors::{parse_class_hash_from_error, RunnerError},
+    eth_address::EthAddress,
     execution_result::ExecutionResult,
     models::{
         BlockId, ContractClass, DeclareTransaction, InvokeTransaction, InvokeTransactionResult,
@@ -398,6 +399,127 @@ async fn jsonrpc_get_class_hash_at() {
         .unwrap();
 
     assert_eq!(class_hash_check, class_hash);
+}
+
+//XXX
+#[tokio::test]
+async fn jsonrpc_get_class_at() {
+    let client = create_jsonrpc_client();
+    let sender_address = FieldElement::from_hex_be(
+        "0x4d8bb41636b42d3c69039f3537333581cc19356a0c93904fa3e569498c23ad0",
+    )
+    .unwrap();
+
+    let signer = LocalWallet::from(SigningKey::from_secret_scalar(
+        FieldElement::from_hex_be("0xb467066159b295a7667b633d6bdaabac").unwrap(),
+    ));
+    let chain_id = FieldElement::from_hex_be("0x534e5f5345504f4c4941").unwrap();
+    let mut account = SingleOwnerAccount::new(
+        client.clone(),
+        signer,
+        sender_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+
+    let class_hash = declare_contract_v3(
+        &account,
+        "../target/dev/example_HelloStarknet.contract_class.json",
+        "../target/dev/example_HelloStarknet.compiled_contract_class.json",
+    )
+    .await
+    .unwrap();
+
+    let deploy_result = deploy_contract_v3(&account, class_hash).await;
+
+    let receipt = client
+        .get_transaction_receipt(deploy_result.transaction_hash)
+        .await
+        .unwrap();
+
+    let receipt = match receipt.receipt {
+        TransactionReceipt::Deploy(receipt) => receipt,
+        _ => panic!("unexpected receipt response type"),
+    };
+
+    match receipt.execution_result {
+        ExecutionResult::Succeeded => {}
+        _ => panic!("unexpected execution result"),
+    }
+
+    let class = account
+        .provider()
+        .get_class_at(BlockId::Tag(BlockTag::Latest), receipt.contract_address)
+        .await
+        .unwrap();
+
+    let class = match class {
+        ContractClass::Sierra(class) => class,
+        _ => panic!("unexpected class type"),
+    };
+
+    assert!(!class.sierra_program.is_empty());
+}
+// XXX
+#[tokio::test]
+async fn jsonrpc_get_block_transaction_count() {
+    let rpc_client = create_jsonrpc_client();
+
+    let count = rpc_client
+        .get_block_transaction_count(BlockId::Tag(BlockTag::Latest))
+        .await
+        .unwrap();
+
+    assert_eq!(count, 1);
+}
+
+// XXX
+#[tokio::test]
+async fn jsonrpc_estimate_message_fee() {
+    let rpc_client = create_jsonrpc_client();
+
+    let estimate = rpc_client
+        .estimate_message_fee(
+            MsgFromL1 {
+                from_address: EthAddress::from_hex("0x8453FC6Cd1bCfE8D4dFC069C400B433054d47bDc")
+                    .unwrap(),
+                to_address: FieldElement::from_hex_be(
+                    "04c5772d1914fe6ce891b64eb35bf3522aeae1315647314aac58b01137607f3f",
+                )
+                .unwrap(),
+                entry_point_selector: FieldElement::from_hex_be(
+                    "02d757788a8d8d6f21d1cd40bce38a8222d70654214e96ff95d8086e684fbee5",
+                )
+                .unwrap(),
+                payload: vec![FieldElement::ONE, FieldElement::ONE, FieldElement::ONE],
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await
+        .unwrap();
+
+    assert!(estimate.gas_consumed > FieldElement::ZERO);
+    assert!(estimate.gas_price > FieldElement::ZERO);
+    assert!(estimate.overall_fee > FieldElement::ZERO);
+}
+
+///XX
+#[tokio::test]
+async fn jsonrpc_block_number() {
+    let rpc_client = create_jsonrpc_client();
+
+    let block_number = rpc_client.block_number().await.unwrap();
+    assert!(block_number > 0);
+}
+
+/// XXX
+#[tokio::test]
+async fn jsonrpc_chain_id() {
+    let rpc_client = create_jsonrpc_client();
+
+    let chain_id = rpc_client.chain_id().await.unwrap();
+    assert!(chain_id > FieldElement::ZERO);
 }
 
 #[tokio::test]
