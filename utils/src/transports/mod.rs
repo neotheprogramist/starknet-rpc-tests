@@ -13,10 +13,10 @@ use crate::{
         FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithReceiptsRequest,
         GetBlockWithReceiptsRequestRef, GetBlockWithTxHashesRequest,
         GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequest, GetBlockWithTxsRequestRef,
-        GetNonceRequest, GetNonceRequestRef, GetStateUpdateRequest, GetStateUpdateRequestRef,
-        GetStorageAtRequest, GetStorageAtRequestRef, GetTransactionByHashRequest,
-        GetTransactionByHashRequestRef, GetTransactionReceiptRequest,
-        GetTransactionReceiptRequestRef, GetTransactionStatusRequest,
+        GetClassRequest, GetClassRequestRef, GetNonceRequest, GetNonceRequestRef,
+        GetStateUpdateRequest, GetStateUpdateRequestRef, GetStorageAtRequest,
+        GetStorageAtRequestRef, GetTransactionByHashRequest, GetTransactionByHashRequestRef,
+        GetTransactionReceiptRequest, GetTransactionReceiptRequestRef, GetTransactionStatusRequest,
         GetTransactionStatusRequestRef, NoTraceAvailableErrorData, PendingBlockWithTxHashes,
         ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
         SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
@@ -25,9 +25,9 @@ use crate::{
     },
     models::{
         BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
-        BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult, FeeUnit,
-        InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
-        MaybePendingStateUpdate, Transaction, TransactionStatus,
+        BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
+        DeclareTransactionResult, FeeUnit, InvokeTransactionResult, MaybePendingBlockWithReceipts,
+        MaybePendingBlockWithTxs, MaybePendingStateUpdate, Transaction, TransactionStatus,
     },
     provider::{Provider, ProviderError, ProviderImplError},
     unsigned_field_element::UfeHex,
@@ -86,8 +86,8 @@ pub enum JsonRpcMethod {
     // GetTransactionByBlockIdAndIndex,
     #[serde(rename = "starknet_getTransactionReceipt")]
     GetTransactionReceipt,
-    // #[serde(rename = "starknet_getClass")]
-    // GetClass,
+    #[serde(rename = "starknet_getClass")]
+    GetClass,
     // #[serde(rename = "starknet_getClassHashAt")]
     // GetClassHashAt,
     // #[serde(rename = "starknet_getClassAt")]
@@ -149,7 +149,7 @@ pub enum JsonRpcRequestData {
     GetTransactionByHash(GetTransactionByHashRequest),
     // GetTransactionByBlockIdAndIndex(GetTransactionByBlockIdAndIndexRequest),
     GetTransactionReceipt(GetTransactionReceiptRequest),
-    // GetClass(GetClassRequest),
+    GetClass(GetClassRequest),
     // GetClassHashAt(GetClassHashAtRequest),
     // GetClassAt(GetClassAtRequest),
     // GetBlockTransactionCount(GetBlockTransactionCountRequest),
@@ -441,25 +441,25 @@ where
         .await
     }
 
-    // /// Get the contract class definition in the given block associated with the given hash
-    // async fn get_class<B, H>(
-    //     &self,
-    //     block_id: B,
-    //     class_hash: H,
-    // ) -> Result<ContractClass, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    //     H: AsRef<FieldElement> + Send + Sync,
-    // {
-    //     self.send_request(
-    //         JsonRpcMethod::GetClass,
-    //         GetClassRequestRef {
-    //             block_id: block_id.as_ref(),
-    //             class_hash: class_hash.as_ref(),
-    //         },
-    //     )
-    //     .await
-    // }
+    /// Get the contract class definition in the given block associated with the given hash
+    async fn get_class<B, H>(
+        &self,
+        block_id: B,
+        class_hash: H,
+    ) -> Result<ContractClass, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        H: AsRef<FieldElement> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetClass,
+            GetClassRequestRef {
+                block_id: block_id.as_ref(),
+                class_hash: class_hash.as_ref(),
+            },
+        )
+        .await
+    }
 
     // /// Get the contract class hash in the given block for the contract deployed at the given address
     // async fn get_class_hash_at<B, A>(
@@ -483,7 +483,7 @@ where
     //         .0)
     // }
 
-    // /// Get the contract class definition in the given block at the given address
+    /// Get the contract class definition in the given block at the given address
     // async fn get_class_at<B, A>(
     //     &self,
     //     block_id: B,
@@ -860,10 +860,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                 serde_json::from_value::<GetTransactionReceiptRequest>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
-            // JsonRpcMethod::GetClass => JsonRpcRequestData::GetClass(
-            //     serde_json::from_value::<GetClassRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::GetClass => JsonRpcRequestData::GetClass(
+                serde_json::from_value::<GetClassRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::GetClassHashAt => JsonRpcRequestData::GetClassHashAt(
             //     serde_json::from_value::<GetClassHashAtRequest>(raw_request.params)
             //         .map_err(error_mapper)?,

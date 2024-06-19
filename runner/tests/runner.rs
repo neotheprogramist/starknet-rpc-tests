@@ -13,7 +13,7 @@ use utils::{
     errors::{parse_class_hash_from_error, RunnerError},
     execution_result::ExecutionResult,
     models::{
-        BlockId, DeclareTransaction, InvokeTransaction, InvokeTransactionResult,
+        BlockId, ContractClass, DeclareTransaction, InvokeTransaction, InvokeTransactionResult,
         MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
         Transaction, TransactionReceipt, TransactionStatus,
     },
@@ -299,6 +299,49 @@ async fn jsonrpc_get_transaction_by_hash_declare_v3() {
     };
 
     assert!(tx.sender_address > FieldElement::ZERO);
+}
+
+#[tokio::test]
+async fn jsonrpc_get_class_cairo_0() {
+    let sender_address = FieldElement::from_hex_be(
+        "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+    )
+    .unwrap();
+
+    let signer = LocalWallet::from(SigningKey::from_secret_scalar(
+        FieldElement::from_hex_be("0x71d7bb07b9a64f6f78ac4c816aff4da9").unwrap(),
+    ));
+    let rpc_client = create_jsonrpc_client();
+    let chain_id = FieldElement::from_hex_be("0x534e5f5345504f4c4941").unwrap();
+    let mut account = SingleOwnerAccount::new(
+        rpc_client.clone(),
+        signer,
+        sender_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+
+    let class_hash = declare_contract_v3(
+        &account,
+        "../target/dev/example_HelloStarknet.contract_class.json",
+        "../target/dev/example_HelloStarknet.compiled_contract_class.json",
+    )
+    .await
+    .unwrap();
+
+    let class = account
+        .provider()
+        .get_class(BlockId::Tag(BlockTag::Latest), class_hash)
+        .await
+        .unwrap();
+
+    let class = match class {
+        ContractClass::Sierra(class) => class,
+        _ => panic!("unexpected class type"),
+    };
+
+    assert!(!class.sierra_program.is_empty());
 }
 
 #[tokio::test]

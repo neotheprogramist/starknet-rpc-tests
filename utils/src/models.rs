@@ -2,15 +2,16 @@ use crate::codegen::{
     BlockTag, BlockWithReceipts, BlockWithTxs, BroadcastedDeclareTransactionV1,
     BroadcastedDeclareTransactionV2, BroadcastedDeclareTransactionV3,
     BroadcastedDeployAccountTransactionV1, BroadcastedDeployAccountTransactionV3,
-    BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, DeclareTransactionReceipt,
-    DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1, DeclareTransactionV2,
-    DeclareTransactionV3, DeployAccountTransactionReceipt, DeployAccountTransactionTrace,
-    DeployAccountTransactionV1, DeployAccountTransactionV3, DeployTransaction,
-    DeployTransactionReceipt, FunctionCall, InvokeTransactionReceipt, InvokeTransactionTrace,
-    InvokeTransactionV0, InvokeTransactionV1, InvokeTransactionV3, L1HandlerTransaction,
-    L1HandlerTransactionReceipt, L1HandlerTransactionTrace, PendingBlockWithReceipts,
-    PendingBlockWithTxs, PendingStateUpdate, ResourcePrice, SequencerTransactionStatus,
-    StateUpdate, TransactionExecutionStatus, TransactionWithReceipt,
+    BroadcastedInvokeTransactionV1, BroadcastedInvokeTransactionV3, CompressedLegacyContractClass,
+    DeclareTransactionReceipt, DeclareTransactionTrace, DeclareTransactionV0, DeclareTransactionV1,
+    DeclareTransactionV2, DeclareTransactionV3, DeployAccountTransactionReceipt,
+    DeployAccountTransactionTrace, DeployAccountTransactionV1, DeployAccountTransactionV3,
+    DeployTransaction, DeployTransactionReceipt, FlattenedSierraClass, FunctionCall,
+    InvokeTransactionReceipt, InvokeTransactionTrace, InvokeTransactionV0, InvokeTransactionV1,
+    InvokeTransactionV3, L1HandlerTransaction, L1HandlerTransactionReceipt,
+    L1HandlerTransactionTrace, PendingBlockWithReceipts, PendingBlockWithTxs, PendingStateUpdate,
+    ResourcePrice, SequencerTransactionStatus, StateUpdate, TransactionExecutionStatus,
+    TransactionWithReceipt,
 };
 use crate::unsigned_field_element::UfeHex;
 
@@ -275,4 +276,10 @@ impl std::fmt::Display for FeeUnit {
             FeeUnit::FRI => "FRI",
         })
     }
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum ContractClass {
+    Sierra(FlattenedSierraClass),
+    Legacy(CompressedLegacyContractClass),
 }
