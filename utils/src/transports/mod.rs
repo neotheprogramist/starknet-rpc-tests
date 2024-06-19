@@ -204,11 +204,11 @@ pub enum JsonRpcErrorConversionError {
 
 #[serde_as]
 #[derive(Serialize, Deserialize)]
-struct Felt(#[serde_as(as = "UfeHex")] pub FieldElement);
+pub struct Felt(#[serde_as(as = "UfeHex")] pub FieldElement);
 
 #[serde_as]
 #[derive(Serialize, Deserialize)]
-struct FeltArray(#[serde_as(as = "Vec<UfeHex>")] pub Vec<FieldElement>);
+pub struct FeltArray(#[serde_as(as = "Vec<UfeHex>")] pub Vec<FieldElement>);
 
 #[allow(dead_code)]
 impl<T> JsonRpcClient<T> {
@@ -771,6 +771,13 @@ where
         todo!()
     }
     async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn create_block(&self) -> Result<Value, ProviderError> {
+        todo!()
+    }
+    async fn abort_blocks(&self, starting_block_hash: String) -> Result<Value, ProviderError> {
         todo!()
     }
 

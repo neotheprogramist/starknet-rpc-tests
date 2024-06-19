@@ -84,5 +84,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
 
+    match account.provider().create_block().await {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            if let Some(block_hash) = value.get("block_hash").and_then(|v| v.as_str()) {
+                println!("Block hash: {}", block_hash);
+                match account
+                    .provider()
+                    .abort_blocks(block_hash.to_string())
+                    .await
+                {
+                    Ok(value) => {
+                        info!("{}", "COMPATIBLE".green());
+                        println!("{:?}", value);
+                    }
+                    Err(_) => info!("{}", "INCOMPATIBLE".red()),
+                }
+            } else {
+                println!("Block hash not found");
+            }
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
     Ok(())
 }
