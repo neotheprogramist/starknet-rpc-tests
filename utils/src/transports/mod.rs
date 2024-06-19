@@ -13,10 +13,11 @@ use crate::{
         FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithReceiptsRequest,
         GetBlockWithReceiptsRequestRef, GetBlockWithTxHashesRequest,
         GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequest, GetBlockWithTxsRequestRef,
-        GetClassRequest, GetClassRequestRef, GetNonceRequest, GetNonceRequestRef,
-        GetStateUpdateRequest, GetStateUpdateRequestRef, GetStorageAtRequest,
-        GetStorageAtRequestRef, GetTransactionByHashRequest, GetTransactionByHashRequestRef,
-        GetTransactionReceiptRequest, GetTransactionReceiptRequestRef, GetTransactionStatusRequest,
+        GetClassHashAtRequest, GetClassHashAtRequestRef, GetClassRequest, GetClassRequestRef,
+        GetNonceRequest, GetNonceRequestRef, GetStateUpdateRequest, GetStateUpdateRequestRef,
+        GetStorageAtRequest, GetStorageAtRequestRef, GetTransactionByHashRequest,
+        GetTransactionByHashRequestRef, GetTransactionReceiptRequest,
+        GetTransactionReceiptRequestRef, GetTransactionStatusRequest,
         GetTransactionStatusRequestRef, NoTraceAvailableErrorData, PendingBlockWithTxHashes,
         ResourcePrice, RevertedInvocation, SimulateTransactionsRequest,
         SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
@@ -88,8 +89,8 @@ pub enum JsonRpcMethod {
     GetTransactionReceipt,
     #[serde(rename = "starknet_getClass")]
     GetClass,
-    // #[serde(rename = "starknet_getClassHashAt")]
-    // GetClassHashAt,
+    #[serde(rename = "starknet_getClassHashAt")]
+    GetClassHashAt,
     // #[serde(rename = "starknet_getClassAt")]
     // GetClassAt,
     // #[serde(rename = "starknet_getBlockTransactionCount")]
@@ -150,7 +151,7 @@ pub enum JsonRpcRequestData {
     // GetTransactionByBlockIdAndIndex(GetTransactionByBlockIdAndIndexRequest),
     GetTransactionReceipt(GetTransactionReceiptRequest),
     GetClass(GetClassRequest),
-    // GetClassHashAt(GetClassHashAtRequest),
+    GetClassHashAt(GetClassHashAtRequest),
     // GetClassAt(GetClassAtRequest),
     // GetBlockTransactionCount(GetBlockTransactionCountRequest),
     EstimateFee(EstimateFeeRequest),
@@ -461,27 +462,27 @@ where
         .await
     }
 
-    // /// Get the contract class hash in the given block for the contract deployed at the given address
-    // async fn get_class_hash_at<B, A>(
-    //     &self,
-    //     block_id: B,
-    //     contract_address: A,
-    // ) -> Result<FieldElement, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    //     A: AsRef<FieldElement> + Send + Sync,
-    // {
-    //     Ok(self
-    //         .send_request::<_, Felt>(
-    //             JsonRpcMethod::GetClassHashAt,
-    //             GetClassHashAtRequestRef {
-    //                 block_id: block_id.as_ref(),
-    //                 contract_address: contract_address.as_ref(),
-    //             },
-    //         )
-    //         .await?
-    //         .0)
-    // }
+    /// Get the contract class hash in the given block for the contract deployed at the given address
+    async fn get_class_hash_at<B, A>(
+        &self,
+        block_id: B,
+        contract_address: A,
+    ) -> Result<FieldElement, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        A: AsRef<FieldElement> + Send + Sync,
+    {
+        Ok(self
+            .send_request::<_, Felt>(
+                JsonRpcMethod::GetClassHashAt,
+                GetClassHashAtRequestRef {
+                    block_id: block_id.as_ref(),
+                    contract_address: contract_address.as_ref(),
+                },
+            )
+            .await?
+            .0)
+    }
 
     /// Get the contract class definition in the given block at the given address
     // async fn get_class_at<B, A>(
@@ -864,10 +865,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                 serde_json::from_value::<GetClassRequest>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
-            // JsonRpcMethod::GetClassHashAt => JsonRpcRequestData::GetClassHashAt(
-            //     serde_json::from_value::<GetClassHashAtRequest>(raw_request.params)
-            //         .map_err(error_mapper)?,
-            // ),
+            JsonRpcMethod::GetClassHashAt => JsonRpcRequestData::GetClassHashAt(
+                serde_json::from_value::<GetClassHashAtRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
             // JsonRpcMethod::GetClassAt => JsonRpcRequestData::GetClassAt(
             //     serde_json::from_value::<GetClassAtRequest>(raw_request.params)
             //         .map_err(error_mapper)?,

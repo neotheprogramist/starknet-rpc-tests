@@ -5437,3 +5437,134 @@ impl Serialize for GetClassRequest {
         seq.end()
     }
 }
+/// Reference version of [GetClassHashAtRequest].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetClassHashAtRequestRef<'a> {
+    pub block_id: &'a BlockId,
+    pub contract_address: &'a FieldElement,
+}
+
+impl<'a> Serialize for GetClassHashAtRequestRef<'a> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: &'a FieldElement,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            block_id: self.block_id,
+        })?;
+        seq.serialize_element(&Field1 {
+            contract_address: self.contract_address,
+        })?;
+
+        seq.end()
+    }
+}
+/// Request for method starknet_getClassHashAt
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct GetClassHashAtRequest {
+    /// The hash of the requested block, or number (height) of the requested block, or a block tag
+    pub block_id: BlockId,
+    /// The address of the contract whose class hash will be returned
+    pub contract_address: FieldElement,
+}
+
+impl Serialize for GetClassHashAtRequest {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field0<'a> {
+            pub block_id: &'a BlockId,
+        }
+
+        #[serde_as]
+        #[derive(Serialize)]
+        #[serde(transparent)]
+        struct Field1<'a> {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: &'a FieldElement,
+        }
+
+        use serde::ser::SerializeSeq;
+
+        let mut seq = serializer.serialize_seq(None)?;
+
+        seq.serialize_element(&Field0 {
+            block_id: &self.block_id,
+        })?;
+        seq.serialize_element(&Field1 {
+            contract_address: &self.contract_address,
+        })?;
+
+        seq.end()
+    }
+}
+
+impl<'de> Deserialize<'de> for GetClassHashAtRequest {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct AsObject {
+            pub block_id: BlockId,
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: FieldElement,
+        }
+
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field0 {
+            pub block_id: BlockId,
+        }
+
+        #[serde_as]
+        #[derive(Deserialize)]
+        #[serde(transparent)]
+        struct Field1 {
+            #[serde_as(as = "UfeHex")]
+            pub contract_address: FieldElement,
+        }
+
+        let temp = serde_json::Value::deserialize(deserializer)?;
+
+        if let Ok(mut elements) = Vec::<serde_json::Value>::deserialize(&temp) {
+            let field1 = serde_json::from_value::<Field1>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+            let field0 = serde_json::from_value::<Field0>(
+                elements
+                    .pop()
+                    .ok_or_else(|| serde::de::Error::custom("invalid sequence length"))?,
+            )
+            .map_err(|err| serde::de::Error::custom(format!("failed to parse element: {}", err)))?;
+
+            Ok(Self {
+                block_id: field0.block_id,
+                contract_address: field1.contract_address,
+            })
+        } else if let Ok(object) = AsObject::deserialize(&temp) {
+            Ok(Self {
+                block_id: object.block_id,
+                contract_address: object.contract_address,
+            })
+        } else {
+            Err(serde::de::Error::custom("invalid sequence length"))
+        }
+    }
+}
