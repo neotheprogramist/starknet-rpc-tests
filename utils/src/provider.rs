@@ -1,14 +1,15 @@
-use auto_impl::auto_impl;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use starknet_crypto::FieldElement;
 use std::{any::Any, error::Error, fmt::Debug};
 
 use crate::{
     codegen::{
-        FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
+        BlockTag, FeeEstimate, FunctionCall, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, TransactionReceiptWithBlockInfo,
     },
     models::{
-        BroadcastedTransaction, DeclareTransactionResult, InvokeTransactionResult,
+        BroadcastedTransaction, DeclareTransactionResult, FeeUnit, InvokeTransactionResult,
         MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
         Transaction, TransactionStatus,
     },
@@ -20,7 +21,6 @@ use super::{
     models::{BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction},
 };
 #[allow(async_fn_in_trait)]
-#[auto_impl(&, Box, Arc)]
 pub trait Provider {
     /// Returns the version of the Starknet JSON-RPC specification being used
     async fn spec_version(&self) -> Result<String, ProviderError>;
@@ -304,6 +304,52 @@ pub trait Provider {
             Err(ProviderError::ArrayLengthMismatch)
         }
     }
+    async fn set_time(&self, time: u64, generate_block: bool) -> Result<Value, ProviderError>;
+    async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError>;
+
+    async fn get_config(&self) -> Result<Value, ProviderError>;
+    async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError>;
+    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError>;
+    async fn get_account_balance(
+        &self,
+        address: FieldElement,
+        unit: FeeUnit,
+        block_tag: BlockTag,
+    ) -> Result<Value, ProviderError>;
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Config {
+    seed: u64,
+    total_accounts: u32,
+    account_contract_class_hash: String,
+    predeployed_accounts_initial_balance: String,
+    start_time: Option<String>,
+    gas_price_wei: u64,
+    gas_price_strk: u64,
+    data_gas_price_wei: u64,
+    data_gas_price_strk: u64,
+    chain_id: String,
+    dump_on: String,
+    dump_path: String,
+    state_archive: String,
+    fork_config: ForkConfig,
+    server_config: ServerConfig,
+    blocks_on_demand: bool,
+    lite_mode: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ForkConfig {
+    url: String,
+    block_number: u64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct ServerConfig {
+    host: String,
+    port: u16,
+    timeout: u64,
+    request_body_size_limit: u64,
 }
 
 #[allow(dead_code)]

@@ -41,7 +41,7 @@ async fn jsonrpc_get_nonce() {
     )
     .unwrap();
 
-    let signer = LocalWallet::from(SigningKey::from_secret_scalar(
+    let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(
         FieldElement::from_hex_be("0xe1406455b7d66b1690803be066cbe5e").unwrap(),
     ));
     let chain_id = FieldElement::from_hex_be("0x534e5f5345504f4c4941").unwrap();

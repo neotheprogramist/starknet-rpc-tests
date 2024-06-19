@@ -2,7 +2,22 @@ mod args;
 
 use args::Args;
 use clap::Parser;
-use shared::account_balance::{account_balance, AccountBalanceParams};
+use colored::Colorize;
+use shared::clients::devnet_client::DevnetClient;
+use starknet_crypto::FieldElement;
+use starknet_signers::{LocalWallet, SigningKey};
+use tracing::info;
+use url::Url;
+use utils::{
+    account::{
+        single_owner::{ExecutionEncoding, SingleOwnerAccount},
+        ConnectedAccount,
+    },
+    codegen::BlockTag,
+    models::FeeUnit,
+    provider::Provider,
+    transports::http::HttpTransport,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -11,12 +26,63 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     let args = Args::parse();
+    let client = DevnetClient::new(HttpTransport::new(Url::parse(args.url.as_ref())?));
+    let account = SingleOwnerAccount::new(
+        client,
+        LocalWallet::from(SigningKey::from_secret_scalar(args.private_key)),
+        args.account_address,
+        FieldElement::from_hex_be(&args.chain_id).unwrap(),
+        ExecutionEncoding::New,
+    );
 
-    let account_balance_params = AccountBalanceParams {
-        address: args.account_address,
-        unit: "WEI".to_string(),
-        block_tag: "latest".to_string(),
-    };
-    account_balance(&account_balance_params, &args.vers, args.url).await?;
+    match account.provider().get_predeployed_accounts().await {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+    match account.provider().get_config().await {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+
+    match account
+        .provider()
+        .get_account_balance(args.account_address, FeeUnit::WEI, BlockTag::Latest)
+        .await
+    {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+    match account.provider().mint(args.account_address, 1000).await {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+    match account.provider().set_time(100, false).await {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+
+    match account.provider().increase_time(1000).await {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+
     Ok(())
 }

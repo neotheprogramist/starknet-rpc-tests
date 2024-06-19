@@ -1,15 +1,15 @@
+use super::{JsonRpcMethod, JsonRpcResponse, JsonRpcTransport};
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
-
-use super::{JsonRpcMethod, JsonRpcResponse, JsonRpcTransport};
+use url::ParseError;
 
 use tracing::debug;
 
 #[derive(Debug, Clone)]
 pub struct HttpTransport {
-    client: Client,
-    url: Url,
-    headers: Vec<(String, String)>,
+    pub client: Client,
+    pub url: Url,
+    pub headers: Vec<(String, String)>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -17,6 +17,8 @@ pub struct HttpTransport {
 pub enum HttpTransportError {
     Reqwest(reqwest::Error),
     Json(serde_json::Error),
+    Parse(ParseError),
+    Serde(serde_urlencoded::ser::Error),
 }
 
 #[derive(Debug, Serialize)]
@@ -60,6 +62,7 @@ impl HttpTransport {
     }
 }
 
+#[allow(unused)]
 impl JsonRpcTransport for HttpTransport {
     type Error = HttpTransportError;
 
@@ -97,6 +100,53 @@ impl JsonRpcTransport for HttpTransport {
         debug!("Response from JSON-RPC: {}", response_body);
 
         let parsed_response = serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
+
+        Ok(parsed_response)
+    }
+
+    async fn send_post_request<R, Q>(&self, method: &str, body: &Q) -> Result<R, Self::Error>
+    where
+        Q: Serialize,
+        R: DeserializeOwned,
+    {
+        let request_body = serde_json::to_string(body).map_err(Self::Error::Json)?;
+        let url = self.url.join(method).map_err(HttpTransportError::Parse)?;
+        debug!("Sending GET request to URL: {}", url);
+
+        let mut request = self.client.post(self.url.clone()).body(request_body);
+        for (name, value) in self.headers.iter() {
+            request = request.header(name, value);
+        }
+
+        let response = request.send().await.map_err(Self::Error::Reqwest)?;
+
+        let response_body = response.text().await.map_err(Self::Error::Reqwest)?;
+        debug!("Response from JSON-RPC: {}", response_body);
+
+        let parsed_response = serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
+
+        Ok(parsed_response)
+    }
+
+    async fn send_get_request<R>(&self, method: &str) -> Result<R, Self::Error>
+    where
+        R: DeserializeOwned,
+    {
+        let url = self.url.join(method).map_err(HttpTransportError::Parse)?;
+        debug!("Sending GET request to URL: {}", url);
+
+        let mut request = self.client.get(url);
+        for (name, value) in self.headers.iter() {
+            request = request.header(name, value);
+        }
+
+        let response = request.send().await.map_err(HttpTransportError::Reqwest)?;
+
+        let response_body = response.text().await.map_err(HttpTransportError::Reqwest)?;
+        debug!("Response from GET request: {}", response_body);
+
+        let parsed_response =
+            serde_json::from_str(&response_body).map_err(HttpTransportError::Json)?;
 
         Ok(parsed_response)
     }

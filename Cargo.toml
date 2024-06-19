@@ -29,6 +29,7 @@ rand = "0.8.5"
 regex = "1.10.5"
 reqwest = { version = "0.12.4", features = ["json"] }
 serde = { version = "1.0.203", default-features = false, features = ["derive"] }
+serde_urlencoded = "0.7"
 serde_json = { version = "1.0.117", default-features = false, features = [
     "alloc",
     "raw_value",

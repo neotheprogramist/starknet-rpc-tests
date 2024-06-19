@@ -1,14 +1,14 @@
 use auto_impl::auto_impl;
 use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize, Serializer};
+use serde_json::Value;
 use starknet_crypto::FieldElement;
-
 use std::{any::Any, error::Error, fmt::Display};
 pub mod http;
 use crate::{
     codegen::{
         AddDeclareTransactionRequest, AddDeclareTransactionRequestRef,
         AddDeployAccountTransactionRequest, AddDeployAccountTransactionRequestRef,
-        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockWithTxHashes,
+        AddInvokeTransactionRequest, AddInvokeTransactionRequestRef, BlockTag, BlockWithTxHashes,
         CallRequest, CallRequestRef, ContractErrorData, EstimateFeeRequest, EstimateFeeRequestRef,
         FeeEstimate, FunctionCall, FunctionInvocation, GetBlockWithReceiptsRequest,
         GetBlockWithReceiptsRequestRef, GetBlockWithTxHashesRequest,
@@ -25,7 +25,7 @@ use crate::{
     },
     models::{
         BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
-        BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult,
+        BroadcastedInvokeTransaction, BroadcastedTransaction, DeclareTransactionResult, FeeUnit,
         InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
         MaybePendingStateUpdate, Transaction, TransactionStatus,
     },
@@ -47,6 +47,15 @@ pub trait JsonRpcTransport {
     ) -> Result<JsonRpcResponse<R>, Self::Error>
     where
         P: Serialize + Send + Sync,
+        R: DeserializeOwned;
+
+    async fn send_post_request<R, Q>(&self, method: &str, body: &Q) -> Result<R, Self::Error>
+    where
+        Q: Serialize,
+        R: DeserializeOwned;
+
+    async fn send_get_request<R>(&self, method: &str) -> Result<R, Self::Error>
+    where
         R: DeserializeOwned;
 }
 
@@ -208,6 +217,7 @@ impl<T> JsonRpcClient<T> {
     }
 }
 
+#[allow(unused)]
 impl<T> JsonRpcClient<T>
 where
     T: 'static + JsonRpcTransport + Send + Sync,
@@ -232,8 +242,31 @@ where
             }
         }
     }
+
+    async fn send_post_request<R, Q>(&self, method: &str, body: &Q) -> Result<R, ProviderError>
+    where
+        Q: Serialize,
+        R: DeserializeOwned,
+    {
+        Ok(self
+            .transport
+            .send_post_request(method, body)
+            .await
+            .map_err(JsonRpcClientError::TransportError)?)
+    }
+    async fn send_get_request<R>(&self, method: &str) -> Result<R, ProviderError>
+    where
+        R: DeserializeOwned,
+    {
+        Ok(self
+            .transport
+            .send_get_request(method)
+            .await
+            .map_err(JsonRpcClientError::TransportError)?)
+    }
 }
 
+#[allow(unused)]
 impl<T> Provider for JsonRpcClient<T>
 where
     T: 'static + JsonRpcTransport + Sync + Send,
@@ -711,6 +744,34 @@ where
             },
         )
         .await
+    }
+
+    async fn get_config(&self) -> Result<Value, ProviderError> {
+        let result = self.send_get_request::<Value>("/config").await?;
+        Ok(result)
+    }
+
+    async fn get_account_balance(
+        &self,
+        address: FieldElement,
+        unit: FeeUnit,
+        block_tag: BlockTag,
+    ) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError> {
+        todo!()
+    }
+    async fn set_time(&self, time: u64, generate_block: bool) -> Result<Value, ProviderError> {
+        todo!()
+    }
+    async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError> {
+        todo!()
     }
 
     // /// Retrieve traces for all transactions in the given block.

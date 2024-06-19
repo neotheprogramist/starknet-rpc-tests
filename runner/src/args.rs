@@ -17,4 +17,7 @@ pub struct Args {
 
     #[arg(long, short, env)]
     pub url: Url,
+
+    #[arg(long,short,env, default_value_t = String::from("0x534e5f5345504f4c4941"))]
+    pub chain_id: String,
 }
