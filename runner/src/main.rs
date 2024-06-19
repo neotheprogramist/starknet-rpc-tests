@@ -26,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     let args = Args::parse();
-    let client = DevnetClient::new(HttpTransport::new(Url::parse(&args.url.to_string())?));
+    let client = DevnetClient::new(HttpTransport::new(Url::parse(args.url.as_ref())?));
     let account = SingleOwnerAccount::new(
         client,
         LocalWallet::from(SigningKey::from_secret_scalar(args.private_key)),
