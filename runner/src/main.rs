@@ -106,6 +106,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
-
+    account.provider()
     Ok(())
 }
