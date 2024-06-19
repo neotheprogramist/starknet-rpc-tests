@@ -9,9 +9,9 @@ use crate::{
         SimulationFlagForEstimateFee, TransactionReceiptWithBlockInfo,
     },
     models::{
-        BroadcastedTransaction, DeclareTransactionResult, FeeUnit, InvokeTransactionResult,
-        MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-        Transaction, TransactionStatus,
+        BroadcastedTransaction, ContractClass, DeclareTransactionResult, FeeUnit,
+        InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
+        MaybePendingStateUpdate, Transaction, TransactionStatus,
     },
     transports::MaybePendingBlockWithTxHashes,
 };
@@ -103,15 +103,15 @@ pub trait Provider {
     where
         H: AsRef<FieldElement> + Send + Sync;
 
-    // /// Get the contract class definition in the given block associated with the given hash
-    // async fn get_class<B, H>(
-    //     &self,
-    //     block_id: B,
-    //     class_hash: H,
-    // ) -> Result<ContractClass, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    //     H: AsRef<FieldElement> + Send + Sync;
+    /// Get the contract class definition in the given block associated with the given hash
+    async fn get_class<B, H>(
+        &self,
+        block_id: B,
+        class_hash: H,
+    ) -> Result<ContractClass, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        H: AsRef<FieldElement> + Send + Sync;
 
     // /// Get the contract class hash in the given block for the contract deployed at the given address
     // async fn get_class_hash_at<B, A>(

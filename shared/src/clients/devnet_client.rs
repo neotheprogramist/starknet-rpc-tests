@@ -7,11 +7,12 @@ use tracing::debug;
 use utils::codegen::{
     AddDeclareTransactionRequestRef, AddInvokeTransactionRequestRef, BlockTag, CallRequestRef,
     EstimateFeeRequestRef, FeeEstimate, FunctionCall, GetBlockWithReceiptsRequestRef,
-    GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequestRef, GetNonceRequestRef,
-    GetStateUpdateRequestRef, GetStorageAtRequestRef, GetTransactionByHashRequestRef,
-    GetTransactionReceiptRequestRef, GetTransactionStatusRequestRef,
-    SimulateTransactionsRequestRef, SimulatedTransaction, SimulationFlag,
-    SimulationFlagForEstimateFee, SpecVersionRequest, TransactionReceiptWithBlockInfo,
+    GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequestRef, GetClassRequestRef,
+    GetNonceRequestRef, GetStateUpdateRequestRef, GetStorageAtRequestRef,
+    GetTransactionByHashRequestRef, GetTransactionReceiptRequestRef,
+    GetTransactionStatusRequestRef, SimulateTransactionsRequestRef, SimulatedTransaction,
+    SimulationFlag, SimulationFlagForEstimateFee, SpecVersionRequest,
+    TransactionReceiptWithBlockInfo,
 };
 use utils::models::{
     BlockId, BroadcastedDeclareTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
@@ -372,6 +373,25 @@ where
             starting_block_hash,
         };
         self.send_post_request("abort_blocks", &req).await
+    }
+
+    async fn get_class<B, H>(
+        &self,
+        block_id: B,
+        class_hash: H,
+    ) -> Result<utils::models::ContractClass, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        H: AsRef<FieldElement> + Send + Sync,
+    {
+        self.send_request(
+            JsonRpcMethod::GetClass,
+            GetClassRequestRef {
+                block_id: block_id.as_ref(),
+                class_hash: class_hash.as_ref(),
+            },
+        )
+        .await
     }
 }
 
