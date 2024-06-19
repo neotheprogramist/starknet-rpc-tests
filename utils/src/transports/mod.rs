@@ -774,6 +774,12 @@ where
         todo!()
     }
 
+    async fn create_block(&self) -> Result<Value, ProviderError> {
+        todo!()
+    }
+    async fn abort_blocks(&self, starting_block_hash: String) -> Result<Value, ProviderError> {
+        todo!()
+    }
     // /// Retrieve traces for all transactions in the given block.
     // async fn trace_block_transactions<B>(
     //     &self,

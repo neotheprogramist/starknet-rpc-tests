@@ -1,6 +1,6 @@
 use super::{DevnetClientError, DevnetError};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 use starknet_crypto::FieldElement;
 use std::{any::Any, error::Error};
 use tracing::debug;
@@ -36,6 +36,10 @@ struct IncreaseTimeRequest {
 struct SetTimeRequest {
     time: u64,
     generate_block: bool,
+}
+#[derive(Debug, Serialize)]
+struct AbortBlocksRequest {
+    starting_block_hash: String,
 }
 
 #[allow(unused)]
@@ -246,6 +250,17 @@ where
             time: increase_time,
         };
         self.send_post_request("increase_time", &req).await
+    }
+
+    async fn create_block(&self) -> Result<Value, ProviderError> {
+        self.send_post_request("create_block", &json!({})).await
+    }
+
+    async fn abort_blocks(&self, starting_block_hash: String) -> Result<Value, ProviderError> {
+        let req: AbortBlocksRequest = AbortBlocksRequest {
+            starting_block_hash,
+        };
+        self.send_post_request("abort_blocks", &req).await
     }
 }
 
