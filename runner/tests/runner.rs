@@ -297,12 +297,13 @@ async fn jsonrpc_get_transaction_by_hash_declare_v3() {
         Transaction::Declare(DeclareTransaction::V3(tx)) => tx,
         _ => panic!("unexpected tx response type"),
     };
+    dbg!(tx.clone());
 
     assert!(tx.sender_address > FieldElement::ZERO);
 }
 
 #[tokio::test]
-async fn jsonrpc_get_class_cairo_0() {
+async fn jsonrpc_get_class_cairo_1() {
     let sender_address = FieldElement::from_hex_be(
         "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
     )
@@ -342,6 +343,61 @@ async fn jsonrpc_get_class_cairo_0() {
     };
 
     assert!(!class.sierra_program.is_empty());
+}
+
+#[tokio::test]
+async fn jsonrpc_get_class_hash_at() {
+    let client = create_jsonrpc_client();
+    let sender_address = FieldElement::from_hex_be(
+        "0x4d8bb41636b42d3c69039f3537333581cc19356a0c93904fa3e569498c23ad0",
+    )
+    .unwrap();
+
+    let signer = LocalWallet::from(SigningKey::from_secret_scalar(
+        FieldElement::from_hex_be("0xb467066159b295a7667b633d6bdaabac").unwrap(),
+    ));
+    let chain_id = FieldElement::from_hex_be("0x534e5f5345504f4c4941").unwrap();
+    let mut account = SingleOwnerAccount::new(
+        client.clone(),
+        signer,
+        sender_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+
+    let class_hash = declare_contract_v3(
+        &account,
+        "../target/dev/example_HelloStarknet.contract_class.json",
+        "../target/dev/example_HelloStarknet.compiled_contract_class.json",
+    )
+    .await
+    .unwrap();
+
+    let deploy_result = deploy_contract_v3(&account, class_hash).await;
+
+    let receipt = client
+        .get_transaction_receipt(deploy_result.transaction_hash)
+        .await
+        .unwrap();
+
+    let receipt = match receipt.receipt {
+        TransactionReceipt::Deploy(receipt) => receipt,
+        _ => panic!("unexpected receipt response type"),
+    };
+
+    match receipt.execution_result {
+        ExecutionResult::Succeeded => {}
+        _ => panic!("unexpected execution result"),
+    }
+
+    let class_hash_check = account
+        .provider()
+        .get_class_hash_at(BlockId::Tag(BlockTag::Latest), receipt.contract_address)
+        .await
+        .unwrap();
+
+    assert_eq!(class_hash_check, class_hash);
 }
 
 #[tokio::test]

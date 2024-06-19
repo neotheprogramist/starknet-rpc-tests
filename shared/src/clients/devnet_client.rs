@@ -7,8 +7,8 @@ use tracing::debug;
 use utils::codegen::{
     AddDeclareTransactionRequestRef, AddInvokeTransactionRequestRef, BlockTag, CallRequestRef,
     EstimateFeeRequestRef, FeeEstimate, FunctionCall, GetBlockWithReceiptsRequestRef,
-    GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequestRef, GetClassRequestRef,
-    GetNonceRequestRef, GetStateUpdateRequestRef, GetStorageAtRequestRef,
+    GetBlockWithTxHashesRequestRef, GetBlockWithTxsRequestRef, GetClassHashAtRequestRef,
+    GetClassRequestRef, GetNonceRequestRef, GetStateUpdateRequestRef, GetStorageAtRequestRef,
     GetTransactionByHashRequestRef, GetTransactionReceiptRequestRef,
     GetTransactionStatusRequestRef, SimulateTransactionsRequestRef, SimulatedTransaction,
     SimulationFlag, SimulationFlagForEstimateFee, SpecVersionRequest,
@@ -151,6 +151,26 @@ where
                     contract_address: contract_address.as_ref(),
                     key: key.as_ref(),
                     block_id: block_id.as_ref(),
+                },
+            )
+            .await?
+            .0)
+    }
+    async fn get_class_hash_at<B, A>(
+        &self,
+        block_id: B,
+        contract_address: A,
+    ) -> Result<FieldElement, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        A: AsRef<FieldElement> + Send + Sync,
+    {
+        Ok(self
+            .send_request::<_, Felt>(
+                JsonRpcMethod::GetClassHashAt,
+                GetClassHashAtRequestRef {
+                    block_id: block_id.as_ref(),
+                    contract_address: contract_address.as_ref(),
                 },
             )
             .await?

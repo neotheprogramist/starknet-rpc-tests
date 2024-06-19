@@ -113,15 +113,15 @@ pub trait Provider {
         B: AsRef<BlockId> + Send + Sync,
         H: AsRef<FieldElement> + Send + Sync;
 
-    // /// Get the contract class hash in the given block for the contract deployed at the given address
-    // async fn get_class_hash_at<B, A>(
-    //     &self,
-    //     block_id: B,
-    //     contract_address: A,
-    // ) -> Result<FieldElement, ProviderError>
-    // where
-    //     B: AsRef<BlockId> + Send + Sync,
-    //     A: AsRef<FieldElement> + Send + Sync;
+    /// Get the contract class hash in the given block for the contract deployed at the given address
+    async fn get_class_hash_at<B, A>(
+        &self,
+        block_id: B,
+        contract_address: A,
+    ) -> Result<FieldElement, ProviderError>
+    where
+        B: AsRef<BlockId> + Send + Sync,
+        A: AsRef<FieldElement> + Send + Sync;
 
     // /// Get the contract class definition in the given block at the given address
     // async fn get_class_at<B, A>(
