@@ -783,6 +783,39 @@ where
         todo!()
     }
 
+    async fn load(
+        &self,
+        network_url: String,
+        address: Option<String>,
+    ) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn flush(&self, dry_run: bool) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn consume_message_from_l2(
+        &self,
+        l2_contract_address: FieldElement,
+        l1_contract_address: FieldElement,
+        payload: Vec<FieldElement>,
+    ) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn send_message_to_l2(
+        &self,
+        l2_contract_address: FieldElement,
+        entry_point_selector: FieldElement,
+        l1_contract_address: FieldElement,
+        payload: Vec<FieldElement>,
+        paid_fee_on_l1: FieldElement,
+        nonce: FieldElement,
+    ) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
     // /// Retrieve traces for all transactions in the given block.
     // async fn trace_block_transactions<B>(
     //     &self,

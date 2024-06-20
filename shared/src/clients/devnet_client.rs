@@ -52,6 +52,10 @@ struct IncreaseTimeRequest {
     time: u64,
 }
 #[derive(Debug, Serialize)]
+struct FlushRequest {
+    dry_run: bool,
+}
+#[derive(Debug, Serialize)]
 struct SetTimeRequest {
     time: u64,
     generate_block: bool,
@@ -60,7 +64,26 @@ struct SetTimeRequest {
 struct AbortBlocksRequest {
     starting_block_hash: String,
 }
-
+#[derive(Debug, Serialize)]
+struct LoadRequest {
+    network_url: String,
+    address: Option<String>,
+}
+#[derive(Debug, Serialize)]
+struct ConsumeMessageRequest {
+    l2_contract_address: FieldElement,
+    l1_contract_address: FieldElement,
+    payload: Vec<FieldElement>,
+}
+#[derive(Debug, Serialize)]
+struct SendMessageRequest {
+    l2_contract_address: FieldElement,
+    entry_point_selector: FieldElement,
+    l1_contract_address: FieldElement,
+    payload: Vec<FieldElement>,
+    paid_fee_on_l1: FieldElement,
+    nonce: FieldElement,
+}
 #[allow(unused)]
 impl<Q> Provider for DevnetClient<Q>
 where
@@ -419,6 +442,59 @@ where
             starting_block_hash,
         };
         self.send_post_request("abort_blocks", &req).await
+    }
+    async fn load(
+        &self,
+        network_url: String,
+        address: Option<String>,
+    ) -> Result<Value, ProviderError> {
+        let req: LoadRequest = LoadRequest {
+            network_url,
+            address,
+        };
+        self.send_post_request("postman/load_l1_messaging_contract", &req)
+            .await
+    }
+    async fn flush(&self, dry_run: bool) -> Result<Value, ProviderError> {
+        let req: FlushRequest = FlushRequest { dry_run };
+        self.send_post_request("postman/flush", &req).await
+    }
+
+    async fn consume_message_from_l2(
+        &self,
+        l2_contract_address: FieldElement,
+        l1_contract_address: FieldElement,
+        payload: Vec<FieldElement>,
+    ) -> Result<Value, ProviderError> {
+        let req: ConsumeMessageRequest = ConsumeMessageRequest {
+            l2_contract_address,
+            l1_contract_address,
+            payload,
+        };
+
+        self.send_post_request("postman/consume_message_from_l2", &req)
+            .await
+    }
+
+    async fn send_message_to_l2(
+        &self,
+        l2_contract_address: FieldElement,
+        entry_point_selector: FieldElement,
+        l1_contract_address: FieldElement,
+        payload: Vec<FieldElement>,
+        paid_fee_on_l1: FieldElement,
+        nonce: FieldElement,
+    ) -> Result<Value, ProviderError> {
+        let req: SendMessageRequest = SendMessageRequest {
+            l2_contract_address,
+            entry_point_selector,
+            l1_contract_address,
+            payload,
+            paid_fee_on_l1,
+            nonce,
+        };
+        self.send_post_request("postman/send_message_to_l2", &req)
+            .await
     }
 
     async fn get_class<B, H>(

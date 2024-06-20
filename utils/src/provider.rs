@@ -310,7 +310,29 @@ pub trait Provider {
     async fn abort_blocks(&self, starting_block_hash: String) -> Result<Value, ProviderError>;
     async fn get_config(&self) -> Result<Value, ProviderError>;
     async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError>;
+    async fn flush(&self, dry_run: bool) -> Result<Value, ProviderError>;
     async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError>;
+    async fn consume_message_from_l2(
+        &self,
+        l2_contract_address: FieldElement,
+        l1_contract_address: FieldElement,
+        payload: Vec<FieldElement>,
+    ) -> Result<Value, ProviderError>;
+    async fn send_message_to_l2(
+        &self,
+        l2_contract_address: FieldElement,
+        entry_point_selector: FieldElement,
+        l1_contract_address: FieldElement,
+        payload: Vec<FieldElement>,
+        paid_fee_on_l1: FieldElement,
+        nonce: FieldElement,
+    ) -> Result<Value, ProviderError>;
+
+    async fn load(
+        &self,
+        network_url: String,
+        address: Option<String>,
+    ) -> Result<Value, ProviderError>;
     async fn get_account_balance(
         &self,
         address: FieldElement,

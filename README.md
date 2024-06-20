@@ -44,6 +44,8 @@ example url: "http://localhost:5050"
 
 ## Runnning tests of Starknet Json Rpc methods
 
+**Currently tests are bound to fail because of ongoing work on deploy account method!!!**
+
 First of all build contract
 
 ```bash
@@ -58,4 +60,10 @@ Run tests
 
 ```bash
     cargo test  
+```
+
+
+```bash
+    geth --http --http.addr "127.0.0.1" --http.port "8545" --http.api "personal,eth,net,web3" --miner.gaslimit 8000000 console
+
 ```

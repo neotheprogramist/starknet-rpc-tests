@@ -106,5 +106,45 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
+
+    match account
+        .provider()
+        .load("http://localhost:8545".to_string(), Option::None)
+        .await
+    {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
+
+    match account
+        .provider()
+        .send_message_to_l2(
+            FieldElement::from_hex_be(
+                "0x00285ddb7e5c777b310d806b9b2a0f7c7ba0a41f12b420219209d97a3b7f25b2",
+            )
+            .unwrap(),
+            FieldElement::from_hex_be(
+                "0xC73F681176FC7B3F9693986FD7B14581E8D540519E27400E88B8713932BE01",
+            )
+            .unwrap(),
+            FieldElement::from_hex_be("0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512").unwrap(),
+            vec![
+                FieldElement::from_hex_be("0x1").unwrap(),
+                FieldElement::from_hex_be("0x2").unwrap(),
+            ],
+            FieldElement::from_hex_be("0x123456abcdef").unwrap(),
+            FieldElement::from_hex_be("0x0").unwrap(),
+        )
+        .await
+    {
+        Ok(value) => {
+            info!("{}", "COMPATIBLE".green());
+            println!("{:?}", value);
+        }
+        Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    }
     Ok(())
 }
