@@ -1,4 +1,4 @@
-use rand::{rngs::StdRng, Rng, RngCore, SeedableRng};
+use rand::Rng;
 use starknet_crypto::FieldElement;
 use starknet_signers::{LocalWallet, SigningKey};
 use std::sync::Arc;
@@ -6,25 +6,25 @@ use utils::{
     account::{
         call::Call,
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
-        Account, AccountError, ConnectedAccount,
+        Account, ConnectedAccount,
     },
     codegen::{BlockTag, FunctionCall, MsgFromL1, TransactionExecutionStatus},
-    contract::factory::ContractFactory,
-    errors::{parse_class_hash_from_error, RunnerError},
     eth_address::EthAddress,
     execution_result::ExecutionResult,
     models::{
-        BlockId, ContractClass, DeclareTransaction, InvokeTransaction, InvokeTransactionResult,
+        BlockId, ContractClass, DeclareTransaction, InvokeTransaction,
         MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
         Transaction, TransactionReceipt, TransactionStatus,
     },
-    provider::{Provider, ProviderError},
+    provider::Provider,
     starknet_utils::{
         create_jsonrpc_client, get_compiled_contract, get_selector_from_name,
         get_storage_var_address,
     },
     transports::{http::HttpTransport, JsonRpcClient, MaybePendingBlockWithTxHashes},
 };
+
+use crate::{declare::declare_contract_v3, deploy::deploy_contract_v3};
 
 #[tokio::test]
 async fn jsonrpc_spec_version() {
@@ -199,7 +199,7 @@ async fn jsonrpc_get_transaction_status_succeeded() {
 #[tokio::test]
 async fn jsonrpc_get_transaction_by_hash_invoke_v1() {
     let rpc_client = create_jsonrpc_client();
-    let (account, contract_address) = decalare_and_deploy(
+    let (account, contract_address) = declare_and_deploy(
         "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1",
         "0x57b2f8431c772e647712ae93cc616638",
         "0x534e5f5345504f4c4941",
@@ -401,7 +401,6 @@ async fn jsonrpc_get_class_hash_at() {
     assert_eq!(class_hash_check, class_hash);
 }
 
-//XXX
 #[tokio::test]
 async fn jsonrpc_get_class_at() {
     let client = create_jsonrpc_client();
@@ -461,7 +460,6 @@ async fn jsonrpc_get_class_at() {
 
     assert!(!class.sierra_program.is_empty());
 }
-// XXX
 #[tokio::test]
 async fn jsonrpc_get_block_transaction_count() {
     let rpc_client = create_jsonrpc_client();
@@ -474,7 +472,6 @@ async fn jsonrpc_get_block_transaction_count() {
     assert_eq!(count, 1);
 }
 
-// XXX
 #[tokio::test]
 async fn jsonrpc_estimate_message_fee() {
     let rpc_client = create_jsonrpc_client();
@@ -504,7 +501,6 @@ async fn jsonrpc_estimate_message_fee() {
     assert!(estimate.overall_fee > FieldElement::ZERO);
 }
 
-///XX
 #[tokio::test]
 async fn jsonrpc_block_number() {
     let rpc_client = create_jsonrpc_client();
@@ -513,7 +509,6 @@ async fn jsonrpc_block_number() {
     assert!(block_number > 0);
 }
 
-/// XXX
 #[tokio::test]
 async fn jsonrpc_chain_id() {
     let rpc_client = create_jsonrpc_client();
@@ -768,7 +763,7 @@ async fn jsonrpc_get_transaction_receipt_deploy() {
 
 #[tokio::test]
 async fn jsonrpc_invoke() {
-    let (account, contract_address) = decalare_and_deploy(
+    let (account, contract_address) = declare_and_deploy(
         "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1",
         "0x57b2f8431c772e647712ae93cc616638",
         "0x534e5f5345504f4c4941",
@@ -806,7 +801,7 @@ async fn jsonrpc_invoke() {
 }
 
 //helper function, reused a lot
-pub async fn decalare_and_deploy(
+pub async fn declare_and_deploy(
     sender_address: &str,
     private_key: &str,
     chain_id: &str,
@@ -851,68 +846,4 @@ pub async fn decalare_and_deploy(
         _ => panic!("unexpected execution result"),
     }
     (account, receipt.contract_address)
-}
-
-pub async fn declare_contract_v3<P: Provider + Send + Sync>(
-    account: &SingleOwnerAccount<P, LocalWallet>,
-    sierra_path: &str,
-    casm_path: &str,
-) -> Result<FieldElement, RunnerError> {
-    let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
-
-    match account
-        .declare_v3(Arc::new(flattened_sierra_class), compiled_class_hash)
-        .gas(200000)
-        .gas_price(500000000000000)
-        .send()
-        .await
-    {
-        Ok(result) => Ok(result.class_hash),
-        Err(AccountError::Signing(sign_error)) => {
-            if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
-            } else {
-                Err(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                )))
-            }
-        }
-
-        Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
-            if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
-            } else {
-                Err(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                )))
-            }
-        }
-        Err(e) => {
-            tracing::info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RunnerError::AccountFailure(format!("Account error: {}", e)))
-        }
-    }
-}
-
-pub async fn deploy_contract_v3<P: Provider + Send + Sync>(
-    account: &SingleOwnerAccount<P, LocalWallet>,
-    class_hash: FieldElement,
-) -> InvokeTransactionResult {
-    let factory = ContractFactory::new(class_hash, account);
-    let mut salt_buffer = [0u8; 32];
-    let mut rng = StdRng::from_entropy();
-    rng.fill_bytes(&mut salt_buffer[1..]);
-    let result = factory
-        .deploy_v3(
-            vec![],
-            FieldElement::from_bytes_be(&salt_buffer).unwrap(),
-            true,
-        )
-        .send()
-        .await
-        .unwrap();
-    result
 }

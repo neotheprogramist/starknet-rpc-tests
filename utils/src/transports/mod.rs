@@ -26,6 +26,7 @@ use crate::{
         SimulationFlagForEstimateFee, SpecVersionRequest, StarknetError,
         TransactionExecutionErrorData, TransactionReceiptWithBlockInfo,
     },
+    devnet_models::StarknetConfig,
     models::{
         BlockId, BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
         BroadcastedInvokeTransaction, BroadcastedTransaction, ContractClass,
@@ -748,8 +749,8 @@ where
         .await
     }
 
-    async fn get_config(&self) -> Result<Value, ProviderError> {
-        let result = self.send_get_request::<Value>("/config").await?;
+    async fn get_config(&self) -> Result<StarknetConfig, ProviderError> {
+        let result = self.send_get_request::<StarknetConfig>("/config").await?;
         Ok(result)
     }
 
@@ -762,7 +763,7 @@ where
         todo!()
     }
 
-    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError> {
+    async fn mint(&self, address: String, mint_amount: u128) -> Result<Value, ProviderError> {
         todo!()
     }
 
@@ -797,21 +798,21 @@ where
 
     async fn consume_message_from_l2(
         &self,
-        l2_contract_address: FieldElement,
-        l1_contract_address: FieldElement,
-        payload: Vec<FieldElement>,
+        l2_contract_address: String,
+        l1_contract_address: String,
+        payload: Vec<String>,
     ) -> Result<Value, ProviderError> {
         todo!()
     }
 
     async fn send_message_to_l2(
         &self,
-        l2_contract_address: FieldElement,
-        entry_point_selector: FieldElement,
-        l1_contract_address: FieldElement,
-        payload: Vec<FieldElement>,
-        paid_fee_on_l1: FieldElement,
-        nonce: FieldElement,
+        l2_contract_address: String,
+        entry_point_selector: String,
+        l1_contract_address: String,
+        payload: Vec<String>,
+        paid_fee_on_l1: String,
+        nonce: String,
     ) -> Result<Value, ProviderError> {
         todo!()
     }

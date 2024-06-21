@@ -23,6 +23,7 @@ colored = "2.1.0"
 flate2 = "1.0.30"
 hex-literal = "0.4.1"
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
+num-bigint = { version = "0.4" }
 proptest = "1.4.0"
 prefix-hex = "0.7.1"
 rand = "0.8.5"

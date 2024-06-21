@@ -8,6 +8,7 @@ use crate::{
         BlockTag, FeeEstimate, FunctionCall, MsgFromL1, SimulatedTransaction, SimulationFlag,
         SimulationFlagForEstimateFee, TransactionReceiptWithBlockInfo,
     },
+    devnet_models::StarknetConfig,
     models::{
         BroadcastedTransaction, ContractClass, DeclareTransactionResult, FeeUnit,
         InvokeTransactionResult, MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs,
@@ -308,24 +309,24 @@ pub trait Provider {
     async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError>;
     async fn create_block(&self) -> Result<Value, ProviderError>;
     async fn abort_blocks(&self, starting_block_hash: String) -> Result<Value, ProviderError>;
-    async fn get_config(&self) -> Result<Value, ProviderError>;
+    async fn get_config(&self) -> Result<StarknetConfig, ProviderError>;
     async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError>;
     async fn flush(&self, dry_run: bool) -> Result<Value, ProviderError>;
-    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError>;
+    async fn mint(&self, address: String, mint_amount: u128) -> Result<Value, ProviderError>;
     async fn consume_message_from_l2(
         &self,
-        l2_contract_address: FieldElement,
-        l1_contract_address: FieldElement,
-        payload: Vec<FieldElement>,
+        l2_contract_address: String,
+        l1_contract_address: String,
+        payload: Vec<String>,
     ) -> Result<Value, ProviderError>;
     async fn send_message_to_l2(
         &self,
-        l2_contract_address: FieldElement,
-        entry_point_selector: FieldElement,
-        l1_contract_address: FieldElement,
-        payload: Vec<FieldElement>,
-        paid_fee_on_l1: FieldElement,
-        nonce: FieldElement,
+        l2_contract_address: String,
+        entry_point_selector: String,
+        l1_contract_address: String,
+        payload: Vec<String>,
+        paid_fee_on_l1: String,
+        nonce: String,
     ) -> Result<Value, ProviderError>;
 
     async fn load(

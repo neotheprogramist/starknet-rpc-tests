@@ -1,9 +1,14 @@
 use super::{DevnetClientError, DevnetError};
+use num_bigint::BigUint;
+use serde::Serializer;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::{json, Value};
 use starknet_crypto::FieldElement;
+use std::fmt::Display;
+use std::num::NonZeroU128;
 use std::{any::Any, error::Error};
 use tracing::debug;
+use url::Url;
 use utils::codegen::{
     AddDeclareTransactionRequestRef, AddInvokeTransactionRequestRef, BlockNumberRequest, BlockTag,
     CallRequestRef, ChainIdRequest, EstimateFeeRequestRef, EstimateMessageFeeRequestRef,
@@ -21,6 +26,7 @@ use utils::models::{
     MaybePendingBlockWithReceipts, MaybePendingBlockWithTxs, MaybePendingStateUpdate, Transaction,
     TransactionStatus,
 };
+use utils::starknet_utils::parse_cairo_short_string;
 use utils::transports::{
     Felt, FeltArray, JsonRpcMethod, JsonRpcResponse, MaybePendingBlockWithTxHashes,
 };
@@ -71,19 +77,162 @@ struct LoadRequest {
 }
 #[derive(Debug, Serialize)]
 struct ConsumeMessageRequest {
-    l2_contract_address: FieldElement,
-    l1_contract_address: FieldElement,
-    payload: Vec<FieldElement>,
+    l2_contract_address: String,
+    l1_contract_address: String,
+    payload: Vec<String>,
 }
 #[derive(Debug, Serialize)]
 struct SendMessageRequest {
-    l2_contract_address: FieldElement,
-    entry_point_selector: FieldElement,
-    l1_contract_address: FieldElement,
-    payload: Vec<FieldElement>,
-    paid_fee_on_l1: FieldElement,
-    nonce: FieldElement,
+    l2_contract_address: String,
+    entry_point_selector: String,
+    l1_contract_address: String,
+    payload: Vec<String>,
+    paid_fee_on_l1: String,
+    nonce: String,
 }
+pub type Balance = BigUint;
+pub const MAINNET: FieldElement = FieldElement::from_mont([
+    17696389056366564951,
+    18446744073709551615,
+    18446744073709551615,
+    502562008147966918,
+]);
+
+pub const TESTNET: FieldElement = FieldElement::from_mont([
+    3753493103916128178,
+    18446744073709548950,
+    18446744073709551615,
+    398700013197595345,
+]);
+
+pub const TESTNET2: FieldElement = FieldElement::from_mont([
+    1663542769632127759,
+    18446744073708869172,
+    18446744073709551615,
+    33650220878420990,
+]);
+
+pub const SEPOLIA: FieldElement = FieldElement::from_mont([
+    1555806712078248243,
+    18446744073708869172,
+    18446744073709551615,
+    507980251676163170,
+]);
+#[derive(Clone, Copy, Debug, clap::ValueEnum)]
+#[clap(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ChainId {
+    Mainnet,
+    Testnet,
+}
+
+impl ChainId {
+    pub fn goerli_legacy_id() -> FieldElement {
+        TESTNET.into()
+    }
+
+    pub fn to_felt(&self) -> FieldElement {
+        FieldElement::from(self).into()
+    }
+}
+
+impl Display for ChainId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let felt = FieldElement::from(self);
+        let str = parse_cairo_short_string(&felt).map_err(|_| std::fmt::Error)?;
+        f.write_str(&str)
+    }
+}
+
+impl From<ChainId> for FieldElement {
+    fn from(value: ChainId) -> Self {
+        match value {
+            ChainId::Mainnet => MAINNET,
+            ChainId::Testnet => SEPOLIA,
+        }
+    }
+}
+
+impl From<&ChainId> for FieldElement {
+    fn from(value: &ChainId) -> Self {
+        match value {
+            ChainId::Mainnet => MAINNET,
+            ChainId::Testnet => SEPOLIA,
+        }
+    }
+}
+
+pub fn serialize_initial_balance<S>(balance: &Balance, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&balance.to_str_radix(10))
+}
+
+pub fn serialize_chain_id<S>(chain_id: &ChainId, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    serializer.serialize_str(&format!("{chain_id}"))
+}
+#[derive(Clone, Debug, Serialize)]
+pub struct StarknetConfig {
+    pub seed: u32,
+    pub total_accounts: u8,
+    #[serde(skip_serializing)]
+    pub account_contract_class: ContractClass,
+    pub account_contract_class_hash: FieldElement,
+    #[serde(serialize_with = "serialize_initial_balance")]
+    pub predeployed_accounts_initial_balance: Balance,
+    pub start_time: Option<u64>,
+    pub gas_price_wei: NonZeroU128,
+    pub gas_price_strk: NonZeroU128,
+    pub data_gas_price_wei: NonZeroU128,
+    pub data_gas_price_strk: NonZeroU128,
+    #[serde(serialize_with = "serialize_chain_id")]
+    pub chain_id: ChainId,
+    pub dump_on: Option<DumpOn>,
+    pub dump_path: Option<String>,
+    pub blocks_on_demand: bool,
+    pub lite_mode: bool,
+    /// on initialization, re-execute loaded txs (if any)
+    #[serde(skip_serializing)]
+    pub re_execute_on_init: bool,
+    pub state_archive: StateArchiveCapacity,
+    pub fork_config: ForkConfig,
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, clap::ValueEnum, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DumpOn {
+    Exit,
+    Block,
+}
+
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, clap::ValueEnum, Serialize)]
+#[serde(rename_all = "snake_case")]
+#[clap(rename_all = "snake_case")]
+pub enum StateArchiveCapacity {
+    #[default]
+    None,
+    Full,
+}
+
+pub fn serialize_config_url<S>(url: &Option<Url>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    match url {
+        Some(url) => serializer.serialize_str(url.as_ref()),
+        None => serializer.serialize_none(),
+    }
+}
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct ForkConfig {
+    #[serde(serialize_with = "serialize_config_url")]
+    pub url: Option<Url>,
+    pub block_number: Option<u64>,
+}
+
 #[allow(unused)]
 impl<Q> Provider for DevnetClient<Q>
 where
@@ -392,7 +541,7 @@ where
         self.send_get_request("predeployed_accounts", Option::None)
             .await
     }
-    async fn get_config(&self) -> Result<Value, ProviderError> {
+    async fn get_config(&self) -> Result<StarknetConfig, ProviderError> {
         self.send_get_request("config", Option::None).await
     }
     async fn get_account_balance(
@@ -410,9 +559,9 @@ where
         self.send_get_request("account_balance", Some(params)).await
     }
 
-    async fn mint(&self, address: FieldElement, mint_amount: u128) -> Result<Value, ProviderError> {
+    async fn mint(&self, address: String, mint_amount: u128) -> Result<Value, ProviderError> {
         let req = MintRequest {
-            address: format!("{address:#x}"),
+            address,
             amount: mint_amount,
         };
 
@@ -455,6 +604,7 @@ where
         self.send_post_request("postman/load_l1_messaging_contract", &req)
             .await
     }
+
     async fn flush(&self, dry_run: bool) -> Result<Value, ProviderError> {
         let req: FlushRequest = FlushRequest { dry_run };
         self.send_post_request("postman/flush", &req).await
@@ -462,9 +612,9 @@ where
 
     async fn consume_message_from_l2(
         &self,
-        l2_contract_address: FieldElement,
-        l1_contract_address: FieldElement,
-        payload: Vec<FieldElement>,
+        l2_contract_address: String,
+        l1_contract_address: String,
+        payload: Vec<String>,
     ) -> Result<Value, ProviderError> {
         let req: ConsumeMessageRequest = ConsumeMessageRequest {
             l2_contract_address,
@@ -478,12 +628,12 @@ where
 
     async fn send_message_to_l2(
         &self,
-        l2_contract_address: FieldElement,
-        entry_point_selector: FieldElement,
-        l1_contract_address: FieldElement,
-        payload: Vec<FieldElement>,
-        paid_fee_on_l1: FieldElement,
-        nonce: FieldElement,
+        l2_contract_address: String,
+        entry_point_selector: String,
+        l1_contract_address: String,
+        payload: Vec<String>,
+        paid_fee_on_l1: String,
+        nonce: String,
     ) -> Result<Value, ProviderError> {
         let req: SendMessageRequest = SendMessageRequest {
             l2_contract_address,
