@@ -19,3 +19,4 @@ starknet-crypto.workspace = true
 prefix-hex.workspace = true
 utils = { path = "../utils" }
 thiserror.workspace = true
+rand.workspace = true
