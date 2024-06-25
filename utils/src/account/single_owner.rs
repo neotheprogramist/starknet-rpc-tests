@@ -9,6 +9,7 @@ use super::{
     Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3,
     RawExecutionV1, RawExecutionV3, RawLegacyDeclaration,
 };
+use starknet_core::types::Felt;
 
 #[derive(Debug, Clone)]
 pub struct SingleOwnerAccount<P, S>
@@ -99,7 +100,11 @@ where
         execution: &RawExecutionV1,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        let tx_hash = Felt::from_bytes_be(
+            &execution
+                .transaction_hash(self.chain_id, self.address, query_only, self)
+                .to_bytes_be(),
+        );
         let signature = self
             .signer
             .sign_hash(&tx_hash)
@@ -114,7 +119,11 @@ where
         execution: &RawExecutionV3,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        let tx_hash = Felt::from_bytes_be(
+            &execution
+                .transaction_hash(self.chain_id, self.address, query_only, self)
+                .to_bytes_be(),
+        );
         let signature = self
             .signer
             .sign_hash(&tx_hash)
@@ -129,7 +138,11 @@ where
         declaration: &RawDeclarationV2,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
+        let tx_hash = Felt::from_bytes_be(
+            &declaration
+                .transaction_hash(self.chain_id, self.address, query_only)
+                .to_bytes_be(),
+        );
         let signature = self
             .signer
             .sign_hash(&tx_hash)
@@ -144,7 +157,11 @@ where
         declaration: &RawDeclarationV3,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
+        let tx_hash = Felt::from_bytes_be(
+            &declaration
+                .transaction_hash(self.chain_id, self.address, query_only)
+                .to_bytes_be(),
+        );
         let signature = self
             .signer
             .sign_hash(&tx_hash)
@@ -161,9 +178,10 @@ where
         let tx_hash = legacy_declaration
             .transaction_hash(self.chain_id, self.address, query_only)
             .map_err(SignError::ClassHash)?;
+        let felt_tx_hash = Felt::from_bytes_be(&tx_hash.to_bytes_be());
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(&felt_tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
