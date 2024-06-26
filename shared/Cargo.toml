@@ -23,4 +23,4 @@ rand.workspace = true
 starknet-signers.workspace = true
 starknet-accounts.workspace = true
 starknet-core.workspace = true
-starknet-types-core.workspace = true
+starknet-providers.workspace = true

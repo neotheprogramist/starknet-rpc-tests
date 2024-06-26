@@ -15,7 +15,7 @@ use crate::transports::ExecuteInvocation;
 use crate::unsigned_field_element::UfeHex;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::serde_as;
-use starknet_core::types::Felt;
+
 use starknet_crypto::FieldElement;
 use std::sync;
 
@@ -2557,7 +2557,7 @@ pub struct GetNonceRequest {
     /// The hash of the requested block, or number (height) of the requested block, or a block tag
     pub block_id: BlockId,
     /// The address of the contract whose nonce we're seeking
-    pub contract_address: Felt,
+    pub contract_address: FieldElement,
 }
 
 /// The definition of a sierra Starknet contract class.
