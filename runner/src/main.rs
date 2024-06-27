@@ -3,7 +3,10 @@ mod args;
 use args::Args;
 use clap::Parser;
 use colored::Colorize;
-use shared::clients::devnet_client::DevnetClient;
+use shared::{
+    clients::devnet_client::DevnetClient,
+    create_acc::{create, AccountType},
+};
 use starknet_crypto::FieldElement;
 use starknet_signers::{LocalWallet, SigningKey};
 use tracing::info;
@@ -18,6 +21,9 @@ use utils::{
     provider::Provider,
     transports::http::HttpTransport,
 };
+
+use starknet_providers::jsonrpc::HttpTransport as StarknetHttpTransport;
+use starknet_providers::JsonRpcClient;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -106,5 +112,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
+    let jsonrpc_client = JsonRpcClient::new(StarknetHttpTransport::new(args.url.clone()));
+    match create(&jsonrpc_client, AccountType::Oz, Option::None).await {
+        Ok(value) => {
+            info!("{}", format!("{:?}", value).green());
+        }
+        Err(_) => info!("{}", "Could not create an account".red()),
+    };
     Ok(())
 }

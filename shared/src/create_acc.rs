@@ -26,9 +26,9 @@ impl fmt::Display for AccountType {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct AccountCreateResponse {
-    pub address: FieldElement,
+    pub account_data: serde_json::Value,
     pub max_fee: FieldElement,
     pub add_profile: String,
     pub message: String,
@@ -36,14 +36,9 @@ pub struct AccountCreateResponse {
 
 #[allow(clippy::too_many_arguments)]
 pub async fn create(
-    rpc_url: &str,
-    account: &str,
     provider: &JsonRpcClient<HttpTransport>,
-    chain_id: FieldElement,
     account_type: AccountType,
     salt: Option<FieldElement>,
-    add_profile: Option<String>,
-    class_hash: Option<FieldElement>,
 ) -> Result<AccountCreateResponse, String> {
     let salt = extract_or_generate_salt(salt);
 
@@ -57,12 +52,11 @@ pub async fn create(
     let (account_json, max_fee) =
         generate_account(provider, salt, class_hash, &account_type).await?;
 
-    // TODO: rm temporary resnpose
     Ok(AccountCreateResponse {
-        address: FieldElement::from_dec_str("0x123").unwrap(),
-        max_fee: FieldElement::from_dec_str("0x123").unwrap(),
-        add_profile: "".to_string(),
-        message: "".to_string(),
+        account_data: account_json,
+        max_fee: max_fee,
+        add_profile: "No profile added to snfoundry.toml".to_string(),
+        message: "Account successfully created. Prefund generated address with at least <max_fee> tokens. It is good to send more in the case of higher demand.".to_string(),
     })
 }
 
