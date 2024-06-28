@@ -1,6 +1,5 @@
-use rand::{distributions::Alphanumeric, Rng};
 use serde::{Deserialize, Serialize};
-use starknet_accounts::{AccountFactory, AccountFactoryError, OpenZeppelinAccountFactory};
+use starknet_accounts::{AccountFactory, OpenZeppelinAccountFactory};
 use starknet_core::types::FieldElement;
 use starknet_providers::{jsonrpc::HttpTransport, JsonRpcClient};
 use starknet_signers::{LocalWallet, SigningKey};
@@ -69,6 +68,7 @@ pub struct ValidatedWaitParams {
     retry_interval: u8,
 }
 
+#[allow(unused_variables)]
 pub async fn deploy(
     provider: &JsonRpcClient<HttpTransport>,
     deploy_args: Deploy,
@@ -91,14 +91,6 @@ pub async fn deploy(
     )
     .await;
     result
-}
-
-fn generate_random_account_name(len: usize) -> String {
-    rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(len)
-        .map(char::from)
-        .collect()
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -149,6 +141,7 @@ async fn deploy_oz_account(
     deploy_account(factory, provider, salt, max_fee, wait_config, class_hash).await
 }
 
+#[allow(unused_variables)]
 async fn deploy_account<T>(
     account_factory: T,
     provider: &JsonRpcClient<HttpTransport>,

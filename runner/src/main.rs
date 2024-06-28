@@ -137,7 +137,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     let chain_id = get_chain_id(&jsonrpc_client).await?;
-    let deploy_account_result = match deploy(
+    match deploy(
         &jsonrpc_client,
         deploy_args,
         chain_id,
