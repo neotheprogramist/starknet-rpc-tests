@@ -1,0 +1,11 @@
+whole_account: Object {
+    "address": String("0x5c11b0e25799d1e7aaf3cbc6e0ee0aec69436fc0d8d862b7a32ea68dd4e2833"),
+    "class_hash": String("0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f"),
+    "deployed": Bool(false),
+    "legacy": Bool(false),
+    "private_key": String("0x200c4803be101e9d5bfb0493461e7a1dd0a1e837d9c861e092890a9568080a6"),
+    "public_key": String("0x2894aa34f2057e45fa7b88316e563bd17dc9af8f94901fecb5fddf700189405"),
+    "salt": String("0x9e7d530bb51dd782"),
+    "type": String("open_zeppelin")
+}, max_fee: FieldElement { inner: 0x00000000000000000000000000000000000000000000000000001b6033cec800
+}

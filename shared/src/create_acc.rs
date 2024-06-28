@@ -1,6 +1,6 @@
 use rand::rngs::OsRng;
 use rand::RngCore;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use starknet_accounts::{AccountDeployment, AccountFactory, OpenZeppelinAccountFactory};
 use starknet_core::types::{BlockId, BlockTag};
@@ -12,7 +12,7 @@ use starknet_signers::{LocalWallet, SigningKey};
 use std::fmt;
 
 #[allow(clippy::doc_markdown)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum AccountType {
     /// OpenZeppelin account implementation
     Oz,
@@ -28,10 +28,24 @@ impl fmt::Display for AccountType {
 
 #[derive(Serialize, Debug)]
 pub struct AccountCreateResponse {
-    pub account_data: serde_json::Value,
+    pub account_json: serde_json::Value,
+    pub account_data: AccountData,
     pub max_fee: FieldElement,
     pub add_profile: String,
     pub message: String,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct AccountData {
+    pub address: FieldElement,
+    pub class_hash: FieldElement,
+    pub deployed: bool,
+    pub legacy: bool,
+    pub private_key: FieldElement,
+    pub public_key: FieldElement,
+    pub salt: FieldElement,
+    #[serde(rename = "type")]
+    pub account_type: AccountType,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -49,12 +63,13 @@ pub async fn create(
 
     check_class_hash_exists(provider, class_hash).await?;
 
-    let (account_json, max_fee) =
+    let (account_json, account_data, max_fee) =
         generate_account(provider, salt, class_hash, &account_type).await?;
 
     Ok(AccountCreateResponse {
-        account_data: account_json,
-        max_fee: max_fee,
+        account_json,
+        account_data,
+        max_fee,
         add_profile: "No profile added to snfoundry.toml".to_string(),
         message: "Account successfully created. Prefund generated address with at least <max_fee> tokens. It is good to send more in the case of higher demand.".to_string(),
     })
@@ -80,7 +95,7 @@ async fn generate_account(
     salt: FieldElement,
     class_hash: FieldElement,
     account_type: &AccountType,
-) -> Result<(serde_json::Value, FieldElement), String> {
+) -> Result<(serde_json::Value, AccountData, FieldElement), String> {
     let chain_id = get_chain_id(provider).await?;
     let private_key = SigningKey::from_random();
     let signer = LocalWallet::from_signing_key(private_key.clone());
@@ -104,7 +119,18 @@ async fn generate_account(
         Some(salt),
     );
 
-    Ok((account_json, fee_estimate.overall_fee))
+    let account_struct = AccountData {
+        address,
+        class_hash,
+        deployed: false,
+        legacy: false,
+        private_key: private_key.secret_scalar(),
+        public_key: private_key.verifying_key().scalar(),
+        salt,
+        account_type: account_type.clone(),
+    };
+
+    Ok((account_json, account_struct, fee_estimate.overall_fee))
 }
 
 pub async fn get_chain_id(provider: &JsonRpcClient<HttpTransport>) -> Result<FieldElement, String> {

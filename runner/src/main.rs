@@ -5,7 +5,8 @@ use clap::Parser;
 use colored::Colorize;
 use shared::{
     clients::devnet_client::DevnetClient,
-    create_acc::{create, AccountType},
+    create_acc::{create, get_chain_id, AccountType},
+    deploy_acc::{deploy, Deploy, ValidatedWaitParams, WaitForTx},
 };
 use starknet_crypto::FieldElement;
 use starknet_signers::{LocalWallet, SigningKey};
@@ -113,11 +114,75 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
     let jsonrpc_client = JsonRpcClient::new(StarknetHttpTransport::new(args.url.clone()));
-    match create(&jsonrpc_client, AccountType::Oz, Option::None).await {
+    let create_account_data = match create(&jsonrpc_client, AccountType::Oz, Option::None).await {
         Ok(value) => {
             info!("{}", format!("{:?}", value).green());
+            Some(value)
         }
-        Err(_) => info!("{}", "Could not create an account".red()),
+        Err(_) => {
+            info!("{}", "Could not create an account".red());
+            return Ok(());
+        }
     };
+
+    let mint_response = mint_tokens(
+        3010000000000000,
+        &create_account_data.as_ref().unwrap().account_data.address,
+    )
+    .await?;
+
+    let deploy_args = Deploy {
+        name: None,
+        max_fee: Some(create_account_data.as_ref().unwrap().max_fee),
+    };
+
+    let wait_conifg = WaitForTx {
+        wait: false,
+        wait_params: ValidatedWaitParams::default(),
+    };
+
+    let chain_id = get_chain_id(&jsonrpc_client).await?;
+    let deploy_account_result = match deploy(
+        &jsonrpc_client,
+        deploy_args,
+        chain_id,
+        wait_conifg,
+        create_account_data.unwrap(),
+    )
+    .await
+    {
+        Ok(value) => {
+            info!("{}", format!("{:?}", value).green());
+            Some(value)
+        }
+        Err(_) => {
+            info!("{}", "Could not deploy an account".red());
+            return Ok(());
+        }
+    };
+
+    Ok(())
+}
+
+use reqwest::Client;
+use serde_json::json;
+
+async fn mint_tokens(amount: u128, address: &FieldElement) -> Result<(), reqwest::Error> {
+    let client = Client::new();
+    let response = client
+        .post("http://localhost:5050/mint")
+        .json(&json!({
+            "amount": amount,
+            "address": address,
+        }))
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        println!("Token minting successful");
+    } else {
+        println!("Token minting failed with status: {}", response.status());
+    }
+
     Ok(())
 }
