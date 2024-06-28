@@ -3,10 +3,9 @@ mod args;
 use args::Args;
 use clap::Parser;
 use colored::Colorize;
-use serde::{Deserialize, Serialize};
 use shared::{
     clients::devnet_client::DevnetClient,
-    create_acc::{create, get_chain_id, mint_tokens, AccountType},
+    create_acc::{create, get_chain_id, AccountType},
     deploy_acc::{deploy, Deploy, ValidatedWaitParams, WaitForTx},
 };
 use starknet_crypto::FieldElement;

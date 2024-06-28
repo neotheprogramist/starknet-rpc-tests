@@ -79,7 +79,7 @@ pub async fn deploy(
     let private_key =
         SigningKey::from_secret_scalar(account_create_response.account_data.private_key);
 
-    let result = get_deployment_result(
+    get_deployment_result(
         provider,
         account_create_response.account_data.account_type,
         account_create_response.account_data.class_hash,
@@ -89,8 +89,7 @@ pub async fn deploy(
         Some(account_create_response.max_fee),
         wait_conifg,
     )
-    .await;
-    result
+    .await
 }
 
 #[allow(clippy::too_many_arguments)]

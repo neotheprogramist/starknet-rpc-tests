@@ -103,7 +103,7 @@ where
 
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
@@ -118,7 +118,7 @@ where
         let tx_hash = &execution.transaction_hash(self.chain_id, self.address, query_only, self);
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
@@ -133,7 +133,7 @@ where
         let tx_hash = &declaration.transaction_hash(self.chain_id, self.address, query_only);
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
@@ -149,7 +149,7 @@ where
 
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(tx_hash)
             .await
             .map_err(SignError::Signer)?;
         Ok(vec![signature.r, signature.s])
