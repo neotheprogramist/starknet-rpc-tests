@@ -65,7 +65,27 @@ pub async fn create(
 
     let (account_json, account_data, max_fee) =
         generate_account(provider, salt, class_hash, &account_type).await?;
-
+    println!(
+        "Minting tokens for account: {}",
+        account_json["address"].as_str().unwrap()
+    );
+    match mint_tokens(
+        3010000000000000,
+        account_json["address"].as_str().unwrap().to_string(),
+    )
+    .await
+    {
+        Ok(_) => {
+            println!("Tokens minted successfully")
+        }
+        Err(e) => {
+            return Err(format!(
+                "Failed to mint tokens for account: {}. Reason: {}",
+                account_json["address"].as_str().unwrap(),
+                e
+            ))
+        }
+    };
     Ok(AccountCreateResponse {
         account_json,
         account_data,
@@ -196,4 +216,34 @@ pub fn prepare_account_json(
     }
 
     account_json
+}
+
+use reqwest::Client;
+
+#[derive(Serialize, Deserialize, Debug)]
+struct MintRequest {
+    amount: u128,
+    address: String,
+}
+
+pub async fn mint_tokens(amount: u128, address: String) -> Result<(), reqwest::Error> {
+    let client = Client::new();
+
+    let mint_request = MintRequest { amount, address };
+    println!("Mint request: {:?}", mint_request);
+
+    let response = client
+        .post("http://127.0.0.1:5050/mint")
+        .header("Content-type", "application/json")
+        .json(&mint_request)
+        .send()
+        .await?;
+
+    if response.status().is_success() {
+        println!("Token minting successful");
+    } else {
+        println!("Token minting failed with status: {}", response.status());
+    }
+
+    Ok(())
 }
