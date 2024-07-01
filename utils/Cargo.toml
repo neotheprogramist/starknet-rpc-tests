@@ -25,3 +25,4 @@ tokio.workspace = true
 tracing.workspace = true
 url.workspace = true
 tracing-subscriber.workspace = true
+starknet-core.workspace = true

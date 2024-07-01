@@ -3,7 +3,11 @@ mod args;
 use args::Args;
 use clap::Parser;
 use colored::Colorize;
-use shared::clients::devnet_client::DevnetClient;
+use shared::{
+    clients::devnet_client::DevnetClient,
+    create_acc::{create, get_chain_id, AccountType},
+    deploy_acc::{deploy, Deploy, ValidatedWaitParams, WaitForTx},
+};
 use starknet_crypto::FieldElement;
 use starknet_signers::{LocalWallet, SigningKey};
 use tracing::info;
@@ -18,6 +22,9 @@ use utils::{
     provider::Provider,
     transports::http::HttpTransport,
 };
+
+use starknet_providers::jsonrpc::HttpTransport as StarknetHttpTransport;
+use starknet_providers::JsonRpcClient;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -106,5 +113,47 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
         Err(_) => info!("{}", "INCOMPATIBLE".red()),
     }
+    let jsonrpc_client = JsonRpcClient::new(StarknetHttpTransport::new(args.url.clone()));
+    let create_account_data = match create(&jsonrpc_client, AccountType::Oz, Option::None).await {
+        Ok(value) => {
+            info!("{}", format!("{:?}", value).green());
+            Some(value)
+        }
+        Err(_) => {
+            info!("{}", "Could not create an account".red());
+            return Ok(());
+        }
+    };
+
+    let deploy_args = Deploy {
+        name: None,
+        max_fee: Some(create_account_data.as_ref().unwrap().max_fee),
+    };
+
+    let wait_conifg = WaitForTx {
+        wait: true,
+        wait_params: ValidatedWaitParams::default(),
+    };
+
+    let chain_id = get_chain_id(&jsonrpc_client).await?;
+    match deploy(
+        &jsonrpc_client,
+        deploy_args,
+        chain_id,
+        wait_conifg,
+        create_account_data.unwrap(),
+    )
+    .await
+    {
+        Ok(value) => {
+            info!("{}", format!("{:?}", value).green());
+            Some(value)
+        }
+        Err(_) => {
+            info!("{}", "Could not deploy an account".red());
+            return Ok(());
+        }
+    };
+
     Ok(())
 }

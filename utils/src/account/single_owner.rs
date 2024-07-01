@@ -99,10 +99,11 @@ where
         execution: &RawExecutionV1,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        let tx_hash = &execution.transaction_hash(self.chain_id, self.address, query_only, self);
+
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
@@ -114,10 +115,10 @@ where
         execution: &RawExecutionV3,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        let tx_hash = &execution.transaction_hash(self.chain_id, self.address, query_only, self);
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
@@ -129,10 +130,10 @@ where
         declaration: &RawDeclarationV2,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
+        let tx_hash = &declaration.transaction_hash(self.chain_id, self.address, query_only);
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(tx_hash)
             .await
             .map_err(SignError::Signer)?;
 
@@ -144,10 +145,11 @@ where
         declaration: &RawDeclarationV3,
         query_only: bool,
     ) -> Result<Vec<FieldElement>, Self::SignError> {
-        let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
+        let tx_hash = &declaration.transaction_hash(self.chain_id, self.address, query_only);
+
         let signature = self
             .signer
-            .sign_hash(&tx_hash)
+            .sign_hash(tx_hash)
             .await
             .map_err(SignError::Signer)?;
         Ok(vec![signature.r, signature.s])
@@ -161,6 +163,7 @@ where
         let tx_hash = legacy_declaration
             .transaction_hash(self.chain_id, self.address, query_only)
             .map_err(SignError::ClassHash)?;
+
         let signature = self
             .signer
             .sign_hash(&tx_hash)
