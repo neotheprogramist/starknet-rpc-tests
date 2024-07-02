@@ -29,3 +29,4 @@ tracing-subscriber.workspace = true
 utils = { path = "../utils" }
 rand.workspace = true
 starknet-providers.workspace = true
+v0-0-5 = { path = "../v0-0-5" }

@@ -1,11 +1,14 @@
 mod args;
 
+use v0_0_5::endpoints::specversion::run;
+
 use args::Args;
 use clap::Parser;
 use colored::Colorize;
+use rand::Rng;
 use shared::{
     clients::devnet_client::DevnetClient,
-    create_acc::{create, get_chain_id, AccountType},
+    create_acc::{create, get_chain_id, AccountCreateResponse, AccountType},
     deploy_acc::{deploy, Deploy, ValidatedWaitParams, WaitForTx},
 };
 use starknet_crypto::FieldElement;
@@ -15,7 +18,7 @@ use url::Url;
 use utils::{
     account::{
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
-        ConnectedAccount,
+        Account, ConnectedAccount,
     },
     codegen::BlockTag,
     models::FeeUnit,
@@ -33,127 +36,183 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     let args = Args::parse();
-    let client = DevnetClient::new(HttpTransport::new(Url::parse(args.url.as_ref())?));
-    let account = SingleOwnerAccount::new(
-        client,
-        LocalWallet::from(SigningKey::from_secret_scalar(args.private_key)),
-        args.account_address,
-        FieldElement::from_hex_be(&args.chain_id).unwrap(),
-        ExecutionEncoding::New,
-    );
+    run(args.url.clone()).await;
+    // let client = DevnetClient::new(HttpTransport::new(Url::parse(args.url.as_ref())?));
 
-    match account.provider().get_predeployed_accounts().await {
-        Ok(value) => {
-            info!("{}", "COMPATIBLE".green());
-            println!("{:?}", value);
-        }
-        Err(_) => info!("{}", "INCOMPATIBLE".red()),
-    }
-    match account.provider().get_config().await {
-        Ok(value) => {
-            info!("{}", "COMPATIBLE".green());
-            println!("{:?}", value);
-        }
-        Err(_) => info!("{}", "INCOMPATIBLE".red()),
-    }
+    // First of all create and deploy an account:
+    // let account_create_response = create_and_deploy_account(&args).await?;
+    // info!("{:?}", account_create_response.account_data);
 
-    match account
-        .provider()
-        .get_account_balance(args.account_address, FeeUnit::WEI, BlockTag::Latest)
-        .await
-    {
-        Ok(value) => {
-            info!("{}", "COMPATIBLE".green());
-            println!("{:?}", value);
-        }
-        Err(_) => info!("{}", "INCOMPATIBLE".red()),
-    }
-    match account.provider().mint(args.account_address, 1000).await {
-        Ok(value) => {
-            info!("{}", "COMPATIBLE".green());
-            println!("{:?}", value);
-        }
-        Err(_) => info!("{}", "INCOMPATIBLE".red()),
-    }
-    match account.provider().set_time(100, false).await {
-        Ok(value) => {
-            info!("{}", "COMPATIBLE".green());
-            println!("{:?}", value);
-        }
-        Err(_) => info!("{}", "INCOMPATIBLE".red()),
-    }
+    // let account = SingleOwnerAccount::new(
+    //     client,
+    //     LocalWallet::from(SigningKey::from_secret_scalar(
+    //         account_create_response.account_data.private_key,
+    //     )),
+    //     account_create_response.account_data.address,
+    //     FieldElement::from_hex_be(&args.chain_id).unwrap(),
+    //     ExecutionEncoding::New,
+    // );
 
-    match account.provider().increase_time(1000).await {
-        Ok(value) => {
-            info!("{}", "COMPATIBLE".green());
-            println!("{:?}", value);
-        }
-        Err(_) => info!("{}", "INCOMPATIBLE".red()),
-    }
+    // // let account = SingleOwnerAccount::new(
+    // //     client,
+    // //     LocalWallet::from(SigningKey::from_secret_scalar(args.private_key)),
+    // //     args.account_address,
+    // //     FieldElement::from_hex_be(&args.chain_id).unwrap(),
+    // //     ExecutionEncoding::New,
+    // // );
 
-    match account.provider().create_block().await {
-        Ok(value) => {
-            info!("{}", "COMPATIBLE".green());
-            if let Some(block_hash) = value.get("block_hash").and_then(|v| v.as_str()) {
-                println!("Block hash: {}", block_hash);
-                match account
-                    .provider()
-                    .abort_blocks(block_hash.to_string())
-                    .await
-                {
-                    Ok(value) => {
-                        info!("{}", "COMPATIBLE".green());
-                        println!("{:?}", value);
-                    }
-                    Err(_) => info!("{}", "INCOMPATIBLE".red()),
-                }
-            } else {
-                println!("Block hash not found");
-            }
-        }
-        Err(_) => info!("{}", "INCOMPATIBLE".red()),
-    }
-    let jsonrpc_client = JsonRpcClient::new(StarknetHttpTransport::new(args.url.clone()));
-    let create_account_data = match create(&jsonrpc_client, AccountType::Oz, Option::None).await {
-        Ok(value) => {
-            info!("{}", format!("{:?}", value).green());
-            Some(value)
-        }
-        Err(_) => {
-            info!("{}", "Could not create an account".red());
-            return Ok(());
-        }
-    };
+    // match account.provider().get_predeployed_accounts().await {
+    //     Ok(value) => {
+    //         info!("{}", "Get predeployed accounts COMPATIBLE".green());
+    //         println!("{:?}", value);
+    //     }
+    //     Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    // }
+    // match account.provider().get_config().await {
+    //     Ok(value) => {
+    //         info!("{}", "Get config COMPATIBLE".green());
+    //         println!("{:?}", value);
+    //     }
+    //     Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    // }
 
-    let deploy_args = Deploy {
-        name: None,
-        max_fee: Some(create_account_data.as_ref().unwrap().max_fee),
-    };
+    // match account
+    //     .provider()
+    //     .get_account_balance(
+    //         account_create_response.account_data.address,
+    //         FeeUnit::WEI,
+    //         BlockTag::Latest,
+    //     )
+    //     .await
+    // {
+    //     Ok(value) => {
+    //         info!("{}", "get account balance COMPATIBLE".green());
+    //         println!("{:?}", value);
+    //     }
+    //     Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    // }
+    // match account
+    //     .provider()
+    //     .mint(account_create_response.account_data.address, 1000)
+    //     .await
+    // {
+    //     Ok(value) => {
+    //         info!("{}", "COMPATIBLE".green());
+    //         println!("{:?}", value);
+    //     }
+    //     Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    // }
+    // match account.provider().set_time(100, false).await {
+    //     Ok(value) => {
+    //         info!("{}", "COMPATIBLE".green());
+    //         println!("{:?}", value);
+    //     }
+    //     Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    // }
 
-    let wait_conifg = WaitForTx {
-        wait: true,
-        wait_params: ValidatedWaitParams::default(),
-    };
+    // match account.provider().increase_time(1000).await {
+    //     Ok(value) => {
+    //         info!("{}", "COMPATIBLE".green());
+    //         println!("{:?}", value);
+    //     }
+    //     Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    // }
 
-    let chain_id = get_chain_id(&jsonrpc_client).await?;
-    match deploy(
-        &jsonrpc_client,
-        deploy_args,
-        chain_id,
-        wait_conifg,
-        create_account_data.unwrap(),
-    )
-    .await
-    {
-        Ok(value) => {
-            info!("{}", format!("{:?}", value).green());
-            Some(value)
-        }
-        Err(_) => {
-            info!("{}", "Could not deploy an account".red());
-            return Ok(());
-        }
-    };
+    // match account.provider().create_block().await {
+    //     Ok(value) => {
+    //         info!("{}", "COMPATIBLE".green());
+    //         if let Some(block_hash) = value.get("block_hash").and_then(|v| v.as_str()) {
+    //             println!("Block hash: {}", block_hash);
+    //             match account
+    //                 .provider()
+    //                 .abort_blocks(block_hash.to_string())
+    //                 .await
+    //             {
+    //                 Ok(value) => {
+    //                     info!("{}", "COMPATIBLE".green());
+    //                     println!("{:?}", value);
+    //                 }
+    //                 Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    //             }
+    //         } else {
+    //             println!("Block hash not found");
+    //         }
+    //     }
+    //     Err(_) => info!("{}", "INCOMPATIBLE".red()),
+    // }
 
     Ok(())
 }
+
+// async fn create_and_deploy_account(args: &Args) -> Result<AccountCreateResponse, String> {
+//     let jsonrpc_client = JsonRpcClient::new(StarknetHttpTransport::new(args.url.clone()));
+//     let create_account_data = match create(&jsonrpc_client, AccountType::Oz, Option::None).await {
+//         Ok(value) => {
+//             info!("{}", format!("{:?}", value.account_data).green());
+//             value
+//         }
+//         Err(e) => {
+//             info!("{}", "Could not create an account".red());
+//             return Err(e);
+//         }
+//     };
+
+//     let deploy_args = Deploy {
+//         name: None,
+//         max_fee: Some(create_account_data.max_fee),
+//     };
+
+//     let wait_conifg = WaitForTx {
+//         wait: true,
+//         wait_params: ValidatedWaitParams::default(),
+//     };
+
+//     let chain_id = get_chain_id(&jsonrpc_client).await?;
+//     match deploy(
+//         &jsonrpc_client,
+//         deploy_args,
+//         chain_id,
+//         wait_conifg,
+//         create_account_data.clone(),
+//     )
+//     .await
+//     {
+//         Ok(value) => {
+//             info!("{}", format!("{:?}", value).green());
+//             Some(value)
+//         }
+//         Err(e) => {
+//             info!("{}", "Could not deploy an account".red());
+//             return Err(e);
+//         }
+//     };
+//     Ok(create_account_data)
+// }
+
+// async fn fuzzy_test_mint(
+//     account: &SingleOwnerAccount<DevnetClient<HttpTransport>, LocalWallet>,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//     let mut rng = rand::thread_rng();
+//     let test_count = rng.gen_range(5..=20);
+
+//     for _ in 0..test_count {
+//         let initial_balance = account
+//             .provider()
+//             .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
+//             .await?;
+
+//         let mint_amount = rng.gen_range(u128::MIN + 1..=u128::MAX);
+
+//         let mint_result = account
+//             .provider()
+//             .mint(account.address(), mint_amount)
+//             .await?;
+
+//         let new_balance = account
+//             .provider()
+//             .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
+//             .await?;
+//     }
+
+//     Ok(())
+// }

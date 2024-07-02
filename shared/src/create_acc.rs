@@ -1,3 +1,4 @@
+use colored::Colorize;
 use rand::rngs::OsRng;
 use rand::RngCore;
 use serde::{Deserialize, Serialize};
@@ -10,6 +11,7 @@ use starknet_providers::JsonRpcClient;
 use starknet_providers::Provider;
 use starknet_signers::{LocalWallet, SigningKey};
 use std::fmt;
+use tracing::info;
 
 #[allow(clippy::doc_markdown)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -26,7 +28,7 @@ impl fmt::Display for AccountType {
     }
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Clone)]
 pub struct AccountCreateResponse {
     pub account_json: serde_json::Value,
     pub account_data: AccountData,
@@ -35,7 +37,7 @@ pub struct AccountCreateResponse {
     pub message: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct AccountData {
     pub address: FieldElement,
     pub class_hash: FieldElement,
@@ -56,6 +58,7 @@ pub async fn create(
 ) -> Result<AccountCreateResponse, String> {
     let salt = extract_or_generate_salt(salt);
 
+    // env
     let class_hash: FieldElement = FieldElement::from_hex_be(
         "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
     )
@@ -65,10 +68,8 @@ pub async fn create(
 
     let (account_json, account_data, max_fee) =
         generate_account(provider, salt, class_hash, &account_type).await?;
-    println!(
-        "Minting tokens for account: {}",
-        account_json["address"].as_str().unwrap()
-    );
+
+    // TODO: REDUNDANT / change name
     match mint_tokens(
         3010000000000000,
         account_json["address"].as_str().unwrap().to_string(),
@@ -226,23 +227,22 @@ struct MintRequest {
     address: String,
 }
 
+// serialize reposnse
 pub async fn mint_tokens(amount: u128, address: String) -> Result<(), reqwest::Error> {
-    let client = Client::new();
-
-    let mint_request = MintRequest { amount, address };
-    println!("Mint request: {:?}", mint_request);
-
-    let response = client
+    let response = Client::new()
         .post("http://127.0.0.1:5050/mint")
         .header("Content-type", "application/json")
-        .json(&mint_request)
+        .json(&MintRequest { amount, address })
         .send()
         .await?;
 
     if response.status().is_success() {
-        println!("Token minting successful");
+        info!("{}", "Token minting successful".green());
     } else {
-        println!("Token minting failed with status: {}", response.status());
+        info!(
+            "Token minting failed with status: {}",
+            response.status().to_string().red()
+        );
     }
 
     Ok(())
