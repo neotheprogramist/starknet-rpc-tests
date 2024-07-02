@@ -1,7 +1,5 @@
-use colored::Colorize;
 use rand::rngs::OsRng;
 use rand::RngCore;
-use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 // use starknet_accounts::{AccountDeploymentV1, AccountFactory, OpenZeppelinAccountFactory};
@@ -11,7 +9,6 @@ use crate::factory::open_zeppelin::OpenZeppelinAccountFactory;
 use crate::factory::{AccountDeploymentV1, AccountFactory};
 use starknet_signers::{LocalWallet, SigningKey};
 use std::fmt;
-use tracing::info;
 
 use crate::jsonrpc::{HttpTransport, JsonRpcClient};
 use crate::provider::Provider;
@@ -71,24 +68,6 @@ pub async fn create(
     let (account_json, account_data, max_fee) =
         generate_account(provider, salt, class_hash, &account_type).await?;
 
-    // TODO: REDUNDANT / change name
-    match mint_tokens(
-        3010000000000000,
-        account_json["address"].as_str().unwrap().to_string(),
-    )
-    .await
-    {
-        Ok(_) => {
-            println!("Tokens minted successfully")
-        }
-        Err(e) => {
-            return Err(format!(
-                "Failed to mint tokens for account: {}. Reason: {}",
-                account_json["address"].as_str().unwrap(),
-                e
-            ))
-        }
-    };
     Ok(AccountCreateResponse {
         account_json,
         account_data,
@@ -219,31 +198,4 @@ pub fn prepare_account_json(
     }
 
     account_json
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct MintRequest {
-    amount: u128,
-    address: String,
-}
-
-// serialize reposnse
-pub async fn mint_tokens(amount: u128, address: String) -> Result<(), reqwest::Error> {
-    let response = Client::new()
-        .post("http://127.0.0.1:5050/mint")
-        .header("Content-type", "application/json")
-        .json(&MintRequest { amount, address })
-        .send()
-        .await?;
-
-    if response.status().is_success() {
-        info!("{}", "Token minting successful".green());
-    } else {
-        info!(
-            "Token minting failed with status: {}",
-            response.status().to_string().red()
-        );
-    }
-
-    Ok(())
 }

@@ -1,8 +1,12 @@
 use serde::{Deserialize, Serialize};
-use starknet_accounts::{AccountFactory, OpenZeppelinAccountFactory};
 use starknet_core::types::Felt;
-use starknet_providers::{jsonrpc::HttpTransport, JsonRpcClient};
+
 use starknet_signers::{LocalWallet, SigningKey};
+
+use crate::{
+    jsonrpc::{HttpTransport, JsonRpcClient},
+    AccountFactory, OpenZeppelinAccountFactory,
+};
 
 use super::create::{AccountCreateResponse, AccountType};
 
@@ -154,7 +158,7 @@ async fn deploy_account<T>(
 where
     T: AccountFactory + Sync,
 {
-    let deployment = account_factory.deploy(salt);
+    let deployment = account_factory.deploy_v1(salt);
 
     let deploy_max_fee = if let Some(max_fee) = max_fee {
         max_fee
