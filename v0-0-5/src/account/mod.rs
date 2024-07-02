@@ -11,6 +11,7 @@ use std::{error::Error, sync::Arc};
 
 pub mod create;
 mod declaration;
+pub mod deploy;
 mod execution;
 /// The standard Starknet account contract interface. It makes no assumption about the underlying
 /// signer or provider. Account implementations that come with an active connection to the network
