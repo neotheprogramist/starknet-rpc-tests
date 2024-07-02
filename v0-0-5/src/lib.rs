@@ -9,6 +9,13 @@ pub use account::{
     RawDeclarationV3, RawExecutionV1, RawExecutionV3, RawLegacyDeclaration,
 };
 
+pub mod factory;
+pub use factory::{
+    open_zeppelin::OpenZeppelinAccountFactory, AccountDeploymentV1, AccountDeploymentV3,
+    AccountFactory, AccountFactoryError, PreparedAccountDeploymentV1, PreparedAccountDeploymentV3,
+    RawAccountDeploymentV1, RawAccountDeploymentV3,
+};
+
 mod call;
 pub use call::Call;
 

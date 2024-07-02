@@ -1,6 +1,7 @@
 use crate::errors::RequestOrParseError;
 use crate::v0_0_5::account_balance::AccountBalanceResponseV0_0_5;
 use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
+
 use clap::Parser;
 use colored::*;
 use reqwest::Client;

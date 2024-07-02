@@ -9,9 +9,9 @@ use starknet_core::types::{
 use starknet_providers::{Provider, ProviderError};
 use std::{error::Error, sync::Arc};
 
+pub mod create;
 mod declaration;
 mod execution;
-
 /// The standard Starknet account contract interface. It makes no assumption about the underlying
 /// signer or provider. Account implementations that come with an active connection to the network
 /// should also implement [ConnectedAccount] for useful functionalities like estimating fees and
