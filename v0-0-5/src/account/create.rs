@@ -29,6 +29,7 @@ impl fmt::Display for AccountType {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+
 pub struct AccountData {
     pub address: Felt,
     pub class_hash: Felt,
@@ -50,7 +51,7 @@ pub struct AccountCreateResponse {
     pub message: String,
 }
 
-#[allow(clippy::too_many_arguments)]
+#[allow(dead_code)]
 pub async fn create(
     provider: &JsonRpcClient<HttpTransport>,
     account_type: AccountType,

@@ -14,7 +14,7 @@ pub mod create_mint_deploy;
 mod declaration;
 mod deploy;
 mod execution;
-mod mint_tokens;
+
 /// The standard Starknet account contract interface. It makes no assumption about the underlying
 /// signer or provider. Account implementations that come with an active connection to the network
 /// should also implement [ConnectedAccount] for useful functionalities like estimating fees and

@@ -1,4 +1,7 @@
-use crate::jsonrpc::{HttpTransport, JsonRpcClient};
+use crate::{
+    endpoints::mint::{mint, MintRequest},
+    jsonrpc::{HttpTransport, JsonRpcClient},
+};
 use colored::*;
 use tracing::info;
 use url::Url;
@@ -8,7 +11,7 @@ use super::{
     deploy::{deploy, Deploy, ValidatedWaitParams, WaitForTx},
 };
 
-async fn create_mint_deploy(url: Url) -> Result<AccountCreateResponse, String> {
+pub async fn create_mint_deploy(url: Url) -> Result<AccountCreateResponse, String> {
     let jsonrpc_client = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_account_data = match create(&jsonrpc_client, AccountType::Oz, Option::None).await {
         Ok(value) => {
@@ -21,7 +24,21 @@ async fn create_mint_deploy(url: Url) -> Result<AccountCreateResponse, String> {
         }
     };
 
-    //TODO: ADD MINTING
+    match mint(
+        url,
+        &MintRequest {
+            amount: u128::MAX,
+            address: create_account_data.account_data.address,
+        },
+    )
+    .await
+    {
+        Ok(response) => info!("{} {:?}", "Minted tokens".green(), response),
+        Err(e) => {
+            info!("{}", "Could not mint tokens".red());
+            return Err(e.to_string());
+        }
+    };
 
     let deploy_args = Deploy {
         name: None,
