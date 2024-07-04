@@ -26,7 +26,7 @@ pub struct GetNonceResponse {
     pub nonce: Felt,
 }
 
-async fn get_nonce(url: Url) -> Result<GetNonceResponse, GetNonceError> {
+pub async fn get_nonce(url: Url, chain_id: String) -> Result<GetNonceResponse, GetNonceError> {
     let account_create_response = match create_mint_deploy(url.clone()).await {
         Ok(value) => value,
         Err(e) => return Err(GetNonceError::CreateAccountError(e)),
@@ -40,7 +40,7 @@ async fn get_nonce(url: Url) -> Result<GetNonceResponse, GetNonceError> {
         JsonRpcClient::new(HttpTransport::new(url)),
         signer,
         account_create_response.account_data.address,
-        Felt::from_hex("0x534e5f5345504f4c4941")?,
+        Felt::from_hex(&chain_id)?,
         ExecutionEncoding::New,
     );
 

@@ -128,7 +128,7 @@ pub async fn mint(base_url: Url, mint_request: &MintRequest) -> Result<MintRespo
     }
 }
 
-async fn fuzzy_test_mint(
+pub async fn fuzzy_test_mint(
     account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let mut rng = rand::thread_rng();
