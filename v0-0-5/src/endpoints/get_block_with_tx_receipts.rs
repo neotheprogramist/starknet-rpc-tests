@@ -2,12 +2,12 @@ use crate::{
     jsonrpc::{HttpTransport, JsonRpcClient},
     provider::{Provider, ProviderError},
 };
-use starknet_core::types::{BlockId, BlockTag, BlockWithTxHashes, MaybePendingBlockWithTxHashes};
+use starknet_core::types::{BlockId, BlockTag, BlockWithReceipts, MaybePendingBlockWithReceipts};
 use thiserror::Error;
 use url::Url;
 
 #[derive(Error, Debug)]
-pub enum GetBlockWithTxHashesError {
+pub enum GetBlockWithTxReceiptsError {
     #[error("Error getting response text")]
     ProviderError(#[from] ProviderError),
 
@@ -15,24 +15,25 @@ pub enum GetBlockWithTxHashesError {
     UnexpectedBlockResponseType(String),
 }
 
-pub struct GetBlockWithTxHashesResponse {
-    pub block: BlockWithTxHashes,
+pub struct GetBlockWithTxReceiptsResponse {
+    pub block: BlockWithReceipts,
 }
 
 pub async fn get_block_with_tx_hashes(
     url: Url,
-) -> Result<GetBlockWithTxHashesResponse, GetBlockWithTxHashesError> {
+) -> Result<GetBlockWithTxReceiptsResponse, GetBlockWithTxReceiptsError> {
     let rpc_client = JsonRpcClient::new(HttpTransport::new(url));
 
     let block = rpc_client
-        .get_block_with_tx_hashes(BlockId::Tag(BlockTag::Latest))
+        .get_block_with_receipts(BlockId::Tag(BlockTag::Latest))
         .await?;
 
     let response = match block {
-        MaybePendingBlockWithTxHashes::Block(block) => GetBlockWithTxHashesResponse { block },
-        _ => Err(GetBlockWithTxHashesError::UnexpectedBlockResponseType(
+        MaybePendingBlockWithReceipts::Block(block) => GetBlockWithTxReceiptsResponse { block },
+        _ => Err(GetBlockWithTxReceiptsError::UnexpectedBlockResponseType(
             "Unexpected block response type".to_string(),
         ))?,
     };
+
     Ok(response)
 }
