@@ -2,11 +2,12 @@ use std::{any::Any, error::Error, fmt::Display};
 
 use async_trait::async_trait;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_json::Value;
 use serde_with::serde_as;
 use starknet_core::{
     serde::unsigned_field_element::UfeHex,
     types::{
-        requests::*, BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+        requests::*, BlockHashAndNumber, BlockId, BlockTag, BroadcastedDeclareTransaction,
         BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
         ContractClass, ContractErrorData, DeclareTransactionResult, DeployAccountTransactionResult,
         EventFilter, EventFilterWithPage, EventsPage, FeeEstimate, Felt as FeltPrimitive,
@@ -19,7 +20,10 @@ use starknet_core::{
     },
 };
 
-use crate::provider::{Provider, ProviderError, ProviderImplError};
+use crate::{
+    endpoints::mint::FeeUnit,
+    provider::{Provider, ProviderError, ProviderImplError},
+};
 
 mod transports;
 pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
@@ -701,6 +705,46 @@ where
             },
         )
         .await
+    }
+    async fn get_account_balance(
+        &self,
+        address: FeltPrimitive,
+        unit: FeeUnit,
+        block_tag: BlockTag,
+    ) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn mint(
+        &self,
+        address: FeltPrimitive,
+        mint_amount: u128,
+    ) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn set_time(&self, time: u64, generate_block: bool) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn create_block(&self) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn abort_blocks(&self, starting_block_hash: String) -> Result<Value, ProviderError> {
+        todo!()
+    }
+
+    async fn get_config(&self) -> Result<Value, ProviderError> {
+        todo!()
     }
 }
 

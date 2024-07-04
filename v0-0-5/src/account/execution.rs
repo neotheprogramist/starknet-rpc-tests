@@ -4,6 +4,7 @@ use super::{
 };
 use crate::{Call, ExecutionEncoder};
 
+use crate::provider::Provider;
 use starknet_core::{
     crypto::compute_hash_on_elements,
     types::{
@@ -14,7 +15,6 @@ use starknet_core::{
     },
 };
 use starknet_crypto::PoseidonHasher;
-use starknet_providers::Provider;
 
 /// Cairo string for "invoke"
 const PREFIX_INVOKE: Felt = Felt::from_raw([

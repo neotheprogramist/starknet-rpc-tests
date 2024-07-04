@@ -148,75 +148,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-// async fn create_and_deploy_account(args: &Args) -> Result<AccountCreateResponse, String> {
-//     let jsonrpc_client = JsonRpcClient::new(StarknetHttpTransport::new(args.url.clone()));
-//     let create_account_data = match create(&jsonrpc_client, AccountType::Oz, Option::None).await {
-//         Ok(value) => {
-//             info!("{}", format!("{:?}", value.account_data).green());
-//             value
-//         }
-//         Err(e) => {
-//             info!("{}", "Could not create an account".red());
-//             return Err(e);
-//         }
-//     };
+async fn fuzzy_test_mint(
+    account: &SingleOwnerAccount<DevnetClient<HttpTransport>, LocalWallet>,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let mut rng = rand::thread_rng();
+    let test_count = rng.gen_range(5..=20);
 
-//     let deploy_args = Deploy {
-//         name: None,
-//         max_fee: Some(create_account_data.max_fee),
-//     };
+    for _ in 0..test_count {
+        let initial_balance = account
+            .provider()
+            .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
+            .await?;
 
-//     let wait_conifg = WaitForTx {
-//         wait: true,
-//         wait_params: ValidatedWaitParams::default(),
-//     };
+        let mint_amount = rng.gen_range(u128::MIN + 1..=u128::MAX);
 
-//     let chain_id = get_chain_id(&jsonrpc_client).await?;
-//     match deploy(
-//         &jsonrpc_client,
-//         deploy_args,
-//         chain_id,
-//         wait_conifg,
-//         create_account_data.clone(),
-//     )
-//     .await
-//     {
-//         Ok(value) => {
-//             info!("{}", format!("{:?}", value).green());
-//             Some(value)
-//         }
-//         Err(e) => {
-//             info!("{}", "Could not deploy an account".red());
-//             return Err(e);
-//         }
-//     };
-//     Ok(create_account_data)
-// }
+        let mint_result = account
+            .provider()
+            .mint(account.address(), mint_amount)
+            .await?;
 
-// async fn fuzzy_test_mint(
-//     account: &SingleOwnerAccount<DevnetClient<HttpTransport>, LocalWallet>,
-// ) -> Result<(), Box<dyn std::error::Error>> {
-//     let mut rng = rand::thread_rng();
-//     let test_count = rng.gen_range(5..=20);
+        let new_balance = account
+            .provider()
+            .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
+            .await?;
+    }
 
-//     for _ in 0..test_count {
-//         let initial_balance = account
-//             .provider()
-//             .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
-//             .await?;
-
-//         let mint_amount = rng.gen_range(u128::MIN + 1..=u128::MAX);
-
-//         let mint_result = account
-//             .provider()
-//             .mint(account.address(), mint_amount)
-//             .await?;
-
-//         let new_balance = account
-//             .provider()
-//             .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
-//             .await?;
-//     }
-
-//     Ok(())
-// }
+    Ok(())
+}

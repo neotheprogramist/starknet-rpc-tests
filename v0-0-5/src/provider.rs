@@ -1,7 +1,9 @@
+use crate::endpoints::mint::FeeUnit;
 use async_trait::async_trait;
 use auto_impl::auto_impl;
+use serde_json::Value;
 use starknet_core::types::{
-    BlockHashAndNumber, BlockId, BroadcastedDeclareTransaction,
+    BlockHashAndNumber, BlockId, BlockTag, BroadcastedDeclareTransaction,
     BroadcastedDeployAccountTransaction, BroadcastedInvokeTransaction, BroadcastedTransaction,
     ContractClass, DeclareTransactionResult, DeployAccountTransactionResult, EventFilter,
     EventsPage, FeeEstimate, Felt, FunctionCall, InvokeTransactionResult,
@@ -298,6 +300,19 @@ pub trait Provider {
             Err(ProviderError::ArrayLengthMismatch)
         }
     }
+    async fn set_time(&self, time: u64, generate_block: bool) -> Result<Value, ProviderError>;
+    async fn increase_time(&self, increase_time: u64) -> Result<Value, ProviderError>;
+    async fn create_block(&self) -> Result<Value, ProviderError>;
+    async fn abort_blocks(&self, starting_block_hash: String) -> Result<Value, ProviderError>;
+    async fn get_config(&self) -> Result<Value, ProviderError>;
+    async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError>;
+    async fn mint(&self, address: Felt, mint_amount: u128) -> Result<Value, ProviderError>;
+    async fn get_account_balance(
+        &self,
+        address: Felt,
+        unit: FeeUnit,
+        block_tag: BlockTag,
+    ) -> Result<Value, ProviderError>;
 }
 
 /// Trait for implementation-specific error type. These errors are irrelevant in most cases,

@@ -1,15 +1,16 @@
+use super::{
+    create::{create, get_chain_id, AccountCreateResponse, AccountType},
+    deploy::{deploy, Deploy, ValidatedWaitParams, WaitForTx},
+};
 use crate::{
     endpoints::mint::{mint, MintRequest},
     jsonrpc::{HttpTransport, JsonRpcClient},
 };
 use colored::*;
+use crypto_bigint::U256 as CryptoBigintU256;
+use starknet_core::types::U256;
 use tracing::info;
 use url::Url;
-
-use super::{
-    create::{create, get_chain_id, AccountCreateResponse, AccountType},
-    deploy::{deploy, Deploy, ValidatedWaitParams, WaitForTx},
-};
 
 pub async fn create_mint_deploy(url: Url) -> Result<AccountCreateResponse, String> {
     let jsonrpc_client = JsonRpcClient::new(HttpTransport::new(url.clone()));
@@ -23,7 +24,12 @@ pub async fn create_mint_deploy(url: Url) -> Result<AccountCreateResponse, Strin
             return Err(e);
         }
     };
-
+    let bytes: Vec<u8> = vec![
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255,
+    ];
+    let crypto_bigint = CryptoBigintU256::from_be_slice(&bytes);
+    let amount = U256::from(crypto_bigint);
     match mint(
         url,
         &MintRequest {
