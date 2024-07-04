@@ -42,7 +42,7 @@ mod u256_mint {
         }
 
         let expected_length = 32;
-        let mut be_bytes = if be_bytes.len() < expected_length {
+        let be_bytes = if be_bytes.len() < expected_length {
             let padding = vec![0u8; expected_length - be_bytes.len()];
             [padding, be_bytes].concat()
         } else {

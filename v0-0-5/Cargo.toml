@@ -27,3 +27,4 @@ tracing-subscriber.workspace = true
 rand.workspace = true
 crypto-bigint = { version = "0.5.5" }
 num = "0.4.3"
+starknet-types-core = "0.1.5"
