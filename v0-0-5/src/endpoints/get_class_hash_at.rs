@@ -79,12 +79,12 @@ pub async fn get_class_hash_at(url: Url, chain_id: String) -> Result<Felt, GetCl
 
     let receipt = match receipt.receipt {
         TransactionReceipt::Deploy(receipt) => receipt,
-        _ => return Err(GetClassHashAtError::UnexpectedReceiptResponseType),
+        _ => Err(GetClassHashAtError::UnexpectedReceiptResponseType)?,
     };
 
     match receipt.execution_result {
         ExecutionResult::Succeeded => (),
-        _ => return Err(GetClassHashAtError::UnexpectedExecutionResult),
+        _ => Err(GetClassHashAtError::UnexpectedExecutionResult)?,
     };
 
     let class_hash_check = account
