@@ -16,11 +16,13 @@ pub use factory::{
     RawAccountDeploymentV1, RawAccountDeploymentV3,
 };
 
-mod call;
-pub use call::Call;
+pub mod call;
 
 pub mod single_owner;
+pub mod utilities;
 pub use single_owner::{ExecutionEncoding, SingleOwnerAccount};
+pub mod contract;
+pub mod errors;
 
 #[derive(Debug, thiserror::Error)]
 #[error("Not all fields are prepared")]

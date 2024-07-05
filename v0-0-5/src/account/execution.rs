@@ -2,7 +2,7 @@ use super::{
     super::NotPreparedError, Account, AccountError, ConnectedAccount, ExecutionV1, ExecutionV3,
     PreparedExecutionV1, PreparedExecutionV3, RawExecutionV1, RawExecutionV3,
 };
-use crate::{Call, ExecutionEncoder};
+use crate::{call::Call, ExecutionEncoder};
 
 use crate::provider::Provider;
 use starknet_core::{

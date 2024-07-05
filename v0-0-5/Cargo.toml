@@ -28,3 +28,5 @@ rand.workspace = true
 crypto-bigint = { version = "0.5.5" }
 num = "0.4.3"
 starknet-types-core = "0.1.5"
+tokio.workspace = true
+regex = "1.10.5"

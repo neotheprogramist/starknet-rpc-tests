@@ -1,6 +1,6 @@
 use crate::{
+    call::Call,
     provider::{Provider, ProviderError},
-    Call,
 };
 
 use async_trait::async_trait;

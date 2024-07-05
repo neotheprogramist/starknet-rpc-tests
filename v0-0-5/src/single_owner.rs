@@ -1,5 +1,5 @@
 use crate::{
-    Account, Call, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3,
+    call::Call, Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3,
     RawExecutionV1, RawExecutionV3, RawLegacyDeclaration,
 };
 
