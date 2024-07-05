@@ -10,6 +10,7 @@ use starknet_core::{
     types::{InvokeTransaction, Transaction},
     utils::get_selector_from_name,
 };
+use starknet_types_core::felt::FromStrError;
 use thiserror::Error;
 use url::Url;
 
@@ -23,6 +24,9 @@ pub enum GetTransactionByHashInvokeV1Error {
 
     #[error("Unexpected tx response type")]
     UnexecpectedTxResponseType(String),
+
+    #[error("Error parsing hex string")]
+    FromStrError(#[from] FromStrError),
 }
 
 pub async fn get_transaction_by_hash_invoke_v1(
@@ -30,11 +34,9 @@ pub async fn get_transaction_by_hash_invoke_v1(
 ) -> Result<InvokeTransactionV1, GetTransactionByHashInvokeV1Error> {
     let rpc_client = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let (account, contract_address) = decalare_and_deploy(
-        Felt::from_hex_unchecked(
-            "0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1",
-        ),
-        Felt::from_hex_unchecked("0x57b2f8431c772e647712ae93cc616638"),
-        Felt::from_hex_unchecked("0x534e5f5345504f4c4941"),
+        Felt::from_hex("0x4b3f4ba8c00a02b66142a4b1dd41a4dfab4f92650922a3280977b0f03c75ee1")?,
+        Felt::from_hex("0x57b2f8431c772e647712ae93cc616638")?,
+        Felt::from_hex("0x534e5f5345504f4c4941")?,
         "../target/dev/example_HelloStarknet.contract_class.json",
         "../target/dev/example_HelloStarknet.compiled_contract_class.json",
         url,
