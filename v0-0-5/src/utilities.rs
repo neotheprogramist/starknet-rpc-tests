@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::contract::factory::ContractFactory;
-use crate::errors::errors::parse_class_hash_from_error;
+use crate::errors::errors::{parse_class_hash_from_error, RunnerError};
 use crate::jsonrpc::HttpTransport;
 use crate::provider::{Provider, ProviderError};
 use crate::{jsonrpc::JsonRpcClient, ExecutionEncoding, SingleOwnerAccount};
@@ -159,32 +159,4 @@ pub async fn get_compiled_contract(
     let casm_class_hash = compiled_class.class_hash().unwrap();
     let flattened_class = contract_artifact.clone().flatten().unwrap();
     Ok((flattened_class, casm_class_hash))
-}
-
-#[derive(Debug, Error)]
-#[allow(dead_code)]
-pub enum RunnerError {
-    #[error("failed to parse url")]
-    ParsingError(#[from] ParseError),
-
-    #[error("SerdeJsonError error: {0}")]
-    SerdeJsonError(#[from] serde_json::Error),
-
-    #[error("ReadFileError error: {0}")]
-    ReadFileError(String),
-
-    #[error("Account error: {0}")]
-    AccountFailure(String),
-
-    #[error("Deployment error: {0}")]
-    DeploymentFailure(String),
-
-    #[error("Box error: {0}")]
-    BoxError(#[from] Box<dyn std::error::Error>),
-
-    #[error("Starknet-devnet not launched : {0}")]
-    DevnetNotLaunched(String),
-
-    #[error("Request failed: {0}")]
-    ReqwestError(#[from] reqwest::Error),
 }

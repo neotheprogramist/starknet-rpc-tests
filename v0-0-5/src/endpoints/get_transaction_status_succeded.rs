@@ -1,10 +1,14 @@
 use crate::{
     account::create_mint_deploy::create_mint_deploy,
+    errors::errors::RunnerError,
     jsonrpc::{HttpTransport, JsonRpcClient},
-    provider::ProviderError,
-    ConnectedAccount, ExecutionEncoding, SingleOwnerAccount,
+    provider::{Provider, ProviderError},
+    utilities::{declare_contract_v3, deploy_contract_v3},
+    ExecutionEncoding, SingleOwnerAccount,
 };
-use starknet_core::types::{BlockId, BlockTag, Felt};
+use starknet_core::types::{
+    BlockId, BlockTag, Felt, TransactionExecutionStatus, TransactionStatus,
+};
 use starknet_signers::{LocalWallet, SigningKey};
 use starknet_types_core::felt::FromStrError;
 use thiserror::Error;
@@ -20,17 +24,21 @@ pub enum GetTransactionStatusSuccededError {
 
     #[error("Error parsing hex string")]
     FromStrError(#[from] FromStrError),
+
+    #[error("Runner error")]
+    RunnerError(#[from] RunnerError),
+
+    #[error("Unexpected transaction status")]
+    TransactionStatusError,
 }
 
-pub struct GetNonceResponse {
-    pub nonce: Felt,
-}
-
-pub async fn get_nonce(
+pub async fn get_transaction_status_succeeded(
     url: Url,
     chain_id: String,
-) -> Result<GetNonceResponse, GetTransactionStatusSuccededError> {
-    let account_create_response = match create_mint_deploy(url.clone()).await {
+) -> Result<TransactionStatus, GetTransactionStatusSuccededError> {
+    let rpc_client = JsonRpcClient::new(HttpTransport::new(url.clone()));
+
+    let account_create_response = match create_mint_deploy(url).await {
         Ok(value) => value,
         Err(e) => return Err(GetTransactionStatusSuccededError::CreateAccountError(e)),
     };
@@ -39,17 +47,31 @@ pub async fn get_nonce(
         account_create_response.account_data.private_key,
     ));
 
-    let mut accout = SingleOwnerAccount::new(
-        JsonRpcClient::new(HttpTransport::new(url)),
+    let mut account = SingleOwnerAccount::new(
+        rpc_client.clone(),
         signer,
         account_create_response.account_data.address,
         Felt::from_hex(&chain_id)?,
         ExecutionEncoding::New,
     );
 
-    accout.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let nonce = accout.get_nonce().await?;
+    let class_hash = declare_contract_v3(
+        &account,
+        "../target/dev/example_HelloStarknet.contract_class.json",
+        "../target/dev/example_HelloStarknet.compiled_contract_class.json",
+    )
+    .await?;
 
-    Ok(GetNonceResponse { nonce })
+    let deploy_result = deploy_contract_v3(&account, class_hash).await;
+
+    let status = rpc_client
+        .get_transaction_status(deploy_result.transaction_hash)
+        .await?;
+
+    match status {
+        TransactionStatus::AcceptedOnL2(TransactionExecutionStatus::Succeeded) => Ok(status),
+        _ => Err(GetTransactionStatusSuccededError::TransactionStatusError)?,
+    }
 }
