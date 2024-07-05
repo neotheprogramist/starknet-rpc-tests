@@ -3,6 +3,7 @@ pub mod get_block_with_tx_receipts;
 pub mod get_block_with_txs;
 pub mod get_nonce;
 pub mod get_state_update;
+pub mod get_transaction_by_hash_invoke_v1;
 pub mod get_transaction_status_succeded;
 pub mod mint;
 pub mod specversion;
