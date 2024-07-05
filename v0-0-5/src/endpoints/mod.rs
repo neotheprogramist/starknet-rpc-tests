@@ -1,3 +1,4 @@
+pub mod get_block_transaction_count;
 pub mod get_block_with_tx_hashes;
 pub mod get_block_with_tx_receipts;
 pub mod get_block_with_txs;
