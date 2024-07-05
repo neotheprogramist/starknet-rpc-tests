@@ -1,3 +1,4 @@
+pub mod block_number;
 pub mod estimate_message_fee;
 pub mod get_block_transaction_count;
 pub mod get_block_with_tx_hashes;
