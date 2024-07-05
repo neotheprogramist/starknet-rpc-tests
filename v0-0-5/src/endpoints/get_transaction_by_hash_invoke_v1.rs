@@ -3,14 +3,11 @@ use crate::{
     jsonrpc::{HttpTransport, JsonRpcClient},
     provider::{Provider, ProviderError},
     utilities::decalare_and_deploy,
-    Account, AccountError,
+    Account,
 };
 use starknet_core::types::{Felt, InvokeTransactionV1};
 use starknet_core::{
-    types::{
-        BlockId, BlockTag, BlockWithReceipts, InvokeTransaction, MaybePendingBlockWithReceipts,
-        Transaction,
-    },
+    types::{InvokeTransaction, Transaction},
     utils::get_selector_from_name,
 };
 use thiserror::Error;
