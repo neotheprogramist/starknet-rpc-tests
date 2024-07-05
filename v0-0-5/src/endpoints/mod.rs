@@ -1,5 +1,6 @@
 pub mod add_declare_transaction;
 pub mod block_number;
+pub mod call;
 pub mod chain_id;
 pub mod deploy;
 pub mod estimate_message_fee;
