@@ -1,6 +1,7 @@
 pub mod get_block_with_tx_hashes;
 pub mod get_block_with_tx_receipts;
 pub mod get_block_with_txs;
+pub mod get_class_at;
 pub mod get_class_cairo_1;
 pub mod get_class_hash_at;
 pub mod get_nonce;

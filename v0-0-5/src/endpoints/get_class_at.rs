@@ -6,14 +6,17 @@ use crate::{
     utilities::{declare_contract_v3, deploy_contract_v3},
     ConnectedAccount, ExecutionEncoding, SingleOwnerAccount,
 };
-use starknet_core::types::{BlockId, BlockTag, ExecutionResult, Felt, TransactionReceipt};
+use starknet_core::types::{
+    BlockId, BlockTag, ContractClass, ExecutionResult, Felt, FlattenedSierraClass,
+    TransactionReceipt,
+};
 use starknet_signers::{LocalWallet, SigningKey};
 use starknet_types_core::felt::FromStrError;
 use thiserror::Error;
 use url::Url;
 
 #[derive(Error, Debug)]
-pub enum GetClassHashAtError {
+pub enum GetClassAtError {
     #[error("Error getting response text")]
     CreateAccountError(String),
 
@@ -35,16 +38,19 @@ pub enum GetClassHashAtError {
     #[error("Unexpected execution result")]
     UnexpectedExecutionResult,
 
-    #[error("Class hash mismatch")]
-    ClassHashMismatch,
+    #[error("Unexpected class type")]
+    UnexpectedClassType,
 }
 
-pub async fn get_class_hash_at(url: Url, chain_id: String) -> Result<Felt, GetClassHashAtError> {
+pub async fn get_class_at(
+    url: Url,
+    chain_id: String,
+) -> Result<FlattenedSierraClass, GetClassAtError> {
     let rpc_client = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let account_create_response = match create_mint_deploy(url).await {
         Ok(value) => value,
-        Err(e) => return Err(GetClassHashAtError::CreateAccountError(e)),
+        Err(e) => return Err(GetClassAtError::CreateAccountError(e)),
     };
 
     let signer = LocalWallet::from(SigningKey::from_secret_scalar(
@@ -76,21 +82,21 @@ pub async fn get_class_hash_at(url: Url, chain_id: String) -> Result<Felt, GetCl
 
     let receipt = match receipt.receipt {
         TransactionReceipt::Deploy(receipt) => receipt,
-        _ => Err(GetClassHashAtError::UnexpectedReceiptResponseType)?,
+        _ => Err(GetClassAtError::UnexpectedReceiptResponseType)?,
     };
 
     match receipt.execution_result {
         ExecutionResult::Succeeded => (),
-        _ => Err(GetClassHashAtError::UnexpectedExecutionResult)?,
+        _ => Err(GetClassAtError::UnexpectedExecutionResult)?,
     };
 
-    let class_hash_check = account
+    let class = account
         .provider()
-        .get_class_hash_at(BlockId::Tag(BlockTag::Latest), receipt.contract_address)
+        .get_class_at(BlockId::Tag(BlockTag::Latest), receipt.contract_address)
         .await?;
 
-    match class_hash_check == class_hash {
-        true => Ok(class_hash_check),
-        false => Err(GetClassHashAtError::ClassHashMismatch),
+    match class {
+        ContractClass::Sierra(class) => Ok(class),
+        _ => Err(GetClassAtError::UnexpectedClassType),
     }
 }
