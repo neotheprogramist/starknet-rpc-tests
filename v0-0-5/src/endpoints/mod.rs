@@ -18,5 +18,6 @@ pub mod get_transaction_by_hash_invoke_v1;
 pub mod get_transaction_by_hash_l1_handler;
 pub mod get_transaction_receipt_deploy;
 pub mod get_transaction_status_succeded;
+pub mod invoke;
 pub mod mint;
 pub mod specversion;
