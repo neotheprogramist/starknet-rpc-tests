@@ -37,12 +37,12 @@ pub enum GetClassHashAtError {
 
     #[error("Unexpected execution result")]
     UnexpectedExecutionResult,
+
+    #[error("Class hash mismatch")]
+    ClassHashMismatch,
 }
 
-pub async fn get_class_hash_at(
-    url: Url,
-    chain_id: String,
-) -> Result<DeployTransactionReceipt, GetClassHashAtError> {
+pub async fn get_class_hash_at(url: Url, chain_id: String) -> Result<Felt, GetClassHashAtError> {
     let rpc_client = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let account_create_response = match create_mint_deploy(url).await {
@@ -79,11 +79,21 @@ pub async fn get_class_hash_at(
 
     let receipt = match receipt.receipt {
         TransactionReceipt::Deploy(receipt) => receipt,
-        _ => Err(GetClassHashAtError::UnexpectedReceiptResponseType)?,
+        _ => return Err(GetClassHashAtError::UnexpectedReceiptResponseType),
     };
 
     match receipt.execution_result {
-        ExecutionResult::Succeeded => Ok(receipt),
-        _ => Err(GetClassHashAtError::UnexpectedExecutionResult)?,
+        ExecutionResult::Succeeded => (),
+        _ => return Err(GetClassHashAtError::UnexpectedExecutionResult),
+    };
+
+    let class_hash_check = account
+        .provider()
+        .get_class_hash_at(BlockId::Tag(BlockTag::Latest), receipt.contract_address)
+        .await?;
+
+    match class_hash_check == class_hash {
+        true => Ok(class_hash_check),
+        false => Err(GetClassHashAtError::ClassHashMismatch),
     }
 }
