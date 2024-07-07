@@ -1,3 +1,4 @@
+pub mod account_balance;
 pub mod add_declare_transaction;
 pub mod block_number;
 pub mod call;

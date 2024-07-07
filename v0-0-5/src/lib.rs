@@ -1,5 +1,4 @@
 pub mod account;
-pub mod account_balance;
 pub mod jsonrpc;
 pub mod provider;
 pub use account::{
