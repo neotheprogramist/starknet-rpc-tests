@@ -1,11 +1,12 @@
-use serde::{Deserialize, Serialize};
-use starknet_core::types::Felt;
+use serde::Deserialize;
+
 use tracing::info;
 
 use std::error::Error as StdError;
 use std::fmt;
 use url::Url;
 
+use crate::account::create_mint_deploy::create_mint_deploy;
 use crate::jsonrpc::{HttpTransport, JsonRpcClient};
 use crate::provider::{Provider, ProviderError};
 
@@ -14,29 +15,21 @@ use colored::*;
 use super::mint::FeeUnit;
 #[derive(Deserialize, Debug)]
 pub struct AccountBalanceResponse {
-    pub amount: (u64, u64, u64),
+    pub amount: Vec<u64>,
     pub unit: String,
-}
-
-#[derive(Serialize)]
-pub struct AccountBalanceParams {
-    pub address: Felt,
-    pub unit: String,
-    pub block_tag: String,
 }
 
 pub async fn account_balance(base_url: Url) -> Result<AccountBalanceResponse, RequestOrParseError> {
     let rpc_client = JsonRpcClient::new(HttpTransport::new(base_url.clone()));
-
+    let acc = create_mint_deploy(base_url.clone()).await.unwrap();
     let response = rpc_client
         .account_balance(
-            Felt::from_hex("0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691")
-                .unwrap(),
+            acc.account_data.address,
             FeeUnit::WEI,
             starknet_core::types::BlockTag::Latest,
         )
         .await;
-
+    println!("{:?}", response.as_ref().unwrap());
     match response {
         Ok(value) => match serde_json::from_value::<AccountBalanceResponse>(value) {
             Ok(account_balance_respnose) => {
