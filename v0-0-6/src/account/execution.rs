@@ -2,8 +2,9 @@ use super::{
     super::NotPreparedError, Account, AccountError, ConnectedAccount, ExecutionV1, ExecutionV3,
     PreparedExecutionV1, PreparedExecutionV3, RawExecutionV1, RawExecutionV3,
 };
-use crate::{Call, ExecutionEncoder};
+use crate::{call::Call, ExecutionEncoder};
 
+use crate::provider::Provider;
 use starknet_core::{
     crypto::compute_hash_on_elements,
     types::{
@@ -14,7 +15,6 @@ use starknet_core::{
     },
 };
 use starknet_crypto::PoseidonHasher;
-use starknet_providers::Provider;
 
 /// Cairo string for "invoke"
 const PREFIX_INVOKE: Felt = Felt::from_raw([

@@ -1,5 +1,4 @@
 pub mod account;
-pub mod account_balance;
 pub mod jsonrpc;
 pub mod provider;
 pub use account::{
@@ -9,12 +8,23 @@ pub use account::{
     RawDeclarationV3, RawExecutionV1, RawExecutionV3, RawLegacyDeclaration,
 };
 
-mod call;
-pub use call::Call;
+pub mod factory;
+pub use factory::{
+    open_zeppelin::OpenZeppelinAccountFactory, AccountDeploymentV1, AccountDeploymentV3,
+    AccountFactory, AccountFactoryError, PreparedAccountDeploymentV1, PreparedAccountDeploymentV3,
+    RawAccountDeploymentV1, RawAccountDeploymentV3,
+};
+
+pub mod call;
 
 pub mod single_owner;
+pub mod utilities;
 pub use single_owner::{ExecutionEncoding, SingleOwnerAccount};
+pub mod contract;
+pub mod errors;
 
 #[derive(Debug, thiserror::Error)]
 #[error("Not all fields are prepared")]
 pub struct NotPreparedError;
+
+pub mod endpoints;

@@ -8,13 +8,25 @@ serde.workspace = true
 serde_json.workspace = true
 async-trait = "0.1.68"
 serde_with = "2.3.2"
-starknet-core = "0.11.1"
+
 auto_impl = "1.0.1"
 thiserror = "1.0.40"
 log = "0.4.19"
 reqwest = { version = "0.12.5", default-features = false, features = [
     "rustls-tls",
 ] }
+starknet-core = "0.11.1"
 starknet-crypto = "0.7.1"
 starknet-providers = "0.11.0"
 starknet-signers = "0.9.0"
+starknet-accounts = "0.10.0"
+url.workspace = true
+colored.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+rand.workspace = true
+crypto-bigint = { version = "0.5.5" }
+num = "0.4.3"
+starknet-types-core = "0.1.5"
+tokio.workspace = true
+regex = "1.10.5"

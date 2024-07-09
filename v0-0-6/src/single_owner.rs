@@ -1,11 +1,11 @@
 use crate::{
-    Account, Call, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3,
+    call::Call, Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3,
     RawExecutionV1, RawExecutionV3, RawLegacyDeclaration,
 };
 
+use crate::provider::Provider;
 use async_trait::async_trait;
 use starknet_core::types::{contract::ComputeClassHashError, BlockId, BlockTag, Felt};
-use starknet_providers::Provider;
 use starknet_signers::Signer;
 
 #[derive(Debug, Clone)]

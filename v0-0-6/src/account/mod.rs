@@ -1,4 +1,7 @@
-use crate::Call;
+use crate::{
+    call::Call,
+    provider::{Provider, ProviderError},
+};
 
 use async_trait::async_trait;
 use auto_impl::auto_impl;
@@ -6,10 +9,12 @@ use starknet_core::types::{
     contract::{legacy::LegacyContractClass, CompressProgramError, ComputeClassHashError},
     BlockId, BlockTag, Felt, FlattenedSierraClass,
 };
-use starknet_providers::{Provider, ProviderError};
 use std::{error::Error, sync::Arc};
 
+mod create;
+pub mod create_mint_deploy;
 mod declaration;
+mod deploy;
 mod execution;
 
 /// The standard Starknet account contract interface. It makes no assumption about the underlying

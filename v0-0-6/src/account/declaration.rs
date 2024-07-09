@@ -4,6 +4,7 @@ use super::{
     RawDeclarationV2, RawDeclarationV3, RawLegacyDeclaration,
 };
 
+use crate::provider::Provider;
 use starknet_core::{
     crypto::compute_hash_on_elements,
     types::{
@@ -15,7 +16,6 @@ use starknet_core::{
     },
 };
 use starknet_crypto::PoseidonHasher;
-use starknet_providers::Provider;
 use std::sync::Arc;
 
 /// Cairo string for "declare"
