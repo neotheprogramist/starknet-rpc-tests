@@ -3,7 +3,14 @@ mod args;
 use args::Args;
 use clap::Parser;
 
-use v0_0_5::endpoints::{account_balance::account_balance, block_number::block_number};
+use shared::account_balance::Version;
+use v0_0_5::endpoints::{
+    account_balance::account_balance, add_declare_transaction::add_declare_transaction,
+    block_number::block_number, call::call, get_block_with_tx_hashes::get_block_with_tx_hashes,
+    get_block_with_tx_receipts::get_block_with_receipts, get_block_with_txs::get_block_with_txs,
+    get_nonce::get_nonce, get_transaction_by_hash_invoke_v1::get_transaction_by_hash_invoke_v1,
+    get_transaction_status_succeded::get_transaction_status_succeeded, specversion::specversion,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -12,8 +19,97 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     let args = Args::parse();
+    let (url, chain_id, vers) = (args.url.clone(), args.chain_id.clone(), args.vers);
+    match vers {
+        Version::V0_0_5 => {
+            match account_balance(url.clone()).await {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("{}", e);
+                    return Ok(());
+                }
+            };
 
-    account_balance(args.url.clone()).await?;
+            match specversion(url.clone()).await {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("{}", e);
+                    return Ok(());
+                }
+            };
+
+            match get_nonce(url.clone(), chain_id.clone()).await {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("{}", e);
+                    return Ok(());
+                }
+            };
+
+            match get_block_with_tx_hashes(url.clone()).await {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("{}", e);
+                    return Ok(());
+                }
+            };
+
+            // match get_block_with_txs(url.clone()).await {
+            //     Ok(_) => {}
+            //     Err(e) => {
+            //         eprintln!("{}", e);
+            //         return Ok(());
+            //     }
+            // }
+
+            match get_transaction_status_succeeded(url.clone(), chain_id.clone()).await {
+                Ok(_) => {}
+                Err(e) => {
+                    eprintln!("{}", e);
+                    return Ok(());
+                }
+            }
+
+            // match get_block_with_receipts(url.clone()).await {
+            //     Ok(_) => {}
+            //     Err(e) => {
+            //         eprintln!("{}", e);
+            //         return Ok(());
+            //     }
+            // }
+            // match get_transaction_by_hash_invoke_v1(url.clone()).await {
+            //     Ok(_) => {}
+            //     Err(e) => {
+            //         eprintln!("{}", e);
+            //         return Ok(());
+            //     }
+            // }
+
+            // match block_number(url.clone()).await {
+            //     Ok(_) => {}
+            //     Err(e) => {
+            //         eprintln!("{}", e);
+            //         return Ok(());
+            //     }
+            // };
+            // match add_declare_transaction(url.clone(), chain_id.clone()).await {
+            //     Ok(_) => {}
+            //     Err(e) => {
+            //         eprintln!("{}", e);
+            //         return Ok(());
+            //     }
+            // };
+
+            // match call(url.clone(), chain_id.clone()).await {
+            //     Ok(_) => {}
+            //     Err(e) => {
+            //         eprintln!("{}", e);
+            //         return Ok(());
+            //     }
+            // };
+        }
+        Version::V0_0_6 => {}
+    }
 
     // run(args.url.clone()).await;
 
