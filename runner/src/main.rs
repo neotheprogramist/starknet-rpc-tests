@@ -1,34 +1,9 @@
 mod args;
 
-use v0_0_5::account::create_mint_deploy::create_mint_deploy;
-use v0_0_5::endpoints::specversion::run;
-
 use args::Args;
 use clap::Parser;
-use colored::Colorize;
-use rand::Rng;
-use shared::{
-    clients::devnet_client::DevnetClient,
-    create_acc::{create, get_chain_id, AccountCreateResponse, AccountType},
-    deploy_acc::{deploy, Deploy, ValidatedWaitParams, WaitForTx},
-};
-use starknet_crypto::FieldElement;
-use starknet_signers::{LocalWallet, SigningKey};
-use tracing::info;
-use url::Url;
-use utils::{
-    account::{
-        single_owner::{ExecutionEncoding, SingleOwnerAccount},
-        Account, ConnectedAccount,
-    },
-    codegen::BlockTag,
-    models::FeeUnit,
-    provider::Provider,
-    transports::http::HttpTransport,
-};
 
-use starknet_providers::jsonrpc::HttpTransport as StarknetHttpTransport;
-use starknet_providers::JsonRpcClient;
+use v0_0_5::endpoints::{account_balance::account_balance, block_number::block_number};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -37,15 +12,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     let args = Args::parse();
-    run(args.url.clone()).await;
 
-    create_mint_deploy(Url::parse(args.url.as_ref())?).await?;
+    account_balance(args.url.clone()).await?;
+
+    // run(args.url.clone()).await;
+
+    // create_mint_deploy(Url::parse(args.url.as_ref())?).await?;
 
     // let client = DevnetClient::new(HttpTransport::new(Url::parse(args.url.as_ref())?));
 
     // First of all create and deploy an account:
-    // let account_create_response = create_and_deploy_account(&args).await?;
+    // let account_create_response = create_mint_deploy(args.url.clone()).await?;
     // info!("{:?}", account_create_response.account_data);
+    // let signer = LocalWallet::from(SigningKey::from_secret_scalar(FieldElement::from_hex_be()));
+
+    // let account = SingleOwnerAccount::new(
+    //     client,
+
+    //     account_create_response.account_data.address,
+    //     Felt::from_hex(&args.chain_id).unwrap(),
+    //     ExecutionEncoding::New
+    // )
 
     // let account = SingleOwnerAccount::new(
     //     client,
@@ -148,30 +135,30 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-async fn fuzzy_test_mint(
-    account: &SingleOwnerAccount<DevnetClient<HttpTransport>, LocalWallet>,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let mut rng = rand::thread_rng();
-    let test_count = rng.gen_range(5..=20);
+// async fn fuzzy_test_mint(
+//     account: &SingleOwnerAccount<DevnetClient<HttpTransport>, LocalWallet>,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//     let mut rng = rand::thread_rng();
+//     let test_count = rng.gen_range(5..=20);
 
-    for _ in 0..test_count {
-        let initial_balance = account
-            .provider()
-            .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
-            .await?;
+//     for _ in 0..test_count {
+//         let initial_balance = account
+//             .provider()
+//             .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
+//             .await?;
 
-        let mint_amount = rng.gen_range(u128::MIN + 1..=u128::MAX);
+//         let mint_amount = rng.gen_range(u128::MIN + 1..=u128::MAX);
 
-        let mint_result = account
-            .provider()
-            .mint(account.address(), mint_amount)
-            .await?;
+//         let mint_result = account
+//             .provider()
+//             .mint(account.address(), mint_amount)
+//             .await?;
 
-        let new_balance = account
-            .provider()
-            .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
-            .await?;
-    }
+//         let new_balance = account
+//             .provider()
+//             .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
+//             .await?;
+//     }
 
-    Ok(())
-}
+//     Ok(())
+// }

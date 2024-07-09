@@ -70,7 +70,7 @@ pub struct MintResponse {
     tx_hash: Felt,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 pub enum FeeUnit {
     WEI,
     FRI,
@@ -137,7 +137,7 @@ pub async fn fuzzy_test_mint(
     for _ in 0..test_count {
         let initial_balance = account
             .provider()
-            .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
+            .account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
             .await?;
 
         let mint_amount = rng.gen_range(u128::MIN + 1..=u128::MAX);
@@ -149,7 +149,7 @@ pub async fn fuzzy_test_mint(
 
         let new_balance = account
             .provider()
-            .get_account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
+            .account_balance(account.address(), FeeUnit::WEI, BlockTag::Latest)
             .await?;
     }
 

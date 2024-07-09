@@ -23,3 +23,18 @@ pub trait JsonRpcTransport {
         P: Serialize + Send + Sync,
         R: DeserializeOwned;
 }
+
+#[cfg_attr(not(target_arch = "wasm32"), async_trait)]
+#[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
+#[auto_impl(&, Box, Arc)]
+pub trait JsonRpcTransportQueryParams {
+    type Error: Error + Send + Sync;
+
+    async fn send_request_query_params<P>(
+        &self,
+        method: JsonRpcMethod,
+        params: P,
+    ) -> Result<serde_json::Value, Self::Error>
+    where
+        P: Serialize + Send + Sync;
+}

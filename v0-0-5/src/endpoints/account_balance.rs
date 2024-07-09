@@ -1,9 +1,17 @@
-use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use starknet_core::types::Felt;
+use tracing::info;
+
 use std::error::Error as StdError;
 use std::fmt;
 use url::Url;
+
+use crate::jsonrpc::{HttpTransport, JsonRpcClient};
+use crate::provider::{Provider, ProviderError};
+
+use colored::*;
+
+use super::mint::FeeUnit;
 #[derive(Deserialize, Debug)]
 pub struct AccountBalanceResponse {
     pub amount: (u64, u64, u64),
@@ -12,30 +20,35 @@ pub struct AccountBalanceResponse {
 
 #[derive(Serialize)]
 pub struct AccountBalanceParams {
-    // #[serde(serialize_with = "crate::serialize_felt_to_hex::serialize_field_element")]
     pub address: Felt,
     pub unit: String,
     pub block_tag: String,
 }
 
-pub async fn account_balance(
-    account_balance_params: &AccountBalanceParams,
-    base_url: Url,
-) -> Result<AccountBalanceResponse, RequestOrParseError> {
-    let client: Client = Client::new();
-    let account_balance_url = match base_url.join("account_balance") {
-        Ok(url) => url,
-        Err(e) => return Err(e.into()),
-    };
-    let res = client
-        .get(account_balance_url)
-        .query(account_balance_params)
-        .send()
-        .await?;
+pub async fn account_balance(base_url: Url) -> Result<AccountBalanceResponse, RequestOrParseError> {
+    let rpc_client = JsonRpcClient::new(HttpTransport::new(base_url.clone()));
 
-    match res.json::<AccountBalanceResponse>().await {
-        Ok(account) => Ok(account),
-        Err(e) => Err(e.into()),
+    let response = rpc_client
+        .account_balance(
+            Felt::from_hex("0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691")
+                .unwrap(),
+            FeeUnit::WEI,
+            starknet_core::types::BlockTag::Latest,
+        )
+        .await;
+
+    match response {
+        Ok(value) => match serde_json::from_value::<AccountBalanceResponse>(value) {
+            Ok(account_balance_respnose) => {
+                info!("{}", "Account Balance Compatible".green());
+                Ok(account_balance_respnose)
+            }
+            Err(e) => {
+                info!("{}", "Incompatible".red());
+                Err(RequestOrParseError::Serde(e))
+            }
+        },
+        Err(e) => Err(RequestOrParseError::from(e)),
     }
 }
 
@@ -43,6 +56,8 @@ pub async fn account_balance(
 pub enum RequestOrParseError {
     Reqwest(reqwest::Error),
     Url(url::ParseError),
+    Serde(serde_json::Error),
+    Provider(ProviderError),
 }
 
 impl fmt::Display for RequestOrParseError {
@@ -50,6 +65,8 @@ impl fmt::Display for RequestOrParseError {
         match self {
             RequestOrParseError::Reqwest(e) => write!(f, "{}", e),
             RequestOrParseError::Url(e) => write!(f, "{}", e),
+            RequestOrParseError::Serde(e) => write!(f, "{}", e),
+            RequestOrParseError::Provider(e) => write!(f, "Provider error: {:?}", e),
         }
     }
 }
@@ -65,5 +82,11 @@ impl From<reqwest::Error> for RequestOrParseError {
 impl From<url::ParseError> for RequestOrParseError {
     fn from(err: url::ParseError) -> RequestOrParseError {
         RequestOrParseError::Url(err)
+    }
+}
+
+impl From<ProviderError> for RequestOrParseError {
+    fn from(err: ProviderError) -> RequestOrParseError {
+        RequestOrParseError::Provider(err)
     }
 }

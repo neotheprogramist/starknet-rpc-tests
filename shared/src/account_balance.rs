@@ -1,6 +1,6 @@
 use crate::errors::RequestOrParseError;
-use crate::v0_0_5::account_balance::AccountBalanceResponseV0_0_5;
-use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
+// use crate::v0_0_5::account_balance::AccountBalanceResponseV0_0_5;
+// use crate::v0_0_6::account_balance::AccountBalanceResponseV0_0_6;
 
 use clap::Parser;
 use colored::*;
@@ -28,44 +28,44 @@ impl std::str::FromStr for Version {
     }
 }
 
-#[derive(Serialize)]
-pub struct AccountBalanceParams {
-    #[serde(serialize_with = "crate::serialize_felt_to_hex::serialize_field_element")]
-    pub address: FieldElement,
-    pub unit: String,
-    pub block_tag: String,
-}
+// #[derive(Serialize)]
+// pub struct AccountBalanceParams {
+//     #[serde(serialize_with = "crate::serialize_felt_to_hex::serialize_field_element")]
+//     pub address: FieldElement,
+//     pub unit: String,
+//     pub block_tag: String,
+// }
 
-pub async fn account_balance(
-    account_balance_params: &AccountBalanceParams,
-    version: &Version,
-    base_url: Url,
-) -> Result<(), RequestOrParseError> {
-    let client: Client = Client::new();
-    let account_balance_url = match base_url.join("account_balance") {
-        Ok(url) => url,
-        Err(e) => return Err(e.into()),
-    };
-    let res = client
-        .get(account_balance_url)
-        .query(account_balance_params)
-        .send()
-        .await?;
-    match version {
-        Version::V0_0_5 => {
-            let account_balance_response = res.json::<AccountBalanceResponseV0_0_5>().await;
-            match account_balance_response {
-                Ok(_) => info!("{}", "COMPATIBLE".green()),
-                Err(_) => info!("{}", "INCOMPATIBLE".red()),
-            }
-        }
-        Version::V0_0_6 => {
-            let account_balance_response = res.json::<AccountBalanceResponseV0_0_6>().await;
-            match account_balance_response {
-                Ok(_) => info!("{}", "COMPATIBLE".green()),
-                Err(_) => info!("{}", "INCOMPATIBLE".red()),
-            }
-        }
-    };
-    Ok(())
-}
+// pub async fn account_balance(
+//     account_balance_params: &AccountBalanceParams,
+//     version: &Version,
+//     base_url: Url,
+// ) -> Result<(), RequestOrParseError> {
+//     let client: Client = Client::new();
+//     let account_balance_url = match base_url.join("account_balance") {
+//         Ok(url) => url,
+//         Err(e) => return Err(e.into()),
+//     };
+//     let res = client
+//         .get(account_balance_url)
+//         .query(account_balance_params)
+//         .send()
+//         .await?;
+//     match version {
+//         Version::V0_0_5 => {
+//             let account_balance_response = res.json::<AccountBalanceResponseV0_0_5>().await;
+//             match account_balance_response {
+//                 Ok(_) => info!("{}", "COMPATIBLE".green()),
+//                 Err(_) => info!("{}", "INCOMPATIBLE".red()),
+//             }
+//         }
+//         Version::V0_0_6 => {
+//             let account_balance_response = res.json::<AccountBalanceResponseV0_0_6>().await;
+//             match account_balance_response {
+//                 Ok(_) => info!("{}", "COMPATIBLE".green()),
+//                 Err(_) => info!("{}", "INCOMPATIBLE".red()),
+//             }
+//         }
+//     };
+//     Ok(())
+// }

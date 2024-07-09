@@ -26,11 +26,19 @@ use crate::{
 };
 
 mod transports;
-pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
+pub use transports::{
+    HttpTransport, HttpTransportError, JsonRpcTransport, JsonRpcTransportQueryParams,
+};
 
 #[derive(Debug, Clone)]
 pub struct JsonRpcClient<T> {
     transport: T,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AccountBalanceRequest {
+    address: FeltPrimitive,
+    unit: FeeUnit,
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
@@ -93,6 +101,8 @@ pub enum JsonRpcMethod {
     SimulateTransactions,
     #[serde(rename = "starknet_traceBlockTransactions")]
     TraceBlockTransactions,
+    #[serde(rename = "account_balance")]
+    AccountBalance,
 }
 
 #[derive(Debug, Clone)]
@@ -132,6 +142,7 @@ pub enum JsonRpcRequestData {
     TraceTransaction(TraceTransactionRequest),
     SimulateTransactions(SimulateTransactionsRequest),
     TraceBlockTransactions(TraceBlockTransactionsRequest),
+    AccountBalance(AccountBalanceRequest),
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -171,7 +182,7 @@ pub enum JsonRpcErrorConversionError {
 }
 
 #[serde_as]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 struct Felt(#[serde_as(as = "UfeHex")] pub FeltPrimitive);
 
 #[serde_as]
@@ -183,7 +194,25 @@ impl<T> JsonRpcClient<T> {
         Self { transport }
     }
 }
-
+impl<T> JsonRpcClient<T>
+where
+    T: 'static + JsonRpcTransportQueryParams + Send + Sync,
+{
+    async fn send_request_query_params<P>(
+        &self,
+        method: JsonRpcMethod,
+        params: P,
+    ) -> Result<serde_json::Value, ProviderError>
+    where
+        P: Serialize + Send + Sync,
+    {
+        self.transport
+            .send_request_query_params(method, params)
+            .await
+            .map_err(JsonRpcClientError::TransportError)
+            .map_err(Into::into)
+    }
+}
 impl<T> JsonRpcClient<T>
 where
     T: 'static + JsonRpcTransport + Send + Sync,
@@ -214,7 +243,7 @@ where
 #[cfg_attr(target_arch = "wasm32", async_trait(?Send))]
 impl<T> Provider for JsonRpcClient<T>
 where
-    T: 'static + JsonRpcTransport + Sync + Send,
+    T: 'static + JsonRpcTransport + JsonRpcTransportQueryParams + Sync + Send,
 {
     /// Returns the version of the Starknet JSON-RPC specification being used
     async fn spec_version(&self) -> Result<String, ProviderError> {
@@ -706,13 +735,18 @@ where
         )
         .await
     }
-    async fn get_account_balance(
+
+    async fn account_balance(
         &self,
         address: FeltPrimitive,
         unit: FeeUnit,
         block_tag: BlockTag,
     ) -> Result<Value, ProviderError> {
-        todo!()
+        self.send_request_query_params(
+            JsonRpcMethod::AccountBalance,
+            AccountBalanceRequest { address, unit },
+        )
+        .await
     }
 
     async fn mint(
@@ -888,6 +922,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
             ),
             JsonRpcMethod::TraceBlockTransactions => JsonRpcRequestData::TraceBlockTransactions(
                 serde_json::from_value::<TraceBlockTransactionsRequest>(raw_request.params)
+                    .map_err(error_mapper)?,
+            ),
+            JsonRpcMethod::AccountBalance => JsonRpcRequestData::AccountBalance(
+                serde_json::from_value::<AccountBalanceRequest>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
         };

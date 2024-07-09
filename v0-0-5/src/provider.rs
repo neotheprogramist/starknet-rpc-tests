@@ -307,7 +307,7 @@ pub trait Provider {
     async fn get_config(&self) -> Result<Value, ProviderError>;
     async fn get_predeployed_accounts(&self) -> Result<Value, ProviderError>;
     async fn mint(&self, address: Felt, mint_amount: u128) -> Result<Value, ProviderError>;
-    async fn get_account_balance(
+    async fn account_balance(
         &self,
         address: Felt,
         unit: FeeUnit,
