@@ -110,15 +110,18 @@ pub async fn deploy_contract_v3<P: Provider + Send + Sync>(
     account: &SingleOwnerAccount<P, LocalWallet>,
     class_hash: Felt,
 ) -> InvokeTransactionResult {
+    println!("...1");
     let factory = ContractFactory::new(class_hash, account);
     let mut salt_buffer = [0u8; 32];
     let mut rng = StdRng::from_entropy();
     rng.fill_bytes(&mut salt_buffer[1..]);
+    println!("...2");
     let result = factory
         .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
         .send()
         .await
         .unwrap();
+    println!("...3");
     result
 }
 

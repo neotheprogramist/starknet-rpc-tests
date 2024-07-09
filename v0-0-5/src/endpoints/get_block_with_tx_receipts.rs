@@ -19,7 +19,7 @@ pub struct GetBlockWithTxReceiptsResponse {
     pub block: BlockWithReceipts,
 }
 
-pub async fn get_block_with_tx_hashes(
+pub async fn get_block_with_receipts(
     url: Url,
 ) -> Result<GetBlockWithTxReceiptsResponse, GetBlockWithTxReceiptsError> {
     let rpc_client = JsonRpcClient::new(HttpTransport::new(url));
@@ -27,6 +27,7 @@ pub async fn get_block_with_tx_hashes(
     let block = rpc_client
         .get_block_with_receipts(BlockId::Tag(BlockTag::Latest))
         .await?;
+    println!("{:?}", block);
 
     let response = match block {
         MaybePendingBlockWithReceipts::Block(block) => GetBlockWithTxReceiptsResponse { block },

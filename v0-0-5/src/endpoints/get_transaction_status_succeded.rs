@@ -46,7 +46,7 @@ pub async fn get_transaction_status_succeeded(
     let signer = LocalWallet::from(SigningKey::from_secret_scalar(
         account_create_response.account_data.private_key,
     ));
-
+    println!("1");
     let mut account = SingleOwnerAccount::new(
         rpc_client.clone(),
         signer,
@@ -54,22 +54,22 @@ pub async fn get_transaction_status_succeeded(
         Felt::from_hex(&chain_id)?,
         ExecutionEncoding::New,
     );
-
+    println!("2");
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
-
+    println!("3");
     let class_hash = declare_contract_v3(
         &account,
         "../target/dev/example_HelloStarknet.contract_class.json",
         "../target/dev/example_HelloStarknet.compiled_contract_class.json",
     )
     .await?;
-
+    println!("4");
     let deploy_result = deploy_contract_v3(&account, class_hash).await;
-
+    println!("5");
     let status = rpc_client
         .get_transaction_status(deploy_result.transaction_hash)
         .await?;
-
+    println!("6");
     match status {
         TransactionStatus::AcceptedOnL2(TransactionExecutionStatus::Succeeded) => Ok(status),
         _ => Err(GetTransactionStatusSuccededError::TransactionStatusError)?,

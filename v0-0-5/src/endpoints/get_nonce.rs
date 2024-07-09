@@ -4,10 +4,12 @@ use crate::{
     provider::ProviderError,
     ConnectedAccount, ExecutionEncoding, SingleOwnerAccount,
 };
+use colored::*;
 use starknet_core::types::{BlockId, BlockTag, Felt};
 use starknet_signers::{LocalWallet, SigningKey};
 use starknet_types_core::felt::FromStrError;
 use thiserror::Error;
+use tracing::info;
 use url::Url;
 
 #[derive(Error, Debug)]
@@ -46,6 +48,6 @@ pub async fn get_nonce(url: Url, chain_id: String) -> Result<GetNonceResponse, G
 
     accout.set_block_id(BlockId::Tag(BlockTag::Pending));
     let nonce = accout.get_nonce().await?;
-
+    info!("{}", "Get Nonce Compatible".green());
     Ok(GetNonceResponse { nonce })
 }

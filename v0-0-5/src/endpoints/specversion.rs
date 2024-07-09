@@ -1,4 +1,4 @@
-use colored::Colorize;
+use colored::*;
 use tracing::info;
 use url::Url;
 
@@ -15,23 +15,12 @@ pub struct SpecVersionResponse {
     version: String,
 }
 
-async fn specversion(url: Url) -> Result<SpecVersionResponse, Box<dyn Error>> {
+pub async fn specversion(url: Url) -> Result<SpecVersionResponse, Box<dyn Error>> {
     let client = JsonRpcClient::new(HttpTransport::new(url));
 
     let response = client.spec_version().await?;
 
     let parsed_response = SpecVersionResponse { version: response };
-
+    info!("{}", "SpecVersion Compatible".green());
     Ok(parsed_response)
-}
-
-pub async fn run(url: Url) {
-    match specversion(url).await {
-        Ok(_) => {
-            info!("{} - {}", "fuzzy_specversion".green(), "compatible".green());
-        }
-        Err(_) => {
-            info!("{} - {}", "fuzzy_specversion".red(), "incompatible".red());
-        }
-    }
 }

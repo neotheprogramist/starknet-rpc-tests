@@ -31,12 +31,9 @@ mod u256_mint {
         D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        println!("STRING {:?}", s);
         let bigint = s.parse::<BigInt>().map_err(de::Error::custom)?;
-        println!("BIGINT {:?}", bigint);
         let be_bytes = bigint.to_bytes_be().1;
 
-        // Check if the bigint is negative or larger than U256 max value
         if bigint.sign() == Sign::Minus || bigint.bits() > 256 {
             return Err(de::Error::custom("Value out of range for U256"));
         }
@@ -51,7 +48,6 @@ mod u256_mint {
 
         let crypto_bigint = CryptoBigintU256::from_be_slice(&be_bytes);
         let data = U256::from(crypto_bigint);
-        println!("DATA {:?}", data);
         Ok(data)
     }
 }

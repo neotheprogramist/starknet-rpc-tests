@@ -13,6 +13,8 @@ use std::fmt;
 use crate::jsonrpc::{HttpTransport, JsonRpcClient};
 use crate::provider::Provider;
 
+use super::deploy::InvokeResponse;
+
 #[allow(clippy::doc_markdown)]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum AccountType {
@@ -49,6 +51,7 @@ pub struct AccountCreateResponse {
     pub max_fee: Felt,
     pub add_profile: String,
     pub message: String,
+    pub tx_hash: InvokeResponse,
 }
 
 #[allow(dead_code)]
@@ -75,6 +78,7 @@ pub async fn create(
         max_fee,
         add_profile: "No profile added to snfoundry.toml".to_string(),
         message: "Account successfully created. Prefund generated address with at least <max_fee> tokens. It is good to send more in the case of higher demand.".to_string(),
+        tx_hash: InvokeResponse { transaction_hash: Felt::from_hex("0x01").unwrap()}
     })
 }
 

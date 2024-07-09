@@ -2,8 +2,10 @@ use crate::{
     jsonrpc::{HttpTransport, JsonRpcClient},
     provider::{Provider, ProviderError},
 };
+use colored::*;
 use starknet_core::types::{BlockId, BlockTag, BlockWithTxHashes, MaybePendingBlockWithTxHashes};
 use thiserror::Error;
+use tracing::info;
 use url::Url;
 
 #[derive(Error, Debug)]
@@ -34,5 +36,6 @@ pub async fn get_block_with_tx_hashes(
             "Unexpected block response type".to_string(),
         ))?,
     };
+    info!("{}", "Get Block With Tx Hashes Compatible".green());
     Ok(response)
 }

@@ -29,7 +29,6 @@ pub async fn account_balance(base_url: Url) -> Result<AccountBalanceResponse, Re
             starknet_core::types::BlockTag::Latest,
         )
         .await;
-    println!("{:?}", response.as_ref().unwrap());
     match response {
         Ok(value) => match serde_json::from_value::<AccountBalanceResponse>(value) {
             Ok(account_balance_respnose) => {
@@ -37,7 +36,7 @@ pub async fn account_balance(base_url: Url) -> Result<AccountBalanceResponse, Re
                 Ok(account_balance_respnose)
             }
             Err(e) => {
-                info!("{}", "Incompatible".red());
+                info!("{}", "Account Balance Incompatible".red());
                 Err(RequestOrParseError::Serde(e))
             }
         },

@@ -18,3 +18,5 @@ Cargo.lock
 Scarb.lock
 .cargo
 runner/proptest-regressions
+
+snfoundry.toml
