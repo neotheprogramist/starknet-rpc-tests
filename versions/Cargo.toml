@@ -1,0 +1,19 @@
+[package]
+name = "versions"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+auto_impl.workspace = true
+colored.workspace = true
+reqwest.workspace = true
+serde_json.workspace = true
+serde_with.workspace = true
+serde.workspace = true
+starknet-types-rpc.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+url.workspace = true
+
+[features]
+std = []

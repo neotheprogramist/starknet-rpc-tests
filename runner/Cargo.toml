@@ -1,0 +1,13 @@
+[package]
+name = "runner"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+tokio.workspace = true
+versions = { path = "../versions" }
+url.workspace = true
+clap.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+colored.workspace = true
