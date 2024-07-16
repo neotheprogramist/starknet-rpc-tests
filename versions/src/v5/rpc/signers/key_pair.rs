@@ -1,10 +1,6 @@
 use crypto_bigint::{Encoding, NonZero, U256};
-use rand::{rngs::StdRng, Rng, SeedableRng};
-// use starknet_core::{
-//     crypto::{ecdsa_sign, ecdsa_verify, EcdsaSignError, EcdsaVerifyError, Signature},
-//     types::FieldElement,
-// };
 use lambdaworks_math::elliptic_curve::short_weierstrass::curves::stark_curve::StarkCurve;
+use rand::{rngs::StdRng, Rng, SeedableRng};
 use starknet_types_core::curve::{get_public_key, EcdsaSignError, Signature, Signer};
 use starknet_types_rpc::Felt;
 
