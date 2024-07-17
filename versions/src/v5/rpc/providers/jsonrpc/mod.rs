@@ -16,8 +16,8 @@ use starknet_types_rpc::{
     GetTransactionStatusParams, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
     MaybePendingStateUpdate, MsgFromL1, SimulateTransactionsParams, SimulateTransactionsResult,
     SimulationFlag, SpecVersionParams, SyncingParams, SyncingStatus, TraceBlockTransactionsParams,
-    TraceBlockTransactionsResult, TraceTransactionParams, TransactionTrace, Txn, TxnReceipt,
-    TxnStatus,
+    TraceBlockTransactionsResult, TraceTransactionParams, TransactionTrace, Txn, TxnHash,
+    TxnReceipt, TxnStatus,
 };
 
 pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
@@ -212,75 +212,55 @@ where
     }
 
     /// Get block information with transaction hashes given the block id
-    async fn get_block_with_tx_hashes<B>(
+    async fn get_block_with_tx_hashes(
         &self,
-        block_id: B,
-    ) -> Result<MaybePendingBlockWithTxHashes, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-    {
+        block_id: BlockId,
+    ) -> Result<MaybePendingBlockWithTxHashes, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetBlockWithTxHashes,
-            GetBlockWithTxHashesParams {
-                block_id: *block_id.as_ref(),
-            },
+            GetBlockWithTxHashesParams { block_id },
         )
         .await
     }
 
     /// Get block information with full transactions given the block id
-    async fn get_block_with_txs<B>(
+    async fn get_block_with_txs(
         &self,
-        block_id: B,
-    ) -> Result<MaybePendingBlockWithTxs, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-    {
+        block_id: BlockId,
+    ) -> Result<MaybePendingBlockWithTxs, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetBlockWithTxs,
-            GetBlockWithTxsParams {
-                block_id: *block_id.as_ref(),
-            },
+            GetBlockWithTxsParams { block_id },
         )
         .await
     }
 
     /// Get the information about the result of executing the requested block
-    async fn get_state_update<B>(
+    async fn get_state_update(
         &self,
-        block_id: B,
-    ) -> Result<MaybePendingStateUpdate, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-    {
+        block_id: BlockId,
+    ) -> Result<MaybePendingStateUpdate, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetStateUpdate,
-            GetStateUpdateParams {
-                block_id: *block_id.as_ref(),
-            },
+            GetStateUpdateParams { block_id },
         )
         .await
     }
 
     /// Get the value of the storage at the given address and key
-    async fn get_storage_at<A, K, B>(
+    async fn get_storage_at(
         &self,
-        contract_address: A,
-        key: K,
-        block_id: B,
-    ) -> Result<FeltPrimitive, ProviderError>
-    where
-        A: AsRef<FeltPrimitive> + Send + Sync,
-        K: AsRef<FeltPrimitive> + Send + Sync,
-        B: AsRef<BlockId> + Send + Sync,
-    {
+        contract_address: FeltPrimitive,
+        key: FeltPrimitive,
+        block_id: BlockId,
+    ) -> Result<FeltPrimitive, ProviderError> {
         Ok(self
             .send_request::<_, Felt>(
                 JsonRpcMethod::GetStorageAt,
                 GetStorageAtParams {
-                    contract_address: *contract_address.as_ref(),
-                    key: key.as_ref().to_string(),
-                    block_id: *block_id.as_ref(),
+                    contract_address,
+                    key: key.to_string(),
+                    block_id,
                 },
             )
             .await?
@@ -289,108 +269,82 @@ where
 
     /// Gets the transaction status (possibly reflecting that the tx is still in
     /// the mempool, or dropped from it)
-    async fn get_transaction_status<H>(
+    async fn get_transaction_status(
         &self,
-        transaction_hash: H,
-    ) -> Result<TxnStatus, ProviderError>
-    where
-        H: AsRef<FeltPrimitive> + Send + Sync,
-    {
+        transaction_hash: FeltPrimitive,
+    ) -> Result<TxnStatus, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetTransactionStatus,
-            GetTransactionStatusParams {
-                transaction_hash: *transaction_hash.as_ref(),
-            },
+            GetTransactionStatusParams { transaction_hash },
         )
         .await
     }
 
     /// Get the details and status of a submitted transaction
-    async fn get_transaction_by_hash<H>(&self, transaction_hash: H) -> Result<Txn, ProviderError>
-    where
-        H: AsRef<FeltPrimitive> + Send + Sync,
-    {
+    async fn get_transaction_by_hash(
+        &self,
+        transaction_hash: FeltPrimitive,
+    ) -> Result<Txn, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetTransactionByHash,
-            GetTransactionByHashParams {
-                transaction_hash: *transaction_hash.as_ref(),
-            },
+            GetTransactionByHashParams { transaction_hash },
         )
         .await
     }
 
     /// Get the details of a transaction by a given block id and index
-    async fn get_transaction_by_block_id_and_index<B>(
+    async fn get_transaction_by_block_id_and_index(
         &self,
-        block_id: B,
+        block_id: BlockId,
         index: u64,
-    ) -> Result<Txn, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-    {
+    ) -> Result<Txn, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetTransactionByBlockIdAndIndex,
-            GetTransactionByBlockIdAndIndexParams {
-                block_id: *block_id.as_ref(),
-                index,
-            },
+            GetTransactionByBlockIdAndIndexParams { block_id, index },
         )
         .await
     }
 
     /// Get the details of a transaction by a given block number and index
-    async fn get_transaction_receipt<H>(
+    async fn get_transaction_receipt(
         &self,
-        transaction_hash: H,
-    ) -> Result<TxnReceipt, ProviderError>
-    where
-        H: AsRef<FeltPrimitive> + Send + Sync,
-    {
+        transaction_hash: TxnHash,
+    ) -> Result<TxnReceipt, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetTransactionReceipt,
-            GetTransactionReceiptParams {
-                transaction_hash: *transaction_hash.as_ref(),
-            },
+            GetTransactionReceiptParams { transaction_hash },
         )
         .await
     }
 
     /// Get the contract class definition in the given block associated with the given hash
-    async fn get_class<B, H>(
+    async fn get_class(
         &self,
-        block_id: B,
-        class_hash: H,
-    ) -> Result<ContractClass, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        H: AsRef<FeltPrimitive> + Send + Sync,
-    {
+        block_id: BlockId,
+        class_hash: FeltPrimitive,
+    ) -> Result<ContractClass, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetClass,
             GetClassParams {
-                block_id: *block_id.as_ref(),
-                class_hash: *class_hash.as_ref(),
+                block_id,
+                class_hash,
             },
         )
         .await
     }
 
     /// Get the contract class hash in the given block for the contract deployed at the given address
-    async fn get_class_hash_at<B, A>(
+    async fn get_class_hash_at(
         &self,
-        block_id: B,
-        contract_address: A,
-    ) -> Result<FeltPrimitive, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        A: AsRef<FeltPrimitive> + Send + Sync,
-    {
+        block_id: BlockId,
+        contract_address: FeltPrimitive,
+    ) -> Result<FeltPrimitive, ProviderError> {
         Ok(self
             .send_request::<_, Felt>(
                 JsonRpcMethod::GetClassHashAt,
                 GetClassHashAtParams {
-                    block_id: *block_id.as_ref(),
-                    contract_address: *contract_address.as_ref(),
+                    block_id,
+                    contract_address,
                 },
             )
             .await?
@@ -398,94 +352,64 @@ where
     }
 
     /// Get the contract class definition in the given block at the given address
-    async fn get_class_at<B, A>(
+    async fn get_class_at(
         &self,
-        block_id: B,
-        contract_address: A,
-    ) -> Result<ContractClass, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        A: AsRef<FeltPrimitive> + Send + Sync,
-    {
+        block_id: BlockId,
+        contract_address: FeltPrimitive,
+    ) -> Result<ContractClass, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetClassAt,
             GetClassAtParams {
-                block_id: *block_id.as_ref(),
-                contract_address: *contract_address.as_ref(),
+                block_id,
+                contract_address,
             },
         )
         .await
     }
 
     /// Get the number of transactions in a block given a block id
-    async fn get_block_transaction_count<B>(&self, block_id: B) -> Result<u64, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-    {
+    async fn get_block_transaction_count(&self, block_id: BlockId) -> Result<u64, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetBlockTransactionCount,
-            GetBlockTransactionCountParams {
-                block_id: *block_id.as_ref(),
-            },
+            GetBlockTransactionCountParams { block_id },
         )
         .await
     }
 
     /// Call a starknet function without creating a Starknet transaction
-    async fn call<R, B>(&self, request: R, block_id: B) -> Result<Vec<FeltPrimitive>, ProviderError>
-    where
-        R: AsRef<FunctionCall> + Send + Sync,
-        B: AsRef<BlockId> + Send + Sync,
-    {
+    async fn call(
+        &self,
+        request: FunctionCall,
+        block_id: BlockId,
+    ) -> Result<Vec<FeltPrimitive>, ProviderError> {
         Ok(self
-            .send_request::<_, FeltArray>(
-                JsonRpcMethod::Call,
-                CallParams {
-                    request: request.as_ref().clone(),
-                    block_id: *block_id.as_ref(),
-                },
-            )
+            .send_request::<_, FeltArray>(JsonRpcMethod::Call, CallParams { request, block_id })
             .await?
             .0)
     }
 
     /// Estimate the fee for a given Starknet transaction
-    async fn estimate_fee<R, S, B>(
+    async fn estimate_fee(
         &self,
-        request: R,
-
-        block_id: B,
-    ) -> Result<Vec<FeeEstimate>, ProviderError>
-    where
-        R: AsRef<[BroadcastedTxn]> + Send + Sync,
-        B: AsRef<BlockId> + Send + Sync,
-    {
+        request: Vec<BroadcastedTxn>,
+        block_id: BlockId,
+    ) -> Result<Vec<FeeEstimate>, ProviderError> {
         self.send_request(
             JsonRpcMethod::EstimateFee,
-            EstimateFeeParams {
-                request: request.as_ref().to_vec(),
-                block_id: *block_id.as_ref(),
-            },
+            EstimateFeeParams { request, block_id },
         )
         .await
     }
 
     /// Estimate the L2 fee of a message sent on L1
-    async fn estimate_message_fee<M, B>(
+    async fn estimate_message_fee(
         &self,
-        message: M,
-        block_id: B,
-    ) -> Result<FeeEstimate, ProviderError>
-    where
-        M: AsRef<MsgFromL1> + Send + Sync,
-        B: AsRef<BlockId> + Send + Sync,
-    {
+        message: MsgFromL1,
+        block_id: BlockId,
+    ) -> Result<FeeEstimate, ProviderError> {
         self.send_request(
             JsonRpcMethod::EstimateMessageFee,
-            EstimateMessageFeeParams {
-                message: message.as_ref().clone(),
-                block_id: *block_id.as_ref(),
-            },
+            EstimateMessageFeeParams { message, block_id },
         )
         .await
     }
@@ -529,21 +453,17 @@ where
     }
 
     /// Get the nonce associated with the given address in the given block
-    async fn get_nonce<B, A>(
+    async fn get_nonce(
         &self,
-        block_id: B,
-        contract_address: A,
-    ) -> Result<FeltPrimitive, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        A: AsRef<FeltPrimitive> + Send + Sync,
-    {
+        block_id: BlockId,
+        contract_address: FeltPrimitive,
+    ) -> Result<FeltPrimitive, ProviderError> {
         Ok(self
             .send_request::<_, Felt>(
                 JsonRpcMethod::GetNonce,
                 GetNonceParams {
-                    block_id: *block_id.as_ref(),
-                    contract_address: *contract_address.as_ref(),
+                    block_id,
+                    contract_address,
                 },
             )
             .await?
@@ -551,51 +471,40 @@ where
     }
 
     /// Submit a new transaction to be added to the chain
-    async fn add_invoke_transaction<I>(
+    async fn add_invoke_transaction(
         &self,
-        invoke_transaction: I,
-    ) -> Result<AddInvokeTransactionResult, ProviderError>
-    where
-        I: AsRef<BroadcastedInvokeTxn> + Send + Sync,
-    {
+        invoke_transaction: BroadcastedInvokeTxn,
+    ) -> Result<AddInvokeTransactionResult, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddInvokeTransaction,
-            AddInvokeTransactionParams {
-                invoke_transaction: invoke_transaction.as_ref().clone(),
-            },
+            AddInvokeTransactionParams { invoke_transaction },
         )
         .await
     }
 
     /// Submit a new transaction to be added to the chain
-    async fn add_declare_transaction<D>(
+    async fn add_declare_transaction(
         &self,
-        declare_transaction: D,
-    ) -> Result<ClassAndTxnHash, ProviderError>
-    where
-        D: AsRef<BroadcastedDeclareTxn> + Send + Sync,
-    {
+        declare_transaction: BroadcastedDeclareTxn,
+    ) -> Result<ClassAndTxnHash, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddDeclareTransaction,
             AddDeclareTransactionParams {
-                declare_transaction: declare_transaction.as_ref().clone(),
+                declare_transaction,
             },
         )
         .await
     }
 
     /// Submit a new deploy account transaction
-    async fn add_deploy_account_transaction<D>(
+    async fn add_deploy_account_transaction(
         &self,
-        deploy_account_transaction: D,
-    ) -> Result<ContractAndTxnHash, ProviderError>
-    where
-        D: AsRef<BroadcastedDeployAccountTxn> + Send + Sync,
-    {
+        deploy_account_transaction: BroadcastedDeployAccountTxn,
+    ) -> Result<ContractAndTxnHash, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddDeployAccountTransaction,
             AddDeployAccountTransactionParams {
-                deploy_account_transaction: deploy_account_transaction.as_ref().clone(),
+                deploy_account_transaction,
             },
         )
         .await
@@ -603,18 +512,13 @@ where
 
     /// For a given executed transaction, return the trace of its execution, including internal
     /// calls
-    async fn trace_transaction<H>(
+    async fn trace_transaction(
         &self,
-        transaction_hash: H,
-    ) -> Result<TransactionTrace, ProviderError>
-    where
-        H: AsRef<FeltPrimitive> + Send + Sync,
-    {
+        transaction_hash: FeltPrimitive,
+    ) -> Result<TransactionTrace, ProviderError> {
         self.send_request(
             JsonRpcMethod::TraceTransaction,
-            TraceTransactionParams {
-                transaction_hash: transaction_hash.as_ref().clone(),
-            },
+            TraceTransactionParams { transaction_hash },
         )
         .await
     }
@@ -625,41 +529,31 @@ where
     /// transactions may revert, this will be reflected by the revert_error property in the trace.
     /// Other types of failures (e.g. unexpected error or failure in the validation phase) will
     /// result in TRANSACTION_EXECUTION_ERROR.
-    async fn simulate_transactions<B, TX, S>(
+    async fn simulate_transactions(
         &self,
-        block_id: B,
-        transactions: TX,
-        simulation_flags: S,
-    ) -> Result<Vec<SimulateTransactionsResult>, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        TX: AsRef<[BroadcastedTxn]> + Send + Sync,
-        S: AsRef<[SimulationFlag]> + Send + Sync,
-    {
+        block_id: BlockId,
+        transactions: Vec<BroadcastedTxn>,
+        simulation_flags: Vec<SimulationFlag>,
+    ) -> Result<Vec<SimulateTransactionsResult>, ProviderError> {
         self.send_request(
             JsonRpcMethod::SimulateTransactions,
             SimulateTransactionsParams {
-                block_id: *block_id.as_ref(),
-                transactions: transactions.as_ref().to_vec(),
-                simulation_flags: simulation_flags.as_ref().to_vec(),
+                block_id,
+                transactions,
+                simulation_flags,
             },
         )
         .await
     }
 
     /// Retrieve traces for all transactions in the given block.
-    async fn trace_block_transactions<B>(
+    async fn trace_block_transactions(
         &self,
-        block_id: B,
-    ) -> Result<Vec<TraceBlockTransactionsResult>, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-    {
+        block_id: BlockId,
+    ) -> Result<Vec<TraceBlockTransactionsResult>, ProviderError> {
         self.send_request(
             JsonRpcMethod::TraceBlockTransactions,
-            TraceBlockTransactionsParams {
-                block_id: *block_id.as_ref(),
-            },
+            TraceBlockTransactionsParams { block_id },
         )
         .await
     }

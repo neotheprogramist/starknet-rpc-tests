@@ -2,9 +2,9 @@ use auto_impl::auto_impl;
 use starknet_types_rpc::{
     AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BroadcastedDeclareTxn,
     BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn, ClassAndTxnHash,
-    ContractAndTxnHash, ContractClass, EventFilterWithPageRequest, EventsChunk, FeeEstimate, Felt,
-    FunctionCall, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-    MsgFromL1, SimulateTransactionsResult, SimulationFlag, SyncingStatus,
+    ContractAndTxnHash, ContractClass, DeployAccountTxnV1, EventFilterWithPageRequest, EventsChunk,
+    FeeEstimate, Felt, FunctionCall, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+    MaybePendingStateUpdate, MsgFromL1, SimulateTransactionsResult, SimulationFlag, SyncingStatus,
     TraceBlockTransactionsResult, TransactionTrace, Txn, TxnReceipt, TxnStatus,
 };
 use std::{any::Any, error::Error, fmt::Debug};
@@ -17,141 +17,119 @@ pub trait Provider {
     fn spec_version(&self) -> impl std::future::Future<Output = Result<String, ProviderError>>;
 
     /// Get block information with transaction hashes given the block id
-    fn get_block_with_tx_hashes<B>(
+    fn get_block_with_tx_hashes(
         &self,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<MaybePendingBlockWithTxHashes, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync;
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<MaybePendingBlockWithTxHashes, ProviderError>>;
 
     /// Get block information with full transactions given the block id
-    fn get_block_with_txs<B>(
+    fn get_block_with_txs(
         &self,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<MaybePendingBlockWithTxs, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync;
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<MaybePendingBlockWithTxs, ProviderError>>;
 
     /// Get the information about the result of executing the requested block
-    fn get_state_update<B>(
+    fn get_state_update(
         &self,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<MaybePendingStateUpdate, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync;
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<MaybePendingStateUpdate, ProviderError>>;
 
     /// Get the value of the storage at the given address and key
-    fn get_storage_at<A, K, B>(
+    fn get_storage_at(
         &self,
-        contract_address: A,
-        key: K,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<Felt, ProviderError>>
-    where
-        A: AsRef<Felt> + Send + Sync,
-        K: AsRef<Felt> + Send + Sync,
-        B: AsRef<BlockId> + Send + Sync;
+        contract_address: Felt,
+        key: Felt,
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<Felt, ProviderError>>;
 
     /// Gets the transaction status (possibly reflecting that the tx is still in
     /// the mempool, or dropped from it)
-    fn get_transaction_status<H>(
+    fn get_transaction_status(
         &self,
-        transaction_hash: H,
-    ) -> impl std::future::Future<Output = Result<TxnStatus, ProviderError>>
-    where
-        H: AsRef<Felt> + Send + Sync;
+        transaction_hash: Felt,
+    ) -> impl std::future::Future<Output = Result<TxnStatus, ProviderError>>;
 
     /// Get the details and status of a submitted transaction
-    fn get_transaction_by_hash<H>(
+    fn get_transaction_by_hash(
         &self,
-        transaction_hash: H,
-    ) -> impl std::future::Future<Output = Result<Txn, ProviderError>>
-    where
-        H: AsRef<Felt> + Send + Sync;
+        transaction_hash: Felt,
+    ) -> impl std::future::Future<Output = Result<Txn, ProviderError>>;
 
     /// Get the details of a transaction by a given block id and index
-    fn get_transaction_by_block_id_and_index<B>(
+    fn get_transaction_by_block_id_and_index(
         &self,
-        block_id: B,
+        block_id: BlockId,
         index: u64,
-    ) -> impl std::future::Future<Output = Result<Txn, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync;
+    ) -> impl std::future::Future<Output = Result<Txn, ProviderError>>;
 
     /// Get the details of a transaction by a given block number and index
-    fn get_transaction_receipt<H>(
+    fn get_transaction_receipt(
         &self,
-        transaction_hash: H,
-    ) -> impl std::future::Future<Output = Result<TxnReceipt, ProviderError>>
-    where
-        H: AsRef<Felt> + Send + Sync;
+        transaction_hash: Felt,
+    ) -> impl std::future::Future<Output = Result<TxnReceipt, ProviderError>>;
 
     /// Get the contract class definition in the given block associated with the given hash
-    fn get_class<B, H>(
+    fn get_class(
         &self,
-        block_id: B,
-        class_hash: H,
-    ) -> impl std::future::Future<Output = Result<ContractClass, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        H: AsRef<Felt> + Send + Sync;
+        block_id: BlockId,
+        class_hash: Felt,
+    ) -> impl std::future::Future<Output = Result<ContractClass, ProviderError>>;
 
     /// Get the contract class hash in the given block for the contract deployed at the given address
-    fn get_class_hash_at<B, A>(
+    fn get_class_hash_at(
         &self,
-        block_id: B,
-        contract_address: A,
-    ) -> impl std::future::Future<Output = Result<Felt, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        A: AsRef<Felt> + Send + Sync;
+        block_id: BlockId,
+        contract_address: Felt,
+    ) -> impl std::future::Future<Output = Result<Felt, ProviderError>>;
 
     /// Get the contract class definition in the given block at the given address
-    fn get_class_at<B, A>(
+    fn get_class_at(
         &self,
-        block_id: B,
-        contract_address: A,
-    ) -> impl std::future::Future<Output = Result<ContractClass, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        A: AsRef<Felt> + Send + Sync;
+        block_id: BlockId,
+        contract_address: Felt,
+    ) -> impl std::future::Future<Output = Result<ContractClass, ProviderError>>;
 
     /// Get the number of transactions in a block given a block id
-    fn get_block_transaction_count<B>(
+    fn get_block_transaction_count(
         &self,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<u64, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync;
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<u64, ProviderError>>;
 
     /// Call a starknet function without creating a Starknet transaction
-    fn call<R, B>(
+    fn call(
         &self,
-        request: R,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<Vec<Felt>, ProviderError>>
-    where
-        R: AsRef<FunctionCall> + Send + Sync,
-        B: AsRef<BlockId> + Send + Sync;
+        request: FunctionCall,
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, ProviderError>>;
 
     /// Estimate the fee for a given Starknet transaction
-    fn estimate_fee<R, S, B>(
+    fn estimate_fee(
         &self,
-        request: R,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<Vec<FeeEstimate>, ProviderError>>
-    where
-        R: AsRef<[BroadcastedTxn]> + Send + Sync,
-        B: AsRef<BlockId> + Send + Sync;
+        request: Vec<BroadcastedTxn>,
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<Vec<FeeEstimate>, ProviderError>>;
 
-    fn estimate_message_fee<M, B>(
+    /// Same as [estimate_fee], but only with one estimate.
+    async fn estimate_fee_single(
         &self,
-        message: M,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<FeeEstimate, ProviderError>>
-    where
-        M: AsRef<MsgFromL1> + Send + Sync,
-        B: AsRef<BlockId> + Send + Sync;
+        request: BroadcastedTxn,
+        block_id: BlockId,
+    ) -> Result<FeeEstimate, ProviderError> {
+        let mut result = self.estimate_fee(vec![request], block_id).await?;
+
+        if result.len() == 1 {
+            // Unwrapping here is safe becuase we already checked length
+            Ok(result.pop().unwrap())
+        } else {
+            Err(ProviderError::ArrayLengthMismatch)
+        }
+    }
+
+    fn estimate_message_fee(
+        &self,
+        message: MsgFromL1,
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<FeeEstimate, ProviderError>>;
 
     /// Get the most recent accepted block number
     fn block_number(&self) -> impl std::future::Future<Output = Result<u64, ProviderError>>;
@@ -174,47 +152,36 @@ pub trait Provider {
     ) -> impl std::future::Future<Output = Result<EventsChunk, ProviderError>>;
 
     /// Get the nonce associated with the given address in the given block
-    fn get_nonce<B, A>(
+    fn get_nonce(
         &self,
-        block_id: B,
-        contract_address: A,
-    ) -> impl std::future::Future<Output = Result<Felt, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        A: AsRef<Felt> + Send + Sync;
+        block_id: BlockId,
+        contract_address: Felt,
+    ) -> impl std::future::Future<Output = Result<Felt, ProviderError>>;
 
     /// Submit a new transaction to be added to the chain
-    fn add_invoke_transaction<I>(
+    fn add_invoke_transaction(
         &self,
-        invoke_transaction: I,
-    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult, ProviderError>>
-    where
-        I: AsRef<BroadcastedInvokeTxn> + Send + Sync;
+        invoke_transaction: BroadcastedInvokeTxn,
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult, ProviderError>>;
 
     /// Submit a new transaction to be added to the chain
-    fn add_declare_transaction<D>(
+    fn add_declare_transaction(
         &self,
-        declare_transaction: D,
-    ) -> impl std::future::Future<Output = Result<ClassAndTxnHash, ProviderError>>
-    where
-        D: AsRef<BroadcastedDeclareTxn> + Send + Sync;
+        declare_transaction: BroadcastedDeclareTxn,
+    ) -> impl std::future::Future<Output = Result<ClassAndTxnHash, ProviderError>>;
 
     /// Submit a new deploy account transaction
-    fn add_deploy_account_transaction<D>(
+    fn add_deploy_account_transaction(
         &self,
-        deploy_account_transaction: D,
-    ) -> impl std::future::Future<Output = Result<ContractAndTxnHash, ProviderError>>
-    where
-        D: AsRef<BroadcastedDeployAccountTxn> + Send + Sync;
+        deploy_account_transaction: BroadcastedDeployAccountTxn,
+    ) -> impl std::future::Future<Output = Result<ContractAndTxnHash, ProviderError>>;
 
     /// For a given executed transaction, return the trace of its execution, including internal
     /// calls
-    fn trace_transaction<H>(
+    fn trace_transaction(
         &self,
-        transaction_hash: H,
-    ) -> impl std::future::Future<Output = Result<TransactionTrace, ProviderError>>
-    where
-        H: AsRef<Felt> + Send + Sync;
+        transaction_hash: Felt,
+    ) -> impl std::future::Future<Output = Result<TransactionTrace, ProviderError>>;
 
     /// Simulate a given sequence of transactions on the requested state, and generate the execution
     /// traces. Note that some of the transactions may revert, in which case no error is thrown, but
@@ -222,43 +189,28 @@ pub trait Provider {
     /// transactions may revert, this will be reflected by the revert_error property in the trace.
     /// Other types of failures (e.g. unexpected error or failure in the validation phase) will
     /// result in TRANSACTION_EXECUTION_ERROR.
-    fn simulate_transactions<B, T, S>(
+    fn simulate_transactions(
         &self,
-        block_id: B,
-        transactions: T,
-        simulation_flags: S,
-    ) -> impl std::future::Future<Output = Result<Vec<SimulateTransactionsResult>, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        T: AsRef<[BroadcastedTxn]> + Send + Sync,
-        S: AsRef<[SimulationFlag]> + Send + Sync;
+        block_id: BlockId,
+        transactions: Vec<BroadcastedTxn>,
+        simulation_flags: Vec<SimulationFlag>,
+    ) -> impl std::future::Future<Output = Result<Vec<SimulateTransactionsResult>, ProviderError>>;
 
     /// Retrieve traces for all transactions in the given block.
-    fn trace_block_transactions<B>(
+    fn trace_block_transactions(
         &self,
-        block_id: B,
-    ) -> impl std::future::Future<Output = Result<Vec<TraceBlockTransactionsResult>, ProviderError>>
-    where
-        B: AsRef<BlockId> + Send + Sync;
+        block_id: BlockId,
+    ) -> impl std::future::Future<Output = Result<Vec<TraceBlockTransactionsResult>, ProviderError>>;
 
     /// Same as [simulate_transactions], but only with one simulation.
-    async fn simulate_transaction<B, T, S>(
+    async fn simulate_transaction(
         &self,
-        block_id: B,
-        transaction: T,
-        simulation_flags: S,
-    ) -> Result<SimulateTransactionsResult, ProviderError>
-    where
-        B: AsRef<BlockId> + Send + Sync,
-        T: AsRef<BroadcastedTxn> + Send + Sync,
-        S: AsRef<[SimulationFlag]> + Send + Sync,
-    {
+        block_id: BlockId,
+        transaction: BroadcastedTxn,
+        simulation_flags: Vec<SimulationFlag>,
+    ) -> Result<SimulateTransactionsResult, ProviderError> {
         let mut result = self
-            .simulate_transactions(
-                block_id,
-                [transaction.as_ref().to_owned()],
-                simulation_flags,
-            )
+            .simulate_transactions(block_id, vec![transaction], simulation_flags)
             .await?;
 
         if result.len() == 1 {

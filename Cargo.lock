@@ -1427,7 +1427,7 @@ checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 [[package]]
 name = "starknet-types-core"
 version = "0.1.5"
-source = "git+https://github.com/neotheprogramist/types-rs?branch=feat/signer#713429812ab03d488db9ceff132d261b60da1fa8"
+source = "git+https://github.com/neotheprogramist/types-rs?branch=feat/signer#0ef0ede5e2fedd6acda0bc3cd5602de775d7d594"
 dependencies = [
  "crypto-bigint",
  "hmac",
@@ -1445,7 +1445,7 @@ dependencies = [
 [[package]]
 name = "starknet-types-rpc"
 version = "0.6.0"
-source = "git+https://github.com/neotheprogramist/types-rs?branch=feat/signer#713429812ab03d488db9ceff132d261b60da1fa8"
+source = "git+https://github.com/neotheprogramist/types-rs?branch=feat/signer#0ef0ede5e2fedd6acda0bc3cd5602de775d7d594"
 dependencies = [
  "serde",
  "starknet-types-core",
@@ -1591,9 +1591,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.38.0"
+version = "1.38.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba4f4a02a7a80d6f274636f0aa95c7e383b912d41fe721a31f29e29698585a4a"
+checksum = "eb2caba9f80616f438e09748d5acda951967e1ea58508ef53d9c6402485a46df"
 dependencies = [
  "backtrace",
  "bytes",
