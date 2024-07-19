@@ -9,6 +9,15 @@ use crate::v5::rpc::signers::signer::Signer;
 // use starknet_core::types::{contract::ComputeClassHashError, BlockId, BlockTag, Felt};
 use starknet_types_rpc::{BlockId, BlockTag, Felt};
 
+use super::{
+    account::{
+        Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawExecutionV1,
+        RawLegacyDeclaration,
+    },
+    call::Call,
+    errors::ComputeClassHashError,
+};
+
 #[derive(Debug, Clone)]
 pub struct SingleOwnerAccount<P, S>
 where
@@ -25,9 +34,9 @@ where
 
 #[derive(Debug, thiserror::Error)]
 pub enum SignError<S> {
-    #[error(transparent)]
+    #[error("Signer error ")]
     Signer(S),
-    #[error(transparent)]
+    #[error("Compute class hash error")]
     ClassHash(ComputeClassHashError),
 }
 
@@ -108,20 +117,20 @@ where
         Ok(vec![signature.r, signature.s])
     }
 
-    async fn sign_execution_v3(
-        &self,
-        execution: &RawExecutionV3,
-        query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError> {
-        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
-        let signature = self
-            .signer
-            .sign_hash(&tx_hash)
-            .await
-            .map_err(SignError::Signer)?;
+    // async fn sign_execution_v3(
+    //     &self,
+    //     execution: &RawExecutionV3,
+    //     query_only: bool,
+    // ) -> Result<Vec<Felt>, Self::SignError> {
+    //     let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+    //     let signature = self
+    //         .signer
+    //         .sign_hash(&tx_hash)
+    //         .await
+    //         .map_err(SignError::Signer)?;
 
-        Ok(vec![signature.r, signature.s])
-    }
+    //     Ok(vec![signature.r, signature.s])
+    // }
 
     async fn sign_declaration_v2(
         &self,
@@ -138,37 +147,37 @@ where
         Ok(vec![signature.r, signature.s])
     }
 
-    async fn sign_declaration_v3(
-        &self,
-        declaration: &RawDeclarationV3,
-        query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError> {
-        let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
-        let signature = self
-            .signer
-            .sign_hash(&tx_hash)
-            .await
-            .map_err(SignError::Signer)?;
+    // async fn sign_declaration_v3(
+    //     &self,
+    //     declaration: &RawDeclarationV3,
+    //     query_only: bool,
+    // ) -> Result<Vec<Felt>, Self::SignError> {
+    //     let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
+    //     let signature = self
+    //         .signer
+    //         .sign_hash(&tx_hash)
+    //         .await
+    //         .map_err(SignError::Signer)?;
 
-        Ok(vec![signature.r, signature.s])
-    }
+    //     Ok(vec![signature.r, signature.s])
+    // }
 
-    async fn sign_legacy_declaration(
-        &self,
-        legacy_declaration: &RawLegacyDeclaration,
-        query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError> {
-        let tx_hash = legacy_declaration
-            .transaction_hash(self.chain_id, self.address, query_only)
-            .map_err(SignError::ClassHash)?;
-        let signature = self
-            .signer
-            .sign_hash(&tx_hash)
-            .await
-            .map_err(SignError::Signer)?;
+    // async fn sign_legacy_declaration(
+    //     &self,
+    //     legacy_declaration: &RawLegacyDeclaration,
+    //     query_only: bool,
+    // ) -> Result<Vec<Felt>, Self::SignError> {
+    //     let tx_hash = legacy_declaration
+    //         .transaction_hash(self.chain_id, self.address, query_only)
+    //         .map_err(SignError::ClassHash)?;
+    //     let signature = self
+    //         .signer
+    //         .sign_hash(&tx_hash)
+    //         .await
+    //         .map_err(SignError::Signer)?;
 
-        Ok(vec![signature.r, signature.s])
-    }
+    //     Ok(vec![signature.r, signature.s])
+    // }
 
     fn is_signer_interactive(&self) -> bool {
         self.signer.is_interactive()

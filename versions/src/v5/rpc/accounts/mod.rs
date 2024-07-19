@@ -1,3 +1,4 @@
+pub mod account;
 pub mod call;
 pub mod errors;
 pub mod factory;
