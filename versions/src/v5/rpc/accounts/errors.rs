@@ -1,3 +1,10 @@
+use starknet_types_rpc::Felt;
+use thiserror::Error;
+
+use crate::v5::rpc::providers::{jsonrpc::StarknetError, provider::ProviderError};
+
+use super::factory::AccountFactoryError;
+
 #[derive(Debug, thiserror::Error)]
 #[error("Not all fields are prepared")]
 pub struct NotPreparedError;
@@ -37,4 +44,48 @@ pub struct InvalidBytecodeSegmentError {
 #[derive(Debug)]
 pub struct PcOutOfRangeError {
     pub pc: u64,
+}
+
+#[derive(Error, Debug)]
+pub enum CreationError {
+    #[error("Class with hash {0:#x} is not declared, try using --class-hash with a hash of the declared class")]
+    ClassHashNotFound(Felt),
+    #[error("RPC error: {0}")]
+    RpcError(String),
+    #[error("Provider error: {0:?}")]
+    ProviderError(ProviderError),
+}
+
+impl From<ProviderError> for CreationError {
+    fn from(error: ProviderError) -> Self {
+        CreationError::ProviderError(error)
+    }
+}
+
+impl From<String> for CreationError {
+    fn from(err: String) -> Self {
+        // Assuming you want to treat String errors as RpcError variants of CreationError
+        CreationError::RpcError(err)
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum TransactionError {
+    #[error("Transaction has been rejected")]
+    Rejected,
+    #[error("Transaction has been reverted = {}", .0.data)]
+    Reverted(ErrorData),
+}
+
+#[derive(Error, Debug)]
+pub enum WaitForTransactionError {
+    #[error(transparent)]
+    TransactionError(TransactionError),
+    #[error("sncast timed out while waiting for transaction to succeed")]
+    TimedOut,
+}
+
+#[derive(Debug)]
+pub struct ErrorData {
+    pub data: String,
 }

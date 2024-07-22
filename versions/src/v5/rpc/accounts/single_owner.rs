@@ -1,19 +1,10 @@
-// use crate::{
-//     Account, Call, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3,
-//     RawExecutionV1, RawExecutionV3, RawLegacyDeclaration,
-// };
-
 use crate::v5::rpc::providers::provider::Provider;
 use crate::v5::rpc::signers::signer::Signer;
 
-// use starknet_core::types::{contract::ComputeClassHashError, BlockId, BlockTag, Felt};
 use starknet_types_rpc::{BlockId, BlockTag, Felt};
 
 use super::{
-    account::{
-        Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawExecutionV1,
-        RawLegacyDeclaration,
-    },
+    account::{Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawExecutionV1},
     call::Call,
     errors::ComputeClassHashError,
 };
