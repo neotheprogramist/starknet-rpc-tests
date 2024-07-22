@@ -218,6 +218,7 @@ impl<'f, F> AccountDeploymentV1<'f, F> {
     }
 
     pub fn max_fee(self, max_fee: Felt) -> Self {
+        info!("SETTING MAX FEE CONSTRUCTOR");
         Self {
             max_fee: Some(max_fee),
             ..self
@@ -376,12 +377,14 @@ where
     }
 
     pub async fn send(&self) -> Result<ContractAndTxnHash, AccountFactoryError<F::SignError>> {
+        info!("START SEND");
         self.prepare().await?.send().await
     }
 
     async fn prepare(
         &self,
     ) -> Result<PreparedAccountDeploymentV1<'f, F>, AccountFactoryError<F::SignError>> {
+        info!("START PREPARE");
         // Resolves nonce
         let nonce = match self.nonce {
             Some(value) => value,
@@ -414,15 +417,16 @@ where
                 (((overall_fee_u64 as f64) * self.fee_estimate_multiplier) as u64).into()
             }
         };
-
-        Ok(PreparedAccountDeploymentV1 {
+        let res: PreparedAccountDeploymentV1<F> = PreparedAccountDeploymentV1 {
             factory: self.factory,
             inner: RawAccountDeploymentV1 {
                 salt: self.salt,
                 nonce,
                 max_fee,
             },
-        })
+        };
+        info!("Looking good ");
+        Ok(res)
     }
 
     async fn estimate_fee_with_nonce(
@@ -766,6 +770,7 @@ impl RawAccountDeploymentV1 {
     }
 
     pub fn max_fee(&self) -> Felt {
+        info!("max_fee constructor");
         self.max_fee
     }
 }
@@ -836,10 +841,12 @@ where
     }
 
     pub async fn send(&self) -> Result<ContractAndTxnHash, AccountFactoryError<F::SignError>> {
+        info!("prepared send");
         let tx_request = self
             .get_deploy_request(false, false)
             .await
             .map_err(AccountFactoryError::Signing)?;
+        info!("prepared provider add deploy acc txn");
         self.factory
             .provider()
             .add_deploy_account_transaction(BroadcastedDeployAccountTxn::V1(tx_request))
@@ -870,6 +877,7 @@ where
             contract_address_salt: self.inner.salt,
             constructor_calldata: self.factory.calldata(),
             class_hash: self.factory.class_hash(),
+            type_: "DEPLOY_ACCOUNT".to_string(),
         };
         info!("txn {:?}", txn);
         Ok(txn)

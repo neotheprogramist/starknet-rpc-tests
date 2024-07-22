@@ -11,7 +11,7 @@ use super::{
     structs::GenerateAccountResponse,
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum AccountType {
     Oz,
 }

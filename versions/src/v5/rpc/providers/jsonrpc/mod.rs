@@ -8,16 +8,16 @@ use starknet_types_rpc::{
     AddInvokeTransactionResult, BlockHashAndNumber, BlockHashAndNumberParams, BlockId,
     BlockNumberParams, BroadcastedDeclareTxn, BroadcastedDeployAccountTxn, BroadcastedInvokeTxn,
     BroadcastedTxn, CallParams, ChainIdParams, ClassAndTxnHash, ContractAndTxnHash, ContractClass,
-    EstimateFeeParams, EstimateMessageFeeParams, EventFilterWithPageRequest, EventsChunk,
-    FeeEstimate, Felt as FeltPrimitive, FunctionCall, GetBlockTransactionCountParams,
+    DeployAccountTxnV1, EstimateFeeParams, EstimateMessageFeeParams, EventFilterWithPageRequest,
+    EventsChunk, FeeEstimate, Felt as FeltPrimitive, FunctionCall, GetBlockTransactionCountParams,
     GetBlockWithTxHashesParams, GetBlockWithTxsParams, GetClassAtParams, GetClassHashAtParams,
     GetClassParams, GetEventsParams, GetNonceParams, GetStateUpdateParams, GetStorageAtParams,
     GetTransactionByBlockIdAndIndexParams, GetTransactionByHashParams, GetTransactionReceiptParams,
     GetTransactionStatusParams, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MsgFromL1, SimulateTransactionsParams, SimulateTransactionsResult,
-    SimulationFlag, SpecVersionParams, SyncingParams, SyncingStatus, TraceBlockTransactionsParams,
-    TraceBlockTransactionsResult, TraceTransactionParams, TransactionTrace, Txn, TxnHash,
-    TxnReceipt, TxnStatus,
+    MaybePendingStateUpdate, MsgFromL1, Signature, SimulateTransactionsParams,
+    SimulateTransactionsResult, SimulationFlag, SpecVersionParams, SyncingParams, SyncingStatus,
+    TraceBlockTransactionsParams, TraceBlockTransactionsResult, TraceTransactionParams,
+    TransactionTrace, Txn, TxnHash, TxnReceipt, TxnStatus,
 };
 
 pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};

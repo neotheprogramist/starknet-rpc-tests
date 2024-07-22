@@ -1228,9 +1228,9 @@ checksum = "976295e77ce332211c0d24d92c0e83e50f5c5f046d11082cea19f3df13a3562d"
 
 [[package]]
 name = "rustls-webpki"
-version = "0.102.5"
+version = "0.102.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9a6fccd794a42c2c105b513a2f62bc3fd8f3ba57a4593677ceb0bd035164d78"
+checksum = "8e6b52d4fda176fd835fdc55a835d4a89b8499cad995885a21149d5ad62f852e"
 dependencies = [
  "ring",
  "rustls-pki-types",
@@ -1427,7 +1427,7 @@ checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 [[package]]
 name = "starknet-types-core"
 version = "0.1.5"
-source = "git+https://github.com/neotheprogramist/types-rs?branch=feat/signer#fbab3f8cd0d10b1e0e86d90231d0e43fc1ca9e3f"
+source = "git+https://github.com/neotheprogramist/types-rs?branch=feat/signer#77c6bbea396084249de442b6201d689e05019f68"
 dependencies = [
  "crypto-bigint",
  "hmac",
@@ -1445,7 +1445,7 @@ dependencies = [
 [[package]]
 name = "starknet-types-rpc"
 version = "0.6.0"
-source = "git+https://github.com/neotheprogramist/types-rs?branch=feat/signer#fbab3f8cd0d10b1e0e86d90231d0e43fc1ca9e3f"
+source = "git+https://github.com/neotheprogramist/types-rs?branch=feat/signer#77c6bbea396084249de442b6201d689e05019f68"
 dependencies = [
  "serde",
  "starknet-types-core",

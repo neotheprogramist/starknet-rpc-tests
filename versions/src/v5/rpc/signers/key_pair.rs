@@ -5,7 +5,7 @@ use starknet_types_core::curve::{get_public_key, EcdsaSignError, Signature, Sign
 use starknet_types_rpc::Felt;
 use tracing::info;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct SigningKey {
     secret_scalar: Felt,
 }

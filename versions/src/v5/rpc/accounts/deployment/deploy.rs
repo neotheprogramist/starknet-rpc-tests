@@ -1,4 +1,5 @@
 use starknet_types_rpc::{BlockId, BlockTag, Felt, TxnHash};
+use tracing::info;
 
 use crate::v5::rpc::{
     accounts::{
@@ -26,8 +27,9 @@ pub async fn deploy(
         tracing::info!("Account already deployed!");
         return Ok(Felt::ZERO);
     }
-
+    info!("==============DEPLOY START..==============");
     let public_key = account_data.signing_key.verifying_key();
+
     let address = match account_data.account_type {
         AccountType::Oz => get_contract_address(
             account_data.salt,
@@ -42,8 +44,10 @@ pub async fn deploy(
         .await
         .is_ok()
     {
+        info!("CLASS HASH AT IS OK");
         Felt::ZERO
     } else {
+        info!("Getting deployment result");
         get_deployment_result(
             &provider,
             account_data.account_type,
@@ -56,6 +60,6 @@ pub async fn deploy(
         )
         .await?
     };
-
+    info!("DEPLOY END..");
     Ok(result)
 }
