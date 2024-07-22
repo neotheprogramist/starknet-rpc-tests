@@ -1,5 +1,7 @@
+use serde::Deserialize;
 use serde::Serialize;
 use serde::Serializer;
+
 use starknet_types_rpc::Felt;
 
 use crate::v5::rpc::signers::key_pair::SigningKey;
@@ -35,3 +37,16 @@ pub struct GenerateAccountResponse {
     pub salt: Felt,
     pub max_fee: Felt,
 }
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MintRequest {
+    pub amount: u128,
+    pub address: Felt,
+}
+
+// #[derive(Serialize, Deserialize, Debug)]
+// pub struct MintResponse {
+//     new_balance: U256,
+//     unit: FeeUnit,
+//     tx_hash: Felt,
+// }

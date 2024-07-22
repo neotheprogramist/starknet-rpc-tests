@@ -7,6 +7,7 @@ use starknet_types_rpc::{
     BlockId, BlockTag, BroadcastedDeployAccountTxn, BroadcastedTxn, ContractAndTxnHash,
     DeployAccountTxnV1, FeeEstimate, Felt, SimulateTransactionsResult, SimulationFlag,
 };
+use tracing::info;
 
 use crate::v5::rpc::providers::{
     jsonrpc::StarknetError,
@@ -32,6 +33,8 @@ const PREFIX_DEPLOY_ACCOUNT: Felt = Felt::from_raw([
     3350261884043292318,
 ]);
 
+#[allow(dead_code)]
+
 /// 2 ^ 128 + 1
 const QUERY_VERSION_ONE: Felt = Felt::from_raw([
     576460752142433776,
@@ -39,6 +42,8 @@ const QUERY_VERSION_ONE: Felt = Felt::from_raw([
     17407,
     18446744073700081633,
 ]);
+
+#[allow(dead_code)]
 
 /// 2 ^ 128 + 3
 const QUERY_VERSION_THREE: Felt = Felt::from_raw([
@@ -90,11 +95,11 @@ pub trait AccountFactory: Sized {
         BlockId::Tag(BlockTag::Latest)
     }
 
-    async fn sign_deployment_v1(
+    fn sign_deployment_v1(
         &self,
         deployment: &RawAccountDeploymentV1,
         query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError>;
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>> + Send;
 
     // async fn sign_deployment_v3(
     //     &self,
@@ -347,6 +352,7 @@ where
                 .await
                 .map_err(AccountFactoryError::Provider)?,
         };
+        info!("estimate fee nonce:  {}", nonce);
 
         self.estimate_fee_with_nonce(nonce).await
     }
@@ -423,8 +429,9 @@ where
         &self,
         nonce: Felt,
     ) -> Result<FeeEstimate, AccountFactoryError<F::SignError>> {
+        info!("estimate fee with nonce start");
         let skip_signature = self.factory.is_signer_interactive();
-
+        info!("skip signature: {}", skip_signature);
         let prepared = PreparedAccountDeploymentV1 {
             factory: self.factory,
             inner: RawAccountDeploymentV1 {
@@ -433,11 +440,12 @@ where
                 max_fee: Felt::ZERO,
             },
         };
+        info!("prepared: ",);
         let deploy = prepared
             .get_deploy_request(true, skip_signature)
             .await
             .map_err(AccountFactoryError::Signing)?;
-
+        info!("get deploy result fine");
         self.factory
             .provider()
             .estimate_fee_single(
@@ -817,11 +825,7 @@ where
 
         compute_hash_on_elements(&[
             PREFIX_DEPLOY_ACCOUNT,
-            if query_only {
-                QUERY_VERSION_ONE
-            } else {
-                Felt::ONE
-            }, // version
+            if query_only { Felt::ONE } else { Felt::ONE }, // version
             self.address(),
             Felt::ZERO, // entry_point_selector
             compute_hash_on_elements(&calldata_to_hash),
@@ -848,13 +852,17 @@ where
         query_only: bool,
         skip_signature: bool,
     ) -> Result<DeployAccountTxnV1, F::SignError> {
+        info!("get deploy request start ");
         let signature = if skip_signature {
+            info!("signature empty");
             vec![]
         } else {
+            info!("signature needed start sign_deployment_v1");
             self.factory
                 .sign_deployment_v1(&self.inner, query_only)
                 .await?
         };
+        info!("after signing");
         let txn = DeployAccountTxnV1 {
             max_fee: self.inner.max_fee,
             signature,
@@ -863,6 +871,7 @@ where
             constructor_calldata: self.factory.calldata(),
             class_hash: self.factory.class_hash(),
         };
+        info!("txn {:?}", txn);
         Ok(txn)
     }
 }

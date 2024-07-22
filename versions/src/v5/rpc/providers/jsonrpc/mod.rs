@@ -22,7 +22,7 @@ use starknet_types_rpc::{
 
 pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
 
-use super::provider::{Provider, ProviderError, ProviderImplError};
+use super::provider::{Provider, ProviderError, ProviderImplError, SimulationFlagForEstimateFee};
 
 #[derive(Debug)]
 pub struct JsonRpcClient<T> {
@@ -392,11 +392,16 @@ where
     async fn estimate_fee(
         &self,
         request: Vec<BroadcastedTxn>,
+        simulation_flags: Vec<String>,
         block_id: BlockId,
     ) -> Result<Vec<FeeEstimate>, ProviderError> {
         self.send_request(
             JsonRpcMethod::EstimateFee,
-            EstimateFeeParams { request, block_id },
+            EstimateFeeParams {
+                request,
+                simulation_flags,
+                block_id,
+            },
         )
         .await
     }

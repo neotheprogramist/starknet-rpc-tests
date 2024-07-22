@@ -3,6 +3,7 @@ use lambdaworks_math::elliptic_curve::short_weierstrass::curves::stark_curve::St
 use rand::{rngs::StdRng, Rng, SeedableRng};
 use starknet_types_core::curve::{get_public_key, EcdsaSignError, Signature, Signer};
 use starknet_types_rpc::Felt;
+use tracing::info;
 
 #[derive(Debug, Clone)]
 pub struct SigningKey {
@@ -55,6 +56,7 @@ impl SigningKey {
     }
 
     pub fn sign(&self, hash: &Felt) -> Result<Signature, EcdsaSignError> {
+        info!("signing");
         StarkCurve::ecdsa_sign(&self.secret_scalar, hash).map(|sig| sig.into())
     }
 }

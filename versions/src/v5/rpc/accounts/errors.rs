@@ -1,9 +1,7 @@
 use starknet_types_rpc::Felt;
 use thiserror::Error;
 
-use crate::v5::rpc::providers::{jsonrpc::StarknetError, provider::ProviderError};
-
-use super::factory::AccountFactoryError;
+use crate::v5::rpc::providers::provider::ProviderError;
 
 #[derive(Debug, thiserror::Error)]
 #[error("Not all fields are prepared")]
@@ -25,6 +23,8 @@ pub enum CompressProgramError {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
+
 pub struct JsonError {
     pub(crate) message: String,
 }

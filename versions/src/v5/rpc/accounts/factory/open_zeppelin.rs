@@ -2,6 +2,7 @@ use crate::v5::rpc::providers::provider::Provider;
 use crate::v5::rpc::signers::signer::Signer;
 
 use starknet_types_rpc::{BlockId, BlockTag, Felt};
+use tracing::info;
 
 use super::{AccountFactory, PreparedAccountDeploymentV1, RawAccountDeploymentV1};
 
@@ -78,9 +79,13 @@ where
         deployment: &RawAccountDeploymentV1,
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
+        info!("sign deployment v1 start, counting tx hash ");
         let tx_hash = PreparedAccountDeploymentV1::from_raw(deployment.clone(), self)
             .transaction_hash(query_only);
+        info!("tx hash: {}", tx_hash);
+        info!("starting signature");
         let signature = self.signer.sign_hash(&tx_hash).await?;
+        info!("signature {:?}", signature);
 
         Ok(vec![signature.r, signature.s])
     }

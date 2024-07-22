@@ -1,21 +1,18 @@
 use starknet_types_core::curve::compute_hash_on_elements;
-use starknet_types_rpc::{Felt, TxnExecutionStatus, TxnStatus};
+use starknet_types_rpc::Felt;
 
 use crate::v5::rpc::{
     accounts::{
         account::normalize_address,
         creation::create::AccountType,
-        errors::{CreationError, TransactionError, WaitForTransactionError},
-        factory::{open_zeppelin::OpenZeppelinAccountFactory, AccountFactory, AccountFactoryError},
+        errors::CreationError,
+        factory::{open_zeppelin::OpenZeppelinAccountFactory, AccountFactory},
     },
-    providers::{
-        jsonrpc::{HttpTransport, JsonRpcClient, StarknetError},
-        provider::Provider,
-    },
+    providers::jsonrpc::{HttpTransport, JsonRpcClient},
     signers::{key_pair::SigningKey, local_wallet::LocalWallet},
 };
 
-use super::structs::{ValidatedWaitParams, WaitForTx};
+use super::structs::WaitForTx;
 
 // Cairo string of "STARKNET_CONTRACT_ADDRESS"
 const CONTRACT_ADDRESS_PREFIX: Felt = Felt::from_raw([

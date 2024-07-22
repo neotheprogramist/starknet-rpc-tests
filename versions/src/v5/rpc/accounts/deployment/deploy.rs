@@ -1,5 +1,3 @@
-use std::future::Pending;
-
 use starknet_types_rpc::{BlockId, BlockTag, Felt, TxnHash};
 
 use crate::v5::rpc::{
@@ -11,20 +9,17 @@ use crate::v5::rpc::{
         jsonrpc::{HttpTransport, JsonRpcClient},
         provider::Provider,
     },
-    signers::key_pair::SigningKey,
 };
 
 use super::{
     helpers::{get_contract_address, get_deployment_result},
-    structs::{Deploy, WaitForTx},
+    structs::WaitForTx,
 };
 
 pub async fn deploy(
     provider: JsonRpcClient<HttpTransport>,
-    deploy_args: Deploy,
     chain_id: Felt,
     wait_config: WaitForTx,
-    account: &str,
     account_data: GenerateAccountResponse,
 ) -> Result<TxnHash, CreationError> {
     if account_data.deployed {

@@ -11,11 +11,9 @@ use crate::v5::rpc::{
 };
 use rand::{rngs::OsRng, RngCore};
 use starknet_types_rpc::{BlockId, BlockTag, FeeEstimate, Felt};
+use tracing::info;
 
-use super::{
-    create::AccountType,
-    structs::{AccountCreateResponse, GenerateAccountResponse},
-};
+use super::{create::AccountType, structs::GenerateAccountResponse};
 
 pub const OZ_CLASS_HASH: &str =
     "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f";
@@ -51,7 +49,10 @@ pub async fn generate_account(
     let chain_id = provider.chain_id().await?;
     let signing_key = SigningKey::from_random();
     let signer = LocalWallet::from_signing_key(signing_key.clone());
-
+    info!(
+        "chainid:{}, sigingg key: {:?}, signer: {:?}",
+        chain_id, &signing_key, &signer
+    );
     let (address, fee_estimate) = match account_type {
         AccountType::Oz => {
             let factory = OpenZeppelinAccountFactory::new(class_hash, chain_id, signer, provider)
@@ -84,6 +85,7 @@ where
     T: AccountFactory + Sync,
 {
     let deployment = account_factory.deploy_v1(salt);
+    info!("Deployment(deploy_v1 fine");
     Ok((deployment.address(), get_deployment_fee(&deployment).await?))
 }
 
@@ -93,6 +95,7 @@ async fn get_deployment_fee<'a, T>(
 where
     T: AccountFactory + Sync,
 {
+    info!("get deployment fee start");
     let fee_estimate = account_deployment.estimate_fee().await;
 
     match fee_estimate {

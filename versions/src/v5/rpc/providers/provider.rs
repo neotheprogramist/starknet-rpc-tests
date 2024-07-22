@@ -1,4 +1,5 @@
 use auto_impl::auto_impl;
+use serde::{Deserialize, Serialize};
 use starknet_types_rpc::{
     AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BroadcastedDeclareTxn,
     BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn, ClassAndTxnHash,
@@ -10,6 +11,12 @@ use starknet_types_rpc::{
 use std::{any::Any, error::Error, fmt::Debug};
 
 use super::jsonrpc::StarknetError;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SimulationFlagForEstimateFee {
+    #[serde(rename = "SKIP_VALIDATE")]
+    SkipValidate,
+}
 
 #[auto_impl(&, Box, Arc)]
 pub trait Provider {
@@ -106,6 +113,7 @@ pub trait Provider {
     fn estimate_fee(
         &self,
         request: Vec<BroadcastedTxn>,
+        simulation_flags: Vec<String>,
         block_id: BlockId,
     ) -> impl std::future::Future<Output = Result<Vec<FeeEstimate>, ProviderError>>;
 
@@ -115,7 +123,7 @@ pub trait Provider {
         request: BroadcastedTxn,
         block_id: BlockId,
     ) -> Result<FeeEstimate, ProviderError> {
-        let mut result = self.estimate_fee(vec![request], block_id).await?;
+        let mut result = self.estimate_fee(vec![request], vec![], block_id).await?;
 
         if result.len() == 1 {
             // Unwrapping here is safe becuase we already checked length
