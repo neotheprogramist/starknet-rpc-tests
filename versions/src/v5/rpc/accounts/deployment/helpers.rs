@@ -88,6 +88,7 @@ async fn deploy_oz_account(
     deploy_account(factory, provider, salt, max_fee, wait_config, class_hash).await
 }
 
+#[allow(unused_variables)]
 async fn deploy_account<T>(
     account_factory: T,
     provider: &JsonRpcClient<HttpTransport>,

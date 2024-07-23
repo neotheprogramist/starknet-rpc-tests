@@ -17,6 +17,7 @@ serde_json = { version = "1.0.120", default-features = false, features = [
     "alloc",
     "raw_value",
 ] }
+serde_json_pythonic = "0.1.2"
 starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs", branch = "feat/signer" }
 starknet-types-core = { git = "https://github.com/neotheprogramist/types-rs", branch = "feat/signer" }
 thiserror = "1.0.61"
@@ -26,5 +27,6 @@ tracing-subscriber = "0.3.18"
 url = "2.5.2"
 serde_with = "3.8.3"
 rand = "0.8.5"
+regex = "1.10.5"
 crypto-bigint = "0.5.5"
 sha3 = "0.10.8"

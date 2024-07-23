@@ -14,7 +14,7 @@ use versions::v5::{
             },
             deployment::{
                 deploy::deploy,
-                structs::{Deploy, ValidatedWaitParams, WaitForTx},
+                structs::{ValidatedWaitParams, WaitForTx},
             },
             utils::mint::mint,
         },
@@ -75,5 +75,6 @@ async fn main() -> Result<(), String> {
         }
     };
     info!("After deploy, resultt: {:?}", result);
+
     Ok(())
 }
