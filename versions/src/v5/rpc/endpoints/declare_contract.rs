@@ -13,6 +13,7 @@ use regex::Regex;
 use starknet_types_rpc::{ContractClass, Felt, TxnHash};
 use thiserror::Error;
 use tokio::io::AsyncReadExt;
+use tracing::info;
 use url::ParseError;
 
 pub async fn declare_contract<P: Provider + Send + Sync>(
@@ -104,9 +105,13 @@ pub async fn get_compiled_contract(
         .map_err(|e| RunnerError::ReadFileError(e.to_string()))?;
 
     let contract_artifact: SierraClass = serde_json::from_str(&sierra)?;
+
     let compiled_class: CompiledClass = serde_json::from_str(&casm)?;
+
     let casm_class_hash = compiled_class.class_hash().unwrap();
+
     let flattened_class = contract_artifact.clone().flatten().unwrap();
+
     Ok((flattened_class, casm_class_hash))
 }
 

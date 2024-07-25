@@ -2,6 +2,7 @@ use crate::v5::rpc::providers::provider::Provider;
 use crate::v5::rpc::signers::signer::Signer;
 
 use starknet_types_rpc::{BlockId, BlockTag, Felt};
+use tracing::info;
 
 use super::{
     account::{Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawExecutionV1},
@@ -128,7 +129,12 @@ where
         declaration: &RawDeclarationV2,
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
+        info!(
+            "transaction hash data: {} {} {}",
+            self.chain_id, self.address, query_only
+        );
         let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
+        info!("tx hash {}", tx_hash);
         let signature = self
             .signer
             .sign_hash(&tx_hash)

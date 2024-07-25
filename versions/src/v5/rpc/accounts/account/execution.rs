@@ -2,6 +2,7 @@ use starknet_types_rpc::{
     AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, FeeEstimate, Felt,
     InvokeTxnV1, SimulateTransactionsResult, SimulationFlag,
 };
+use tracing::info;
 
 use crate::v5::rpc::{
     accounts::{call::Call, errors::NotPreparedError},
@@ -192,10 +193,12 @@ where
     }
 
     pub async fn send(&self) -> Result<AddInvokeTransactionResult, AccountError<A::SignError>> {
+        info!("send");
         self.prepare().await?.send().await
     }
 
     async fn prepare(&self) -> Result<PreparedExecutionV1<'a, A>, AccountError<A::SignError>> {
+        info!("prepare");
         // Resolves nonce
         let nonce = match self.nonce {
             Some(value) => value,
@@ -205,6 +208,7 @@ where
                 .await
                 .map_err(AccountError::Provider)?,
         };
+        info!("nonce {:?}", nonce);
 
         // Resolves max_fee
         let max_fee = match self.max_fee {
@@ -228,6 +232,7 @@ where
                 (((overall_fee_u64 as f64) * self.fee_estimate_multiplier) as u64).into()
             }
         };
+        info!("max_fee {}", max_fee);
 
         Ok(PreparedExecutionV1 {
             account: self.account,
@@ -262,6 +267,7 @@ where
             .provider()
             .estimate_fee_single(
                 BroadcastedTxn::Invoke(BroadcastedInvokeTxn::V1(invoke)),
+                vec![],
                 self.account.block_id(),
             )
             .await
@@ -712,11 +718,15 @@ where
             .get_invoke_request(false, false)
             .await
             .map_err(AccountError::Signing)?;
-        self.account
+        info!("get invoke request tx request {:?}", tx_request);
+        let result = self
+            .account
             .provider()
             .add_invoke_transaction(BroadcastedInvokeTxn::V1(tx_request))
             .await
-            .map_err(AccountError::Provider)
+            .map_err(AccountError::Provider);
+        info!("add invoke transaction result {:?}", result);
+        result
     }
 
     // The `simulate` function is temporarily removed until it's supported in [Provider]
@@ -739,6 +749,7 @@ where
             nonce: self.inner.nonce,
             sender_address: self.account.address(),
             calldata: self.account.encode_calls(&self.inner.calls),
+            type_: "INVOKE".to_string(),
         })
     }
 }

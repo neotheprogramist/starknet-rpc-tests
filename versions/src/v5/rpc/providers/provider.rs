@@ -121,9 +121,12 @@ pub trait Provider {
     async fn estimate_fee_single(
         &self,
         request: BroadcastedTxn,
+        simulation_flags: Vec<String>,
         block_id: BlockId,
     ) -> Result<FeeEstimate, ProviderError> {
-        let mut result = self.estimate_fee(vec![request], vec![], block_id).await?;
+        let mut result = self
+            .estimate_fee(vec![request], simulation_flags, block_id)
+            .await?;
 
         if result.len() == 1 {
             // Unwrapping here is safe becuase we already checked length

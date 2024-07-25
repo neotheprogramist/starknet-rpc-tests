@@ -100,21 +100,16 @@ async fn deploy_account<T>(
 where
     T: AccountFactory + Sync,
 {
-    info!("Deploy account start");
     let deployment = account_factory.deploy_v1(salt);
     let deploy_max_fee = if let Some(max_fee) = max_fee {
-        info!("Max fee fine");
         max_fee
     } else {
-        info!("Gotta estimate max fee");
         match deployment.estimate_fee().await {
             Ok(max_fee) => Felt::from_dec_str(&max_fee.overall_fee.to_string()).unwrap(),
             Err(error) => return Err(CreationError::RpcError(error.to_string())),
         }
     };
-    info!("deployment max fee end {}", deploy_max_fee);
-    info!("GAGRI GAGRI GAGRI");
     let result = deployment.max_fee(deploy_max_fee).send().await.unwrap();
-    info!("final result {:?}", result);
+
     Ok(result.transaction_hash)
 }

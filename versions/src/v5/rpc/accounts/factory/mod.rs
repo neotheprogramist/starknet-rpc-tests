@@ -454,6 +454,7 @@ where
             .provider()
             .estimate_fee_single(
                 BroadcastedTxn::DeployAccount(BroadcastedDeployAccountTxn::V1(deploy)),
+                vec![],
                 self.factory.block_id(),
             )
             .await

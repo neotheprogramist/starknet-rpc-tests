@@ -15,14 +15,14 @@ use starknet_types_rpc::{
     GetTransactionByBlockIdAndIndexParams, GetTransactionByHashParams, GetTransactionReceiptParams,
     GetTransactionStatusParams, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
     MaybePendingStateUpdate, MsgFromL1, Signature, SimulateTransactionsParams,
-    SimulateTransactionsResult, SimulationFlag, SpecVersionParams, SyncingParams, SyncingStatus,
-    TraceBlockTransactionsParams, TraceBlockTransactionsResult, TraceTransactionParams,
-    TransactionTrace, Txn, TxnHash, TxnReceipt, TxnStatus,
+    SimulateTransactionsResult, SimulationFlag, SimulationFlagForEstimateFee, SpecVersionParams,
+    SyncingParams, SyncingStatus, TraceBlockTransactionsParams, TraceBlockTransactionsResult,
+    TraceTransactionParams, TransactionTrace, Txn, TxnHash, TxnReceipt, TxnStatus,
 };
 
 pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
 
-use super::provider::{Provider, ProviderError, ProviderImplError, SimulationFlagForEstimateFee};
+use super::provider::{Provider, ProviderError, ProviderImplError};
 
 #[derive(Debug)]
 pub struct JsonRpcClient<T> {

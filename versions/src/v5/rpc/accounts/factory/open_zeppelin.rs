@@ -79,11 +79,8 @@ where
         deployment: &RawAccountDeploymentV1,
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
-        info!("sign deployment v1 start, counting tx hash ");
         let tx_hash = PreparedAccountDeploymentV1::from_raw(deployment.clone(), self)
             .transaction_hash(query_only);
-        info!("tx hash: {}", tx_hash);
-        info!("starting signature");
         let signature = self.signer.sign_hash(&tx_hash).await?;
         info!("signature {:?}", signature);
 

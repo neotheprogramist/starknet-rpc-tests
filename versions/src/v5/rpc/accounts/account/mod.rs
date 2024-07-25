@@ -3,7 +3,10 @@ use crate::v5::rpc::providers::provider::{Provider, ProviderError};
 use auto_impl::auto_impl;
 
 use sha3::{Digest, Keccak256};
-use starknet_types_core::{curve::compute_hash_on_elements, felt::NonZeroFelt, hash::StarkHash};
+use starknet_types_core::{
+    felt::NonZeroFelt,
+    hash::{poseidon_hash_many, PoseidonHasher},
+};
 use starknet_types_rpc::{
     BlockId, BlockTag, ContractClass, DeprecatedContractClass, Felt, SierraEntryPoint,
 };
@@ -60,11 +63,11 @@ pub trait Account: ExecutionEncoder + Sized {
 
     fn chain_id(&self) -> Felt;
 
-    async fn sign_execution_v1(
+    fn sign_execution_v1(
         &self,
         execution: &RawExecutionV1,
         query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError>;
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>> + Send;
 
     // async fn sign_execution_v3(
     //     &self,
@@ -72,11 +75,11 @@ pub trait Account: ExecutionEncoder + Sized {
     //     query_only: bool,
     // ) -> Result<Vec<Felt>, Self::SignError>;
 
-    async fn sign_declaration_v2(
+    fn sign_declaration_v2(
         &self,
         declaration: &RawDeclarationV2,
         query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError>;
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>> + Send;
 
     // async fn sign_declaration_v3(
     //     &self,
@@ -273,7 +276,6 @@ pub struct RawDeclarationV2 {
     nonce: Felt,
     max_fee: Felt,
 }
-use starknet_types_core::hash::Poseidon;
 
 const PREFIX_CONTRACT_CLASS_V0_1_0: Felt = Felt::from_raw([
     37302452645455172,
@@ -287,17 +289,15 @@ pub trait ContractClassHasher {
 
 impl ContractClassHasher for ContractClass {
     fn class_hash(&self) -> Felt {
-        let mut hash_data: Vec<Felt> = vec![];
-        hash_data.push(PREFIX_CONTRACT_CLASS_V0_1_0);
-        hash_data.push(hash_entrypoints(&self.entry_points_by_type.external));
-        hash_data.push(hash_entrypoints(&self.entry_points_by_type.l1_handler));
-        hash_data.push(hash_entrypoints(&self.entry_points_by_type.constructor));
-        if let Some(hash) = self.abi.as_ref().map(|abi| starknet_keccak(abi.as_bytes())) {
-            hash_data.push(hash);
-        }
-        hash_data.push(Poseidon::hash_array(&self.sierra_program));
+        let mut hasher = PoseidonHasher::new();
+        hasher.update(PREFIX_CONTRACT_CLASS_V0_1_0);
+        hasher.update(hash_entrypoints(&self.entry_points_by_type.external));
+        hasher.update(hash_entrypoints(&self.entry_points_by_type.l1_handler));
+        hasher.update(hash_entrypoints(&self.entry_points_by_type.constructor));
+        hasher.update(starknet_keccak(self.abi.clone().as_bytes()));
+        hasher.update(poseidon_hash_many(&self.sierra_program));
 
-        normalize_address(Poseidon::hash_array(&hash_data))
+        normalize_address(hasher.finalize())
     }
 }
 
@@ -306,12 +306,12 @@ pub fn normalize_address(address: Felt) -> Felt {
 }
 
 pub fn hash_entrypoints(entrypoints: &[SierraEntryPoint]) -> Felt {
-    let mut hash_data: Vec<Felt> = vec![];
+    let mut hasher = PoseidonHasher::new();
     for entry in entrypoints.iter() {
-        hash_data.push(entry.selector);
-        hash_data.push(entry.function_idx.into());
+        hasher.update(entry.selector);
+        hasher.update(entry.function_idx.into());
     }
-    Poseidon::hash_array(&hash_data)
+    hasher.finalize()
 }
 
 pub fn starknet_keccak(data: &[u8]) -> Felt {

@@ -17,8 +17,8 @@ use super::{
     structs::WaitForTx,
 };
 
-pub async fn deploy(
-    provider: JsonRpcClient<HttpTransport>,
+pub async fn deploy_account(
+    provider: &JsonRpcClient<HttpTransport>,
     chain_id: Felt,
     wait_config: WaitForTx,
     account_data: GenerateAccountResponse,

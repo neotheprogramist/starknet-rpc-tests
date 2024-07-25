@@ -16,7 +16,7 @@ pub enum AccountType {
     Oz,
 }
 
-pub async fn create(
+pub async fn create_account(
     provider: &JsonRpcClient<HttpTransport>,
     account_type: AccountType,
     salt: Option<Felt>,

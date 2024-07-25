@@ -6,6 +6,7 @@ use starknet_types_rpc::{
     FeeEstimate, Felt, ResourceLimits, SimulateTransactionsResult, SimulationFlag,
 };
 use std::sync::Arc;
+use tracing::info;
 
 use super::{
     Account, AccountError, ConnectedAccount, DeclarationV2, PreparedDeclarationV2, RawDeclarationV2,
@@ -143,10 +144,12 @@ where
     }
 
     pub async fn send(&self) -> Result<ClassAndTxnHash, AccountError<A::SignError>> {
+        info!("send start");
         self.prepare().await?.send().await
     }
 
     async fn prepare(&self) -> Result<PreparedDeclarationV2<'a, A>, AccountError<A::SignError>> {
+        info!("DECLAREV2 prepare start");
         // Resolves nonce
         let nonce = match self.nonce {
             Some(value) => value,
@@ -156,13 +159,19 @@ where
                 .await
                 .map_err(AccountError::Provider)?,
         };
+        info!("DECLAREV2 nonce {}", nonce);
 
         // Resolves max_fee
         let max_fee = match self.max_fee {
-            Some(value) => value,
+            Some(value) => {
+                info!("there is value {}", value);
+                value
+            }
             None => {
                 // Obtain the fee estimate
+                info!("before estimatefeewithnonce");
                 let fee_estimate = self.estimate_fee_with_nonce(nonce).await?;
+                info!("after estimatefeewithnonce");
                 // Convert the overall fee to little-endian bytes
                 let overall_fee_bytes = fee_estimate.overall_fee.to_le_bytes();
 
@@ -179,6 +188,7 @@ where
                 (((overall_fee_u64 as f64) * self.fee_estimate_multiplier) as u64).into()
             }
         };
+        println!("DECLAREV2 max_fee {}", max_fee);
 
         Ok(PreparedDeclarationV2 {
             account: self.account,
@@ -195,8 +205,8 @@ where
         &self,
         nonce: Felt,
     ) -> Result<FeeEstimate, AccountError<A::SignError>> {
+        info!("estimate_fee_with_nonce start ");
         let skip_signature = self.account.is_signer_interactive();
-
         let prepared = PreparedDeclarationV2 {
             account: self.account,
             inner: RawDeclarationV2 {
@@ -206,12 +216,14 @@ where
                 max_fee: Felt::ZERO,
             },
         };
-        let declare = prepared.get_declare_request(true, skip_signature).await?;
+
+        let declare = prepared.get_declare_request(true, skip_signature).await?; // TODO: query only has to be false
 
         self.account
             .provider()
             .estimate_fee_single(
-                BroadcastedTxn::Declare(BroadcastedDeclareTxn::V2(declare)),
+                BroadcastedTxn::Declare(BroadcastedDeclareTxn::QueryV2(declare)),
+                vec![], // TODO: put back if needed
                 self.account.block_id(),
             )
             .await
@@ -224,6 +236,7 @@ where
         skip_validate: bool,
         skip_fee_charge: bool,
     ) -> Result<SimulateTransactionsResult, AccountError<A::SignError>> {
+        info!("simulate_with_nonce GOGO");
         let skip_signature = if self.account.is_signer_interactive() {
             // If signer is interactive, we would try to minimize signing requests. However, if the
             // caller has decided to not skip validation, it's best we still request a real
@@ -773,6 +786,19 @@ where
 
 impl RawDeclarationV2 {
     pub fn transaction_hash(&self, chain_id: Felt, address: Felt, query_only: bool) -> Felt {
+        info!(
+            "compute hash on elements data: {} {} {} {} {} {} {} {} {} {}",
+            PREFIX_DECLARE,
+            QUERY_VERSION_TWO,
+            Felt::TWO,
+            address,
+            Felt::ZERO,
+            compute_hash_on_elements(&[self.contract_class.class_hash()]),
+            self.max_fee,
+            chain_id,
+            self.nonce,
+            self.compiled_class_hash
+        );
         compute_hash_on_elements(&[
             PREFIX_DECLARE,
             if query_only {
@@ -935,12 +961,20 @@ where
     A: ConnectedAccount,
 {
     pub async fn send(&self) -> Result<ClassAndTxnHash, AccountError<A::SignError>> {
+        info!("PreparedDeclarationV2 SEND START");
         let tx_request = self.get_declare_request(false, false).await?;
-        self.account
+        info!("PreparedDeclarationV2 tx_request {:?}", tx_request);
+        let result = self
+            .account
             .provider()
             .add_declare_transaction(BroadcastedDeclareTxn::V2(tx_request))
             .await
-            .map_err(AccountError::Provider)
+            .map_err(AccountError::Provider);
+        info!(
+            "PreparedDeclarationV2 add_declare_transaction result {:?}",
+            result
+        );
+        result
     }
 
     async fn get_declare_request(
@@ -948,20 +982,27 @@ where
         query_only: bool,
         skip_signature: bool,
     ) -> Result<BroadcastedDeclareTxnV2, AccountError<A::SignError>> {
+        let signature = if skip_signature {
+            vec![]
+        } else {
+            info!(
+                "sign declaration v2 params: {:?} {}",
+                self.inner, query_only
+            );
+            self.account
+                .sign_declaration_v2(&self.inner, query_only)
+                .await
+                .map_err(AccountError::Signing)?
+        };
+        info!("signature {:?}", signature);
         Ok(BroadcastedDeclareTxnV2 {
             max_fee: self.inner.max_fee,
-            signature: if skip_signature {
-                vec![]
-            } else {
-                self.account
-                    .sign_declaration_v2(&self.inner, query_only)
-                    .await
-                    .map_err(AccountError::Signing)?
-            },
+            signature,
             nonce: self.inner.nonce,
             contract_class: Arc::clone(&self.inner.contract_class).as_ref().clone(),
             compiled_class_hash: self.inner.compiled_class_hash,
             sender_address: self.account.address(),
+            type_: "DECLARE".to_string(),
         })
     }
 }

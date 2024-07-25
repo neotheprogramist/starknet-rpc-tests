@@ -1,3 +1,4 @@
+pub mod declare_and_deploy;
 pub mod factory;
 pub mod helpers;
 pub mod unsigned_felt;
@@ -11,24 +12,24 @@ use super::{
     },
     contract::unsigned_felt::UfeHex,
 };
-use starknet_types_core::hash::{Poseidon, StarkHash};
+use starknet_types_core::hash::{poseidon_hash_many, Poseidon, PoseidonHasher, StarkHash};
 use starknet_types_rpc::{ContractClass, DeprecatedContractClass, Felt};
 use std::boxed;
 
 /// Cairo string for "CONTRACT_CLASS_V0.1.0"
 const PREFIX_CONTRACT_CLASS_V0_1_0: Felt = Felt::from_raw([
-    5800711240972404213,
-    15539482671244488427,
-    18446734822722598327,
     37302452645455172,
+    18446734822722598327,
+    15539482671244488427,
+    5800711240972404213,
 ]);
 
-/// Cairo string for "COMPILED_CLASS_V1"
+/// Cairo string for `COMPILED_CLASS_V1`
 const PREFIX_COMPILED_CLASS_V1: Felt = Felt::from_raw([
-    2291010424822318237,
-    1609463842841646376,
-    18446744073709549462,
     324306817650036332,
+    18446744073709549462,
+    1609463842841646376,
+    2291010424822318237,
 ]);
 
 #[derive(Debug, Clone, Serialize)]
@@ -420,34 +421,28 @@ impl HashAndFlatten for SierraClass {
             })
         })?;
 
-        // let mut hasher = Poseidon::new();
-        let mut to_hash: Vec<Felt> = vec![];
-        // hasher.update(PREFIX_CONTRACT_CLASS_V0_1_0);
-        to_hash.push(PREFIX_CONTRACT_CLASS_V0_1_0);
+        let mut hasher = PoseidonHasher::new();
+        hasher.update(PREFIX_CONTRACT_CLASS_V0_1_0);
+
         // Hashes entry points
-        // hasher.update(hash_sierra_entrypoints(&self.entry_points_by_type.external));
-        to_hash.push(hash_sierra_entrypoints(&self.entry_points_by_type.external));
-        // hasher.update(hash_sierra_entrypoints(
-        //     &self.entry_points_by_type.l1_handler,
-        // ));
-        to_hash.push(hash_sierra_entrypoints(
+        hasher.update(hash_sierra_entrypoints(&self.entry_points_by_type.external));
+
+        hasher.update(hash_sierra_entrypoints(
             &self.entry_points_by_type.l1_handler,
         ));
-        // hasher.update(hash_sierra_entrypoints(
-        //     &self.entry_points_by_type.constructor,
-        // ));
-        to_hash.push(hash_sierra_entrypoints(
+
+        hasher.update(hash_sierra_entrypoints(
             &self.entry_points_by_type.constructor,
         ));
 
         // Hashes ABI
-        to_hash.push(starknet_keccak(abi_str.as_bytes()));
+        hasher.update(starknet_keccak(abi_str.as_bytes()));
 
         // Hashes Sierra program
-        to_hash.push(Poseidon::hash_array(&self.sierra_program));
+        hasher.update(poseidon_hash_many(&self.sierra_program));
 
         // Ok(normalize_address(hasher.finalize()))
-        Ok(normalize_address(Poseidon::hash_array(&to_hash)))
+        Ok(normalize_address(hasher.finalize()))
     }
 
     fn flatten(self) -> Result<ContractClass, JsonError> {
@@ -458,7 +453,7 @@ impl HashAndFlatten for SierraClass {
         Ok(ContractClass {
             sierra_program: self.sierra_program,
             entry_points_by_type: self.entry_points_by_type,
-            abi: Some(abi),
+            abi: abi,
             contract_class_version: self.contract_class_version,
         })
     }
@@ -471,56 +466,51 @@ trait ClassHash {
 
 impl ClassHash for ContractClass {
     fn class_hash(&self) -> Felt {
-        let mut to_hash = vec![];
-        to_hash.push(PREFIX_CONTRACT_CLASS_V0_1_0);
+        let mut hasher = PoseidonHasher::new();
+        hasher.update(PREFIX_CONTRACT_CLASS_V0_1_0);
 
         // Hashes entry points
-        to_hash.push(hash_sierra_entrypoints(&self.entry_points_by_type.external));
-        to_hash.push(hash_sierra_entrypoints(
+        hasher.update(hash_sierra_entrypoints(&self.entry_points_by_type.external));
+        hasher.update(hash_sierra_entrypoints(
             &self.entry_points_by_type.l1_handler,
         ));
-        to_hash.push(hash_sierra_entrypoints(
+        hasher.update(hash_sierra_entrypoints(
             &self.entry_points_by_type.constructor,
         ));
 
         // Hashes ABI
-        to_hash.push(starknet_keccak(
-            self.abi
-                .clone()
-                .expect("Abi is required but is none")
-                .as_bytes(),
-        ));
+        hasher.update(starknet_keccak(self.abi.clone().as_bytes()));
 
         // Hashes Sierra program
-        to_hash.push(Poseidon::hash_array(&self.sierra_program));
+        hasher.update(poseidon_hash_many(&self.sierra_program));
 
-        normalize_address(Poseidon::hash_array(&to_hash))
+        normalize_address(hasher.finalize())
     }
 }
 
 impl CompiledClass {
     pub fn class_hash(&self) -> Result<Felt, ComputeClassHashError> {
-        let mut to_hash = vec![];
-        to_hash.push(PREFIX_COMPILED_CLASS_V1);
+        let mut hasher = PoseidonHasher::new();
+        hasher.update(PREFIX_COMPILED_CLASS_V1);
 
         // Hashes entry points
-        to_hash.push(
+        hasher.update(
             Self::hash_entrypoints(&self.entry_points_by_type.external)
                 .map_err(|_| ComputeClassHashError::InvalidBuiltinName)?,
         );
-        to_hash.push(
+        hasher.update(
             Self::hash_entrypoints(&self.entry_points_by_type.l1_handler)
                 .map_err(|_| ComputeClassHashError::InvalidBuiltinName)?,
         );
-        to_hash.push(
+        hasher.update(
             Self::hash_entrypoints(&self.entry_points_by_type.constructor)
                 .map_err(|_| ComputeClassHashError::InvalidBuiltinName)?,
         );
 
         // Hashes bytecode
-        to_hash.push(if self.bytecode_segment_lengths.is_empty() {
+        hasher.update(if self.bytecode_segment_lengths.is_empty() {
             // Pre-Sierra-1.5.0 compiled classes
-            Poseidon::hash_array(&self.bytecode)
+            poseidon_hash_many(&self.bytecode)
         } else {
             // `bytecode_segment_lengths` was added since Sierra 1.5.0 and changed hash calculation.
             // This implementation here is basically a direct translation of the Python code from
@@ -555,27 +545,27 @@ impl CompiledClass {
             res.hash()
         });
 
-        Ok(Poseidon::hash_array(&to_hash))
+        Ok(hasher.finalize())
     }
 
     fn hash_entrypoints(
         entrypoints: &[CompiledClassEntrypoint],
     ) -> Result<Felt, CairoShortStringToFeltError> {
-        let mut to_hash = vec![];
+        let mut hasher = PoseidonHasher::new();
 
-        for entry in entrypoints.iter() {
-            to_hash.push(entry.selector);
-            to_hash.push(entry.offset.into());
+        for entry in entrypoints {
+            hasher.update(entry.selector);
+            hasher.update(entry.offset.into());
 
-            let mut builtin_hasher = vec![];
-            for builtin in entry.builtins.iter() {
-                builtin_hasher.push(cairo_short_string_to_felt(builtin)?)
+            let mut builtin_hasher = PoseidonHasher::new();
+            for builtin in &entry.builtins {
+                builtin_hasher.update(cairo_short_string_to_felt(builtin)?)
             }
 
-            to_hash.push(Poseidon::hash_array(&builtin_hasher));
+            hasher.update(builtin_hasher.finalize());
         }
 
-        Ok(Poseidon::hash_array(&to_hash))
+        Ok(hasher.finalize())
     }
 
     // Direct translation of `_create_bytecode_segment_structure_inner` from `cairo-lang` v0.13.1.
@@ -612,7 +602,7 @@ impl CompiledClass {
                 let mut res = Vec::new();
                 let mut total_len = 0;
 
-                for item in bytecode_segment_lengths.iter() {
+                for item in bytecode_segment_lengths {
                     let visited_pc_before = if !visited_pcs.is_empty() {
                         Some(visited_pcs[visited_pcs.len() - 1])
                     } else {
@@ -677,18 +667,18 @@ impl BytecodeSegmentStructure {
 
 impl BytecodeLeaf {
     fn hash(&self) -> Felt {
-        Poseidon::hash_array(&self.data)
+        poseidon_hash_many(&self.data)
     }
 }
 
 impl BytecodeSegmentedNode {
     fn hash(&self) -> Felt {
-        let mut hasher = vec![];
+        let mut hasher = PoseidonHasher::new();
         for node in self.segments.iter() {
-            hasher.push(node.segment_length.into());
-            hasher.push(node.inner_structure.hash());
+            hasher.update(node.segment_length.into());
+            hasher.update(node.inner_structure.hash());
         }
-        Poseidon::hash_array(&hasher) + Felt::ONE
+        hasher.finalize() + Felt::ONE
     }
 }
 
@@ -853,12 +843,12 @@ impl<'de> Deserialize<'de> for IntOrList {
 }
 
 fn hash_sierra_entrypoints(entrypoints: &[SierraEntryPoint]) -> Felt {
-    let mut hasher = vec![];
+    let mut hasher = PoseidonHasher::new();
 
     for entry in entrypoints.iter() {
-        hasher.push(entry.selector);
-        hasher.push(entry.function_idx.into());
+        hasher.update(entry.selector);
+        hasher.update(entry.function_idx.into());
     }
 
-    Poseidon::hash_array(&hasher)
+    hasher.finalize()
 }
