@@ -47,7 +47,7 @@ pub async fn deploy_account(
         Felt::ZERO
     } else {
         get_deployment_result(
-            &provider,
+            provider,
             account_data.account_type,
             account_data.class_hash,
             account_data.signing_key,

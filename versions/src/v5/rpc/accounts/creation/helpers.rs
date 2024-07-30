@@ -48,7 +48,7 @@ pub async fn generate_account(
 ) -> Result<GenerateAccountResponse, CreationError> {
     let chain_id = provider.chain_id().await?;
     let signing_key = SigningKey::from_random();
-    let signer = LocalWallet::from_signing_key(signing_key.clone());
+    let signer = LocalWallet::from_signing_key(signing_key);
 
     let (address, fee_estimate) = match account_type {
         AccountType::Oz => {

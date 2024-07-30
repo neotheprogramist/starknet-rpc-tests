@@ -82,7 +82,7 @@ pub async fn add_declare_transaction(
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data.clone()).await {
+    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => Some(value),
         Err(e) => {
             info!("{}", "Could not deploy an account");
@@ -180,7 +180,7 @@ pub async fn add_invoke_transaction(
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data.clone()).await {
+    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => Some(value),
         Err(e) => {
             info!("{}", "Could not deploy an account");

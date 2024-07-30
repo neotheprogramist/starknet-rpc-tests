@@ -938,14 +938,11 @@ where
     pub async fn send(&self) -> Result<ClassAndTxnHash, AccountError<A::SignError>> {
         let tx_request = self.get_declare_request(false, false).await?;
 
-        let result = self
-            .account
+        self.account
             .provider()
             .add_declare_transaction(BroadcastedDeclareTxn::V2(tx_request))
             .await
-            .map_err(AccountError::Provider);
-
-        result
+            .map_err(AccountError::Provider)
     }
 
     async fn get_declare_request(
