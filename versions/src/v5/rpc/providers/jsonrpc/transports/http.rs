@@ -1,6 +1,6 @@
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
-use tracing::info;
+use tracing::{debug, info};
 
 use crate::v5::rpc::providers::jsonrpc::{JsonRpcMethod, JsonRpcResponse};
 
@@ -80,7 +80,7 @@ impl JsonRpcTransport for HttpTransport {
         };
 
         let request_body = serde_json::to_string(&request_body).map_err(Self::Error::Json)?;
-        info!("Sending request via JSON-RPC: {}", request_body);
+        debug!("Sending request via JSON-RPC: {}", request_body);
 
         let mut request = self
             .client
@@ -94,7 +94,7 @@ impl JsonRpcTransport for HttpTransport {
         let response = request.send().await.map_err(Self::Error::Reqwest)?;
 
         let response_body = response.text().await.map_err(Self::Error::Reqwest)?;
-        info!("Response from JSON-RPC: {}", response_body);
+        debug!("Response from JSON-RPC: {}", response_body);
 
         let parsed_response: JsonRpcResponse<R> =
             serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
