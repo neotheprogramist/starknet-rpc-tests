@@ -18,8 +18,8 @@ serde_json = { version = "1.0.120", default-features = false, features = [
     "raw_value",
 ] }
 serde_json_pythonic = "0.1.2"
-starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs", rev = "dcbf2e03f3b01a10458de15cbffaf8e7b94aa8f9" }
-starknet-types-core = { git = "https://github.com/neotheprogramist/types-rs", rev = "dcbf2e03f3b01a10458de15cbffaf8e7b94aa8f9" }
+starknet-types-rpc = { path = "/home/filipg/forks/types-rs/crates/starknet-types-rpc" }
+starknet-types-core = { path = "/home/filipg/forks/types-rs/crates/starknet-types-core" }
 thiserror = "1.0.61"
 tokio = { version = "1.38.0", features = ["full"] }
 tracing = "0.1.40"

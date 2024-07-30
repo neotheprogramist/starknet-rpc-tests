@@ -1,12 +1,13 @@
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
+use serde_json::Value;
 use tracing::info;
 
 use crate::v5::rpc::providers::jsonrpc::{JsonRpcMethod, JsonRpcResponse};
 
 use super::JsonRpcTransport;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct HttpTransport {
     client: Client,
     url: Url,
@@ -87,7 +88,7 @@ impl JsonRpcTransport for HttpTransport {
             .post(self.url.clone())
             .body(request_body)
             .header("Content-Type", "application/json");
-        for (name, value) in self.headers.iter() {
+        for (name, value) in &self.headers {
             request = request.header(name, value);
         }
 
@@ -96,8 +97,9 @@ impl JsonRpcTransport for HttpTransport {
         let response_body = response.text().await.map_err(Self::Error::Reqwest)?;
         info!("Response from JSON-RPC: {}", response_body);
 
-        let parsed_response = serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
-
+        let parsed_response: JsonRpcResponse<R> =
+            serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
+        info!("Parsed response success");
         Ok(parsed_response)
     }
 }

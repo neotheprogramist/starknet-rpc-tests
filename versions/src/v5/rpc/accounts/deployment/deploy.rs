@@ -27,7 +27,7 @@ pub async fn deploy_account(
         tracing::info!("Account already deployed!");
         return Ok(Felt::ZERO);
     }
-    info!("==============DEPLOY START..==============");
+
     let public_key = account_data.signing_key.verifying_key();
 
     let address = match account_data.account_type {
@@ -44,10 +44,8 @@ pub async fn deploy_account(
         .await
         .is_ok()
     {
-        info!("CLASS HASH AT IS OK");
         Felt::ZERO
     } else {
-        info!("Getting deployment result");
         get_deployment_result(
             &provider,
             account_data.account_type,
@@ -60,6 +58,6 @@ pub async fn deploy_account(
         )
         .await?
     };
-    info!("DEPLOY END..");
+
     Ok(result)
 }

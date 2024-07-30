@@ -1469,7 +1469,6 @@ checksum = "6980e8d7511241f8acf4aebddbb1ff938df5eebe98691418c4468d0b72a96a67"
 [[package]]
 name = "starknet-types-core"
 version = "0.1.5"
-source = "git+https://github.com/neotheprogramist/types-rs?rev=dcbf2e03f3b01a10458de15cbffaf8e7b94aa8f9#dcbf2e03f3b01a10458de15cbffaf8e7b94aa8f9"
 dependencies = [
  "crypto-bigint",
  "hmac",
@@ -1487,7 +1486,6 @@ dependencies = [
 [[package]]
 name = "starknet-types-rpc"
 version = "0.6.0"
-source = "git+https://github.com/neotheprogramist/types-rs?rev=dcbf2e03f3b01a10458de15cbffaf8e7b94aa8f9#dcbf2e03f3b01a10458de15cbffaf8e7b94aa8f9"
 dependencies = [
  "serde",
  "starknet-types-core",

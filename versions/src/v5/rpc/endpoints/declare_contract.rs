@@ -9,6 +9,7 @@ use crate::v5::rpc::{
     providers::provider::Provider,
     signers::local_wallet::LocalWallet,
 };
+use colored::*;
 use regex::Regex;
 use starknet_types_rpc::{ContractClass, Felt, TxnHash};
 use thiserror::Error;
@@ -52,14 +53,14 @@ pub async fn declare_contract<P: Provider + Send + Sync>(
             }
         }
         Err(e) => {
-            tracing::info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
+            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
             Err(RunnerError::AccountFailure(format!("Account error: {}", e)))
         }
     }
 }
 
 pub fn parse_class_hash_from_error(error_msg: &str) -> Felt {
-    tracing::info!("Error message: {}", error_msg);
+    info!("Error message: {}", error_msg);
     let re = Regex::new(r#"StarkFelt\("(0x[a-fA-F0-9]+)"\)"#).unwrap();
 
     // Attempt to capture the class hash

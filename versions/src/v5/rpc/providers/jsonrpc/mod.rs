@@ -6,10 +6,11 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use starknet_types_rpc::{
     AddDeclareTransactionParams, AddDeployAccountTransactionParams, AddInvokeTransactionParams,
     AddInvokeTransactionResult, BlockHashAndNumber, BlockHashAndNumberParams, BlockId,
-    BlockNumberParams, BroadcastedDeclareTxn, BroadcastedDeployAccountTxn, BroadcastedInvokeTxn,
-    BroadcastedTxn, CallParams, ChainIdParams, ClassAndTxnHash, ContractAndTxnHash, ContractClass,
-    DeployAccountTxnV1, EstimateFeeParams, EstimateMessageFeeParams, EventFilterWithPageRequest,
-    EventsChunk, FeeEstimate, Felt as FeltPrimitive, FunctionCall, GetBlockTransactionCountParams,
+    BlockNumberParams, BlockWithTxHashes2, BroadcastedDeclareTxn, BroadcastedDeployAccountTxn,
+    BroadcastedInvokeTxn, BroadcastedTxn, CallParams, ChainIdParams, ClassAndTxnHash,
+    ContractAndTxnHash, ContractClass, DeployAccountTxnV1, EstimateFeeParams,
+    EstimateMessageFeeParams, EventFilterWithPageRequest, EventsChunk, FeeEstimate,
+    Felt as FeltPrimitive, FunctionCall, GetBlockTransactionCountParams,
     GetBlockWithTxHashesParams, GetBlockWithTxsParams, GetClassAtParams, GetClassHashAtParams,
     GetClassParams, GetEventsParams, GetNonceParams, GetStateUpdateParams, GetStorageAtParams,
     GetTransactionByBlockIdAndIndexParams, GetTransactionByHashParams, GetTransactionReceiptParams,
@@ -17,14 +18,16 @@ use starknet_types_rpc::{
     MaybePendingStateUpdate, MsgFromL1, Signature, SimulateTransactionsParams,
     SimulateTransactionsResult, SimulationFlag, SimulationFlagForEstimateFee, SpecVersionParams,
     SyncingParams, SyncingStatus, TraceBlockTransactionsParams, TraceBlockTransactionsResult,
-    TraceTransactionParams, TransactionTrace, Txn, TxnHash, TxnReceipt, TxnStatus,
+    TraceTransactionParams, TransactionTrace, Txn, TxnFinalityAndExecutionStatus, TxnHash,
+    TxnReceipt, TxnStatus,
 };
 
+use tracing::info;
 pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
 
 use super::provider::{Provider, ProviderError, ProviderImplError};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct JsonRpcClient<T> {
     transport: T,
 }
@@ -190,8 +193,13 @@ where
             .await
             .map_err(JsonRpcClientError::TransportError)?
         {
-            JsonRpcResponse::Success { result, .. } => Ok(result),
+            JsonRpcResponse::Success { result, .. } => {
+                println!("- >>>>>> inside SUCCESS");
+                Ok(result)
+            }
             JsonRpcResponse::Error { error, .. } => {
+                println!("- >>>>>> inside ERROR");
+
                 Err(match TryInto::<StarknetError>::try_into(&error) {
                     Ok(error) => ProviderError::StarknetError(error),
                     Err(_) => JsonRpcClientError::<T::Error>::JsonRpcError(error).into(),
@@ -259,7 +267,7 @@ where
                 JsonRpcMethod::GetStorageAt,
                 GetStorageAtParams {
                     contract_address,
-                    key: key.to_string(),
+                    key,
                     block_id,
                 },
             )
@@ -272,7 +280,7 @@ where
     async fn get_transaction_status(
         &self,
         transaction_hash: FeltPrimitive,
-    ) -> Result<TxnStatus, ProviderError> {
+    ) -> Result<TxnFinalityAndExecutionStatus, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetTransactionStatus,
             GetTransactionStatusParams { transaction_hash },
@@ -305,16 +313,29 @@ where
         .await
     }
 
-    /// Get the details of a transaction by a given block number and index
     async fn get_transaction_receipt(
         &self,
         transaction_hash: TxnHash,
     ) -> Result<TxnReceipt, ProviderError> {
-        self.send_request(
-            JsonRpcMethod::GetTransactionReceipt,
-            GetTransactionReceiptParams { transaction_hash },
-        )
-        .await
+        let response = self
+            .send_request(
+                JsonRpcMethod::GetTransactionReceipt,
+                GetTransactionReceiptParams { transaction_hash },
+            )
+            .await;
+        info!("response {:?}", response);
+        match &response {
+            Ok(json) => {
+                // Print the raw JSON response for debugging
+                println!("Raw JSON response: {:?}", json);
+            }
+            Err(e) => {
+                // Print the error for debugging
+                println!("XD Error: {:?}", e);
+            }
+        }
+
+        response
     }
 
     /// Get the contract class definition in the given block associated with the given hash

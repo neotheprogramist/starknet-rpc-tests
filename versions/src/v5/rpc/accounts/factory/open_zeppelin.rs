@@ -82,7 +82,6 @@ where
         let tx_hash = PreparedAccountDeploymentV1::from_raw(deployment.clone(), self)
             .transaction_hash(query_only);
         let signature = self.signer.sign_hash(&tx_hash).await?;
-        info!("signature {:?}", signature);
 
         Ok(vec![signature.r, signature.s])
     }

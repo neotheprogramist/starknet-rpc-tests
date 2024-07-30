@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 use starknet_types_core::felt::FromStrError;
 use starknet_types_rpc::{AddInvokeTransactionResult, Felt};
@@ -27,7 +29,7 @@ pub enum DeployError {
     RunnerError(#[from] RunnerError),
 }
 
-pub async fn deploy_contract<P: Provider + Send + Sync>(
+pub async fn deploy_contract<P: Provider + Send + Sync + Debug>(
     account: &SingleOwnerAccount<P, LocalWallet>,
     class_hash: Felt,
 ) -> AddInvokeTransactionResult {

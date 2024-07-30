@@ -1,5 +1,5 @@
+pub mod endpoints;
 pub mod errors;
-pub mod methods;
 pub mod models;
 
 use colored::*;
@@ -32,10 +32,10 @@ pub trait DevnetEndpoints {
 
 impl DevnetEndpoints for Devnet {
     async fn is_alive(&self) -> Result<String, DevnetError> {
-        methods::is_alive(self.url.clone()).await
+        endpoints::is_alive(self.url.clone()).await
     }
     async fn account_balance(&self) -> Result<AccountBalanceResponse, DevnetError> {
-        methods::get_account_balance(
+        endpoints::get_account_balance(
             self.url.clone(),
             AccountBalanceParams {
                 address: Felt::from_hex(
@@ -49,7 +49,7 @@ impl DevnetEndpoints for Devnet {
     }
 
     async fn predeployed_accounts(&self) -> Result<Vec<SerializableAccount>, DevnetError> {
-        methods::get_predeployed_accounts(self.url.clone()).await
+        endpoints::get_predeployed_accounts(self.url.clone()).await
     }
 }
 

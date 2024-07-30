@@ -193,12 +193,12 @@ where
     }
 
     pub async fn send(&self) -> Result<AddInvokeTransactionResult, AccountError<A::SignError>> {
-        info!("send");
+        info!("execution send");
         self.prepare().await?.send().await
     }
 
     async fn prepare(&self) -> Result<PreparedExecutionV1<'a, A>, AccountError<A::SignError>> {
-        info!("prepare");
+        info!("execution prepare");
         // Resolves nonce
         let nonce = match self.nonce {
             Some(value) => value,
@@ -208,7 +208,6 @@ where
                 .await
                 .map_err(AccountError::Provider)?,
         };
-        info!("nonce {:?}", nonce);
 
         // Resolves max_fee
         let max_fee = match self.max_fee {
@@ -232,7 +231,6 @@ where
                 (((overall_fee_u64 as f64) * self.fee_estimate_multiplier) as u64).into()
             }
         };
-        info!("max_fee {}", max_fee);
 
         Ok(PreparedExecutionV1 {
             account: self.account,
@@ -718,14 +716,15 @@ where
             .get_invoke_request(false, false)
             .await
             .map_err(AccountError::Signing)?;
-        info!("get invoke request tx request {:?}", tx_request);
+        info!("----> send PreparedExecutionV1 tx_request {:?}", tx_request);
+
         let result = self
             .account
             .provider()
             .add_invoke_transaction(BroadcastedInvokeTxn::V1(tx_request))
             .await
             .map_err(AccountError::Provider);
-        info!("add invoke transaction result {:?}", result);
+
         result
     }
 
@@ -742,6 +741,7 @@ where
             signature: if skip_signature {
                 vec![]
             } else {
+                info!("get_invoke_request params {:?} {}", self.inner, query_only);
                 self.account
                     .sign_execution_v1(&self.inner, query_only)
                     .await?
@@ -749,7 +749,7 @@ where
             nonce: self.inner.nonce,
             sender_address: self.account.address(),
             calldata: self.account.encode_calls(&self.inner.calls),
-            type_: "INVOKE".to_string(),
+            _type: Some("INVOKE".to_string()),
         })
     }
 }

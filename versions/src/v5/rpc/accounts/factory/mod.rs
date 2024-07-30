@@ -218,7 +218,6 @@ impl<'f, F> AccountDeploymentV1<'f, F> {
     }
 
     pub fn max_fee(self, max_fee: Felt) -> Self {
-        info!("SETTING MAX FEE CONSTRUCTOR");
         Self {
             max_fee: Some(max_fee),
             ..self
@@ -353,7 +352,6 @@ where
                 .await
                 .map_err(AccountFactoryError::Provider)?,
         };
-        info!("estimate fee nonce:  {}", nonce);
 
         self.estimate_fee_with_nonce(nonce).await
     }
@@ -377,14 +375,12 @@ where
     }
 
     pub async fn send(&self) -> Result<ContractAndTxnHash, AccountFactoryError<F::SignError>> {
-        info!("START SEND");
         self.prepare().await?.send().await
     }
 
     async fn prepare(
         &self,
     ) -> Result<PreparedAccountDeploymentV1<'f, F>, AccountFactoryError<F::SignError>> {
-        info!("START PREPARE");
         // Resolves nonce
         let nonce = match self.nonce {
             Some(value) => value,
@@ -425,7 +421,7 @@ where
                 max_fee,
             },
         };
-        info!("Looking good ");
+
         Ok(res)
     }
 
@@ -433,9 +429,8 @@ where
         &self,
         nonce: Felt,
     ) -> Result<FeeEstimate, AccountFactoryError<F::SignError>> {
-        info!("estimate fee with nonce start");
         let skip_signature = self.factory.is_signer_interactive();
-        info!("skip signature: {}", skip_signature);
+
         let prepared = PreparedAccountDeploymentV1 {
             factory: self.factory,
             inner: RawAccountDeploymentV1 {
@@ -444,12 +439,12 @@ where
                 max_fee: Felt::ZERO,
             },
         };
-        info!("prepared: ",);
+
         let deploy = prepared
             .get_deploy_request(true, skip_signature)
             .await
             .map_err(AccountFactoryError::Signing)?;
-        info!("get deploy result fine");
+
         self.factory
             .provider()
             .estimate_fee_single(
@@ -771,7 +766,6 @@ impl RawAccountDeploymentV1 {
     }
 
     pub fn max_fee(&self) -> Felt {
-        info!("max_fee constructor");
         self.max_fee
     }
 }
@@ -842,12 +836,11 @@ where
     }
 
     pub async fn send(&self) -> Result<ContractAndTxnHash, AccountFactoryError<F::SignError>> {
-        info!("prepared send");
         let tx_request = self
             .get_deploy_request(false, false)
             .await
             .map_err(AccountFactoryError::Signing)?;
-        info!("prepared provider add deploy acc txn");
+
         self.factory
             .provider()
             .add_deploy_account_transaction(BroadcastedDeployAccountTxn::V1(tx_request))
@@ -860,17 +853,14 @@ where
         query_only: bool,
         skip_signature: bool,
     ) -> Result<DeployAccountTxnV1, F::SignError> {
-        info!("get deploy request start ");
         let signature = if skip_signature {
-            info!("signature empty");
             vec![]
         } else {
-            info!("signature needed start sign_deployment_v1");
             self.factory
                 .sign_deployment_v1(&self.inner, query_only)
                 .await?
         };
-        info!("after signing");
+
         let txn = DeployAccountTxnV1 {
             max_fee: self.inner.max_fee,
             signature,
@@ -878,9 +868,9 @@ where
             contract_address_salt: self.inner.salt,
             constructor_calldata: self.factory.calldata(),
             class_hash: self.factory.class_hash(),
-            type_: "DEPLOY_ACCOUNT".to_string(),
+            type_: Some("DEPLOY_ACCOUNT".to_string()),
         };
-        info!("txn {:?}", txn);
+
         Ok(txn)
     }
 }

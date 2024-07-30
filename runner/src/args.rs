@@ -7,4 +7,10 @@ use url::Url;
 pub struct Args {
     #[arg(long, short, env)]
     pub url: Url,
+
+    #[arg(long, short, env)]
+    pub sierra_path: String,
+
+    #[arg(long, short, env)]
+    pub casm_path: String,
 }

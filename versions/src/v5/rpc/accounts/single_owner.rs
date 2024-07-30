@@ -129,12 +129,7 @@ where
         declaration: &RawDeclarationV2,
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
-        info!(
-            "transaction hash data: {} {} {}",
-            self.chain_id, self.address, query_only
-        );
         let tx_hash = declaration.transaction_hash(self.chain_id, self.address, query_only);
-        info!("tx hash {}", tx_hash);
         let signature = self
             .signer
             .sign_hash(&tx_hash)

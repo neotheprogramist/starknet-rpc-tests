@@ -1,6 +1,7 @@
 use starknet_types_rpc::{
     AddInvokeTransactionResult, FeeEstimate, Felt, SimulateTransactionsResult,
 };
+use tracing::info;
 
 use crate::v5::rpc::accounts::{
     account::{Account, AccountError, ConnectedAccount, ExecutionV1},
@@ -18,18 +19,17 @@ use super::helpers::{get_udc_deployed_address, UdcUniqueSettings, UdcUniqueness}
 
 /// The default UDC address: 0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf.
 const UDC_ADDRESS: Felt = Felt::from_raw([
-    15144800532519055890,
-    15685625669053253235,
-    9333317513348225193,
     121672436446604875,
+    9333317513348225193,
+    15685625669053253235,
+    15144800532519055890,
 ]);
-
 /// Selector for entrypoint `deployContract`.
 const SELECTOR_DEPLOYCONTRACT: Felt = Felt::from_raw([
-    18249998464715511309,
-    1265649739554438882,
-    1439621915307882061,
     469988280392664069,
+    1439621915307882061,
+    1265649739554438882,
+    18249998464715511309,
 ]);
 
 pub struct ContractFactory<A> {
@@ -238,10 +238,10 @@ where
 //         )
 //     }
 // }
-
+use std::fmt::Debug;
 impl<'f, A> DeploymentV1<'f, A>
 where
-    A: ConnectedAccount + Sync,
+    A: ConnectedAccount + Sync + Debug,
 {
     pub async fn estimate_fee(&self) -> Result<FeeEstimate, AccountError<A::SignError>> {
         let execution: ExecutionV1<A> = self.into();
@@ -259,6 +259,7 @@ where
 
     pub async fn send(&self) -> Result<AddInvokeTransactionResult, AccountError<A::SignError>> {
         let execution: ExecutionV1<A> = self.into();
+        info!("execution object {:?}", execution);
         execution.send().await
     }
 }

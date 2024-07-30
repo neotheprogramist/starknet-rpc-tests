@@ -1,12 +1,13 @@
 use auto_impl::auto_impl;
 use serde::{Deserialize, Serialize};
 use starknet_types_rpc::{
-    AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BroadcastedDeclareTxn,
-    BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn, ClassAndTxnHash,
-    ContractAndTxnHash, ContractClass, DeployAccountTxnV1, EventFilterWithPageRequest, EventsChunk,
-    FeeEstimate, Felt, FunctionCall, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MsgFromL1, SimulateTransactionsResult, SimulationFlag, SyncingStatus,
-    TraceBlockTransactionsResult, TransactionTrace, Txn, TxnReceipt, TxnStatus,
+    AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BlockWithTxHashes2,
+    BroadcastedDeclareTxn, BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn,
+    ClassAndTxnHash, ContractAndTxnHash, ContractClass, DeployAccountTxnV1,
+    EventFilterWithPageRequest, EventsChunk, FeeEstimate, Felt, FunctionCall,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate, MsgFromL1,
+    SimulateTransactionsResult, SimulationFlag, SyncingStatus, TraceBlockTransactionsResult,
+    TransactionTrace, Txn, TxnFinalityAndExecutionStatus, TxnReceipt, TxnStatus,
 };
 use std::{any::Any, error::Error, fmt::Debug};
 
@@ -54,7 +55,7 @@ pub trait Provider {
     fn get_transaction_status(
         &self,
         transaction_hash: Felt,
-    ) -> impl std::future::Future<Output = Result<TxnStatus, ProviderError>>;
+    ) -> impl std::future::Future<Output = Result<TxnFinalityAndExecutionStatus, ProviderError>>;
 
     /// Get the details and status of a submitted transaction
     fn get_transaction_by_hash(
