@@ -193,12 +193,10 @@ where
     }
 
     pub async fn send(&self) -> Result<AddInvokeTransactionResult, AccountError<A::SignError>> {
-        info!("execution send");
         self.prepare().await?.send().await
     }
 
     async fn prepare(&self) -> Result<PreparedExecutionV1<'a, A>, AccountError<A::SignError>> {
-        info!("execution prepare");
         // Resolves nonce
         let nonce = match self.nonce {
             Some(value) => value,
@@ -716,7 +714,6 @@ where
             .get_invoke_request(false, false)
             .await
             .map_err(AccountError::Signing)?;
-        info!("----> send PreparedExecutionV1 tx_request {:?}", tx_request);
 
         let result = self
             .account
@@ -741,7 +738,6 @@ where
             signature: if skip_signature {
                 vec![]
             } else {
-                info!("get_invoke_request params {:?} {}", self.inner, query_only);
                 self.account
                     .sign_execution_v1(&self.inner, query_only)
                     .await?

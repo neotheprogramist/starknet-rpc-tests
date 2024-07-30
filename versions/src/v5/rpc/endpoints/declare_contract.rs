@@ -9,7 +9,7 @@ use crate::v5::rpc::{
     providers::provider::Provider,
     signers::local_wallet::LocalWallet,
 };
-use colored::*;
+
 use regex::Regex;
 use starknet_types_rpc::{ContractClass, Felt, TxnHash};
 use thiserror::Error;

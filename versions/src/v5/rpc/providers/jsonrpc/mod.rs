@@ -6,20 +6,18 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use starknet_types_rpc::{
     AddDeclareTransactionParams, AddDeployAccountTransactionParams, AddInvokeTransactionParams,
     AddInvokeTransactionResult, BlockHashAndNumber, BlockHashAndNumberParams, BlockId,
-    BlockNumberParams, BlockWithTxHashes2, BroadcastedDeclareTxn, BroadcastedDeployAccountTxn,
-    BroadcastedInvokeTxn, BroadcastedTxn, CallParams, ChainIdParams, ClassAndTxnHash,
-    ContractAndTxnHash, ContractClass, DeployAccountTxnV1, EstimateFeeParams,
-    EstimateMessageFeeParams, EventFilterWithPageRequest, EventsChunk, FeeEstimate,
-    Felt as FeltPrimitive, FunctionCall, GetBlockTransactionCountParams,
+    BlockNumberParams, BroadcastedDeclareTxn, BroadcastedDeployAccountTxn, BroadcastedInvokeTxn,
+    BroadcastedTxn, CallParams, ChainIdParams, ClassAndTxnHash, ContractAndTxnHash, ContractClass,
+    EstimateFeeParams, EstimateMessageFeeParams, EventFilterWithPageRequest, EventsChunk,
+    FeeEstimate, Felt as FeltPrimitive, FunctionCall, GetBlockTransactionCountParams,
     GetBlockWithTxHashesParams, GetBlockWithTxsParams, GetClassAtParams, GetClassHashAtParams,
     GetClassParams, GetEventsParams, GetNonceParams, GetStateUpdateParams, GetStorageAtParams,
     GetTransactionByBlockIdAndIndexParams, GetTransactionByHashParams, GetTransactionReceiptParams,
     GetTransactionStatusParams, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MsgFromL1, Signature, SimulateTransactionsParams,
-    SimulateTransactionsResult, SimulationFlag, SimulationFlagForEstimateFee, SpecVersionParams,
-    SyncingParams, SyncingStatus, TraceBlockTransactionsParams, TraceBlockTransactionsResult,
-    TraceTransactionParams, TransactionTrace, Txn, TxnFinalityAndExecutionStatus, TxnHash,
-    TxnReceipt, TxnStatus,
+    MaybePendingStateUpdate, MsgFromL1, SimulateTransactionsParams, SimulateTransactionsResult,
+    SimulationFlag, SpecVersionParams, SyncingParams, SyncingStatus, TraceBlockTransactionsParams,
+    TraceBlockTransactionsResult, TraceTransactionParams, TransactionTrace, Txn,
+    TxnFinalityAndExecutionStatus, TxnHash, TxnReceipt,
 };
 
 use tracing::info;
@@ -193,13 +191,8 @@ where
             .await
             .map_err(JsonRpcClientError::TransportError)?
         {
-            JsonRpcResponse::Success { result, .. } => {
-                println!("- >>>>>> inside SUCCESS");
-                Ok(result)
-            }
+            JsonRpcResponse::Success { result, .. } => Ok(result),
             JsonRpcResponse::Error { error, .. } => {
-                println!("- >>>>>> inside ERROR");
-
                 Err(match TryInto::<StarknetError>::try_into(&error) {
                     Ok(error) => ProviderError::StarknetError(error),
                     Err(_) => JsonRpcClientError::<T::Error>::JsonRpcError(error).into(),
@@ -323,7 +316,6 @@ where
                 GetTransactionReceiptParams { transaction_hash },
             )
             .await;
-        info!("response {:?}", response);
         match &response {
             Ok(json) => {
                 // Print the raw JSON response for debugging

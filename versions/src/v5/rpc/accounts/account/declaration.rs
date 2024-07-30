@@ -6,7 +6,6 @@ use starknet_types_rpc::{
     FeeEstimate, Felt, ResourceLimits, SimulateTransactionsResult, SimulationFlag,
 };
 use std::sync::Arc;
-use tracing::info;
 
 use super::{
     Account, AccountError, ConnectedAccount, DeclarationV2, PreparedDeclarationV2, RawDeclarationV2,

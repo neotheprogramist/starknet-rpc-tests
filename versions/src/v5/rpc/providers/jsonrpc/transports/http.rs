@@ -1,6 +1,5 @@
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
-use serde_json::Value;
 use tracing::info;
 
 use crate::v5::rpc::providers::jsonrpc::{JsonRpcMethod, JsonRpcResponse};
@@ -99,7 +98,6 @@ impl JsonRpcTransport for HttpTransport {
 
         let parsed_response: JsonRpcResponse<R> =
             serde_json::from_str(&response_body).map_err(Self::Error::Json)?;
-        info!("Parsed response success");
         Ok(parsed_response)
     }
 }

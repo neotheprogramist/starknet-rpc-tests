@@ -1,10 +1,9 @@
-use starknet_types_rpc::{BlockId, BlockTag, Felt};
+use starknet_types_rpc::{BlockId, BlockTag};
 use tracing::info;
 use url::Url;
 
 use crate::v5::rpc::{
     accounts::{
-        account::Account,
         creation::{
             create::{create_account, AccountType},
             helpers::get_chain_id,
@@ -19,13 +18,11 @@ use crate::v5::rpc::{
     },
     endpoints::{declare_contract::declare_contract, deploy_contract::deploy_contract},
     providers::jsonrpc::{HttpTransport, JsonRpcClient},
-    signers::{key_pair::SigningKey, local_wallet::LocalWallet},
+    signers::local_wallet::LocalWallet,
 };
 
 pub async fn decalare_and_deploy(
     url: Url,
-
-    chain_id: &str,
     sierra_path: &str,
     casm_path: &str,
 ) -> Result<(), String> {
@@ -59,13 +56,13 @@ pub async fn decalare_and_deploy(
     };
 
     let chain_id = get_chain_id(&provider).await.unwrap();
-    let result =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data.clone()).await {
-            Ok(value) => Some(value),
-            Err(e) => {
-                return Err(e.to_string());
-            }
-        };
+
+    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data.clone()).await {
+        Ok(value) => Some(value),
+        Err(e) => {
+            return Err(e.to_string());
+        }
+    };
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -83,23 +80,7 @@ pub async fn decalare_and_deploy(
         .await
         .unwrap();
 
-    let deploy_result = deploy_contract(&account, class_hash).await;
+    deploy_contract(&account, class_hash).await;
 
     Ok(())
 }
-// let receipt = client
-//     .get_transaction_receipt(deploy_result.transaction_hash)
-//     .await
-//     .unwrap();
-// assert!(receipt.block.is_block());
-
-// let receipt = match receipt.receipt {
-//     TransactionReceipt::Deploy(receipt) => receipt,
-//     _ => panic!("unexpected receipt response type"),
-// };
-
-// match receipt.execution_result {
-//     ExecutionResult::Succeeded => {}
-//     _ => panic!("unexpected execution result"),
-// }
-// (account, receipt.contract_address)

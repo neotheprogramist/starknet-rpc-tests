@@ -1,22 +1,19 @@
 use std::sync::Arc;
 
 use rand::{rngs::StdRng, RngCore, SeedableRng};
-use reqwest::Client;
-use serde_json::{json, Number};
+
 use starknet_types_rpc::{
-    AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxHashes2,
-    BlockWithTxs, BlockWithTxs2, ChainId, ContractClass, DeclareTxn, DeclareTxnV2,
-    DeployAccountTxn, DeployAccountTxnV1, EthAddress, FeeEstimate, Felt, FunctionCall, InvokeTxn,
-    InvokeTxnV1, InvokeTxnV3, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MsgFromL1, NewDeployTxnReceipt, StateDiff, StateUpdate, Txn,
-    TxnExecutionStatus, TxnReceipt, TxnStatus,
+    AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, ContractClass,
+    DeployAccountTxn, DeployAccountTxnV1, FeeEstimate, Felt, FunctionCall, InvokeTxn, InvokeTxnV1,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+    NewDeployTxnReceipt, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
 };
-use tracing::{error, info, warn};
+use tracing::{info, warn};
 use url::Url;
 
 use crate::v5::rpc::{
     accounts::{
-        account::{self, Account, AccountError, ConnectedAccount},
+        account::{Account, AccountError, ConnectedAccount},
         creation::{
             create::{create_account, AccountType},
             helpers::get_chain_id,
@@ -30,22 +27,19 @@ use crate::v5::rpc::{
         utils::mint::mint,
     },
     contract::factory::ContractFactory,
-    endpoints::{
-        declare_contract::declare_contract, deploy_contract::deploy_contract, errors::CallError,
-    },
+    endpoints::errors::CallError,
     providers::{
         jsonrpc::{HttpTransport, JsonRpcClient, StarknetError},
         provider::{Provider, ProviderError},
     },
-    signers::{key_pair::SigningKey, local_wallet::LocalWallet},
+    signers::local_wallet::LocalWallet,
 };
 
 use super::{
     declare_contract::{parse_class_hash_from_error, RunnerError},
     errors::RpcError,
-    utils::{get_compiled_contract, get_selector_from_name, get_storage_var_address},
+    utils::{get_compiled_contract, get_selector_from_name},
 };
-use thiserror::Error;
 
 pub async fn add_declare_transaction(
     url: Url,
@@ -60,7 +54,7 @@ pub async fn add_declare_transaction(
         match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
             Ok(value) => value,
             Err(e) => {
-                info!("{}", "Could not create an account");
+                warn!("{}", "Could not create an account");
                 return Err(e.into());
             }
         };
@@ -211,7 +205,7 @@ pub async fn add_invoke_transaction(
         .send()
         .await
     {
-        Ok(result) => Ok((result.class_hash)),
+        Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string()))
@@ -335,14 +329,7 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
     );
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
-    // let class_hash = declare_contract(
-    //     &account,
-    //     "/home/filipg/starknet-devnet/starknet-devnet-tests/target/dev/declaredeploy_HelloStarknet.contract_class.json",
-    //     "/home/filipg/starknet-devnet/starknet-devnet-tests/target/dev/declaredeploy_HelloStarknet.compiled_contract_class.json",
-    // )
-    // .await?;
 
-    // let deploy_result = deploy_contract(&account, class_hash).await;
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
 

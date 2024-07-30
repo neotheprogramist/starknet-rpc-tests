@@ -24,7 +24,7 @@ pub async fn deploy_account(
     account_data: GenerateAccountResponse,
 ) -> Result<TxnHash, CreationError> {
     if account_data.deployed {
-        tracing::info!("Account already deployed!");
+        tracing::warn!("Account already deployed!");
         return Ok(Felt::ZERO);
     }
 

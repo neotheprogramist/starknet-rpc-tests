@@ -12,7 +12,7 @@ use super::{
     },
     contract::unsigned_felt::UfeHex,
 };
-use starknet_types_core::hash::{poseidon_hash_many, Poseidon, PoseidonHasher, StarkHash};
+use starknet_types_core::hash::{poseidon_hash_many, PoseidonHasher};
 use starknet_types_rpc::{ContractClass, DeprecatedContractClass, Felt};
 use std::boxed;
 
