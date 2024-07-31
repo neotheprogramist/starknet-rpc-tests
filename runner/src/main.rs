@@ -3,7 +3,10 @@ use args::Args;
 use clap::Parser;
 use colored::*;
 use tracing::error;
-use versions::v5::{devnet::test_devnet_endpoints, rpc::endpoints::test_rpc_endpoints};
+use versions::{
+    v5::{devnet::test_devnet_endpoints, rpc::endpoints::test_rpc_endpoints},
+    v6::rpc::endpoints::test_rpc_endpoints_v0_0_6,
+};
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
@@ -16,7 +19,7 @@ async fn main() -> Result<(), String> {
         Ok(_) => {}
         Err(e) => error!("Failure: {}", e.to_string().red()),
     };
-    match test_rpc_endpoints(args.url.clone(), &args.sierra_path, &args.casm_path).await {
+    match test_rpc_endpoints_v0_0_6(args.url.clone(), &args.sierra_path, &args.casm_path).await {
         Ok(_) => {}
         Err(e) => error!("Failure: {}", e.to_string().red()),
     }
