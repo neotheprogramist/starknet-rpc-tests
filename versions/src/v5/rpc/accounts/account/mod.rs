@@ -3,12 +3,13 @@ use crate::v5::rpc::providers::provider::{Provider, ProviderError};
 use auto_impl::auto_impl;
 
 use sha3::{Digest, Keccak256};
+
 use starknet_types_core::{
-    felt::NonZeroFelt,
+    felt::{Felt, NonZeroFelt},
     hash::{poseidon_hash_many, PoseidonHasher},
 };
-use starknet_types_rpc::{
-    BlockId, BlockTag, ContractClass, DeprecatedContractClass, Felt, SierraEntryPoint,
+use starknet_types_rpc::v0_5_0::{
+    BlockId, BlockTag, ContractClass, DeprecatedContractClass, SierraEntryPoint,
 };
 use std::{error::Error, sync::Arc};
 

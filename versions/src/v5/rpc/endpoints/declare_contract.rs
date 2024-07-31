@@ -11,7 +11,9 @@ use crate::v5::rpc::{
 };
 
 use regex::Regex;
-use starknet_types_rpc::{ContractClass, Felt, TxnHash};
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{ContractClass, TxnHash};
+
 use thiserror::Error;
 use tokio::io::AsyncReadExt;
 use tracing::info;

@@ -1,4 +1,4 @@
-use starknet_types_rpc::Felt;
+use starknet_types_core::felt::Felt;
 
 #[derive(Debug, Clone)]
 pub struct Call {

@@ -3,7 +3,8 @@ use super::{
     signer::Signer,
 };
 use starknet_types_core::curve::{EcdsaSignError, Signature};
-use starknet_types_rpc::Felt;
+use starknet_types_core::felt::Felt;
+
 use std::fmt;
 
 #[derive(Debug, Clone)]

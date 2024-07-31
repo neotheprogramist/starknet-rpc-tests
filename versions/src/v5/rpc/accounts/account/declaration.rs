@@ -1,9 +1,10 @@
 use crate::v5::rpc::accounts::account::ContractClassHasher;
 use crate::v5::rpc::{accounts::errors::NotPreparedError, providers::provider::Provider};
 use starknet_types_core::curve::compute_hash_on_elements;
-use starknet_types_rpc::{
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{
     BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedTxn, ClassAndTxnHash, ContractClass,
-    FeeEstimate, Felt, ResourceLimits, SimulateTransactionsResult, SimulationFlag,
+    FeeEstimate, ResourceLimits, SimulateTransactionsResult, SimulationFlag,
 };
 use std::sync::Arc;
 

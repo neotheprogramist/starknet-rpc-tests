@@ -1,13 +1,15 @@
 use auto_impl::auto_impl;
 use serde::{Deserialize, Serialize};
-use starknet_types_rpc::{
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{
     AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BroadcastedDeclareTxn,
     BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn, ClassAndTxnHash,
-    ContractAndTxnHash, ContractClass, EventFilterWithPageRequest, EventsChunk, FeeEstimate, Felt,
+    ContractAndTxnHash, ContractClass, EventFilterWithPageRequest, EventsChunk, FeeEstimate,
     FunctionCall, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
     MsgFromL1, SimulateTransactionsResult, SimulationFlag, SyncingStatus,
     TraceBlockTransactionsResult, TransactionTrace, Txn, TxnFinalityAndExecutionStatus, TxnReceipt,
 };
+
 use std::{any::Any, error::Error, fmt::Debug};
 
 use super::jsonrpc::StarknetError;

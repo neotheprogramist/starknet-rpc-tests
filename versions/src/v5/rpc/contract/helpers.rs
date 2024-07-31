@@ -1,5 +1,5 @@
+use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::{Pedersen, StarkHash};
-use starknet_types_rpc::Felt;
 
 use crate::v5::rpc::accounts::deployment::helpers::get_contract_address;
 

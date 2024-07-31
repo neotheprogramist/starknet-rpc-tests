@@ -1,6 +1,6 @@
 use auto_impl::auto_impl;
 use starknet_types_core::curve::Signature;
-use starknet_types_rpc::Felt;
+use starknet_types_core::felt::Felt;
 
 use std::error::Error;
 

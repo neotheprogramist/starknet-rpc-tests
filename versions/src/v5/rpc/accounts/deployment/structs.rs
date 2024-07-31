@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use starknet_types_rpc::Felt;
+use starknet_types_core::felt::Felt;
 
 // used in wait_for_tx. Txs will be fetched every 5s with timeout of 300s - so 60 attempts
 #[allow(dead_code)]

@@ -10,8 +10,8 @@ use crate::v5::rpc::{
     signers::{key_pair::SigningKey, local_wallet::LocalWallet},
 };
 use rand::{rngs::OsRng, RngCore};
-use starknet_types_rpc::{BlockId, BlockTag, FeeEstimate, Felt};
-use tracing::info;
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{BlockId, BlockTag, FeeEstimate};
 
 use super::{create::AccountType, structs::GenerateAccountResponse};
 

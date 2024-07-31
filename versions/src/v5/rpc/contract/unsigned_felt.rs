@@ -5,7 +5,7 @@ use serde::{
     Deserializer, Serializer,
 };
 use serde_with::{DeserializeAs, SerializeAs};
-use starknet_types_rpc::Felt;
+use starknet_types_core::felt::Felt;
 
 pub struct UfeHex;
 

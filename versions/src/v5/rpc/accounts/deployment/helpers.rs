@@ -1,6 +1,5 @@
 use starknet_types_core::curve::compute_hash_on_elements;
-use starknet_types_rpc::Felt;
-use tracing::info;
+use starknet_types_core::felt::Felt;
 
 use crate::v5::rpc::{
     accounts::{

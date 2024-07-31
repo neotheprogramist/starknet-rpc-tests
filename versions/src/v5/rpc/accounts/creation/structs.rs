@@ -2,8 +2,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde::Serializer;
 
-use starknet_types_rpc::FeeUnit;
-use starknet_types_rpc::Felt;
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::FeeUnit;
 
 use crate::v5::rpc::signers::key_pair::SigningKey;
 

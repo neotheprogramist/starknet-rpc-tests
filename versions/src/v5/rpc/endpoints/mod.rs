@@ -14,10 +14,12 @@ use endpoints::{
     get_transaction_receipt, get_transaction_status_succeeded,
 };
 use errors::RpcError;
-use starknet_types_rpc::{
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{
     AddInvokeTransactionResult, BlockWithTxHashes, BlockWithTxs, ContractClass, DeployAccountTxnV1,
-    FeeEstimate, Felt, InvokeTxnV1, NewDeployTxnReceipt, StateUpdate, TxnStatus,
+    DeployTxnReceipt, FeeEstimate, InvokeTxnV1, StateUpdate, TxnStatus,
 };
+
 use tracing::{error, info};
 use url::Url;
 use utils::restart_devnet;
@@ -104,7 +106,7 @@ pub trait RpcEndpoints {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
-    ) -> Result<NewDeployTxnReceipt, RpcError>;
+    ) -> Result<DeployTxnReceipt, RpcError>;
 
     async fn get_class(
         &self,
@@ -232,7 +234,7 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
-    ) -> Result<NewDeployTxnReceipt, RpcError> {
+    ) -> Result<DeployTxnReceipt, RpcError> {
         get_transaction_receipt(url.clone(), &sierra_path, &casm_path).await
     }
 

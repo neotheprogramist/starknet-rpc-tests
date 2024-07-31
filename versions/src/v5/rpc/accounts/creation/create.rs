@@ -1,4 +1,4 @@
-use starknet_types_rpc::Felt;
+use starknet_types_core::felt::Felt;
 
 use crate::v5::rpc::{
     accounts::errors::CreationError,
@@ -26,6 +26,5 @@ pub async fn create_account(
         AccountType::Oz => Felt::from_hex(OZ_CLASS_HASH).unwrap(),
     });
     let account_response = generate_account(provider, salt, class_hash, &account_type).await?;
-    tracing::info!("Account sucessfully created. Prefund address with at least {} tokens. It is good to send more in case of higher demand.", account_response.max_fee);
     Ok(account_response)
 }

@@ -1,6 +1,7 @@
 use reqwest::Client;
+use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::{Pedersen, StarkHash};
-use starknet_types_rpc::{ContractClass, Felt, TxnHash};
+use starknet_types_rpc::v0_5_0::{ContractClass, TxnHash};
 use tokio::io::AsyncReadExt;
 use tracing::{error, info};
 use url::Url;

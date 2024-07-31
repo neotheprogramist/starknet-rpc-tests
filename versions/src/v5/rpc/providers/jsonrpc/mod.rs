@@ -1,17 +1,14 @@
 pub mod transports;
-use std::{any::Any, error::Error, fmt::Display};
-
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
-
-use starknet_types_rpc::{
+use starknet_types_rpc::v0_5_0::{
     AddDeclareTransactionParams, AddDeployAccountTransactionParams, AddInvokeTransactionParams,
     AddInvokeTransactionResult, BlockHashAndNumber, BlockHashAndNumberParams, BlockId,
     BlockNumberParams, BroadcastedDeclareTxn, BroadcastedDeployAccountTxn, BroadcastedInvokeTxn,
     BroadcastedTxn, CallParams, ChainIdParams, ClassAndTxnHash, ContractAndTxnHash, ContractClass,
     EstimateFeeParams, EstimateMessageFeeParams, EventFilterWithPageRequest, EventsChunk,
-    FeeEstimate, Felt as FeltPrimitive, FunctionCall, GetBlockTransactionCountParams,
-    GetBlockWithTxHashesParams, GetBlockWithTxsParams, GetClassAtParams, GetClassHashAtParams,
-    GetClassParams, GetEventsParams, GetNonceParams, GetStateUpdateParams, GetStorageAtParams,
+    FeeEstimate, FunctionCall, GetBlockTransactionCountParams, GetBlockWithTxHashesParams,
+    GetBlockWithTxsParams, GetClassAtParams, GetClassHashAtParams, GetClassParams, GetEventsParams,
+    GetNonceParams, GetStateUpdateParams, GetStorageAtParams,
     GetTransactionByBlockIdAndIndexParams, GetTransactionByHashParams, GetTransactionReceiptParams,
     GetTransactionStatusParams, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
     MaybePendingStateUpdate, MsgFromL1, SimulateTransactionsParams, SimulateTransactionsResult,
@@ -19,11 +16,11 @@ use starknet_types_rpc::{
     TraceBlockTransactionsResult, TraceTransactionParams, TransactionTrace, Txn,
     TxnFinalityAndExecutionStatus, TxnHash, TxnReceipt,
 };
-
-use tracing::info;
-pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
+use std::{any::Any, error::Error, fmt::Display};
 
 use super::provider::{Provider, ProviderError, ProviderImplError};
+use starknet_types_core::felt::Felt as FeltPrimitive;
+pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
 
 #[derive(Debug, Clone)]
 pub struct JsonRpcClient<T> {
@@ -316,16 +313,6 @@ where
                 GetTransactionReceiptParams { transaction_hash },
             )
             .await;
-        match &response {
-            Ok(json) => {
-                // Print the raw JSON response for debugging
-                println!("Raw JSON response: {:?}", json);
-            }
-            Err(e) => {
-                // Print the error for debugging
-                println!("XD Error: {:?}", e);
-            }
-        }
 
         response
     }

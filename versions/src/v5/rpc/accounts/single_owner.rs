@@ -1,8 +1,8 @@
 use crate::v5::rpc::providers::provider::Provider;
 use crate::v5::rpc::signers::signer::Signer;
 
-use starknet_types_rpc::{BlockId, BlockTag, Felt};
-use tracing::info;
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{BlockId, BlockTag};
 
 use super::{
     account::{Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawExecutionV1},

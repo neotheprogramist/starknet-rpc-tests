@@ -12,8 +12,10 @@ use super::{
     },
     contract::unsigned_felt::UfeHex,
 };
+use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::{poseidon_hash_many, PoseidonHasher};
-use starknet_types_rpc::{ContractClass, DeprecatedContractClass, Felt};
+use starknet_types_rpc::v0_5_0::{ContractClass, DeprecatedContractClass};
+
 use std::boxed;
 
 /// Cairo string for "CONTRACT_CLASS_V0.1.0"
@@ -393,7 +395,7 @@ pub use errors::{
 #[cfg(feature = "std")]
 pub use errors::CompressProgramError;
 
-use starknet_types_rpc::{EntryPointsByType, SierraEntryPoint};
+use starknet_types_rpc::v0_5_0::{EntryPointsByType, SierraEntryPoint};
 
 // use super::{
 //     codegen::{EntryPointsByType, SierraEntryPoint},
@@ -453,7 +455,7 @@ impl HashAndFlatten for SierraClass {
         Ok(ContractClass {
             sierra_program: self.sierra_program,
             entry_points_by_type: self.entry_points_by_type,
-            abi: abi,
+            abi,
             contract_class_version: self.contract_class_version,
         })
     }
