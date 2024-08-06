@@ -66,14 +66,13 @@ impl CommittedClassStorage {
     }
 }
 
-pub(crate) struct StarknetState {
-    pub(crate) state: CachedState<DictState>,
-    rpc_contract_classes: CommittedClassStorage,
+pub struct StarknetState {
+    pub state: CachedState<DictState>,
+    pub rpc_contract_classes: CommittedClassStorage,
     /// - initially `None`
     /// - indicates the state hasn't yet been cloned for old-state preservation purpose
-    historic_state: Option<DictState>,
+    pub historic_state: Option<DictState>,
 }
-
 impl Default for StarknetState {
     fn default() -> Self {
         Self {
