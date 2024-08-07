@@ -967,7 +967,7 @@ where
             contract_class: Arc::clone(&self.inner.contract_class).as_ref().clone(),
             compiled_class_hash: self.inner.compiled_class_hash,
             sender_address: self.account.address(),
-            type_: "DECLARE".to_string(),
+            type_: Some("DECLARE".to_string()),
         })
     }
 }

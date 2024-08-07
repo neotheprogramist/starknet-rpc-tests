@@ -24,6 +24,7 @@ cairo-lang-sierra-generator = "=2.6.0"
 cairo-lang-sierra-to-casm = "=2.6.0"
 cairo-lang-syntax = "=2.6.0"
 cairo-lang-utils = "=2.6.0"
+clap.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 starknet_api = { version = "0.10.0", features = ["testing"] }
@@ -34,3 +35,9 @@ starknet-rs-core = { version = "0.10.0", package = "starknet-core" }
 starknet-rs-signers = { version = "0.8.0", package = "starknet-signers" }
 usc = { version = "2.1.0", package = "universal-sierra-compiler" }
 indexmap = "2.3.0"
+nonzero_ext = "0.3.0"
+rand.workspace = true
+rand_mt = "4.2.2"
+ethers = "2.0.14"
+k256 = "0.13.3"
+hex = "0.4.3"

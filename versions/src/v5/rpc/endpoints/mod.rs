@@ -272,7 +272,7 @@ pub async fn test_rpc_endpoints(
     casm_path: &str,
 ) -> Result<(), RpcError> {
     info!("{}", "⌛ Testing Rpc V5 endpoints -- START ⌛".yellow());
-
+    restart_devnet(url.clone()).await?;
     let rpc = Rpc::new(url.clone())?;
     match rpc.add_declare_transaction(&sierra_path, &casm_path).await {
         Ok(_) => {

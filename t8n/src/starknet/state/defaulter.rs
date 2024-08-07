@@ -12,11 +12,7 @@ use starknet_devnet_types::traits::ToHexString;
 use tracing::info;
 use url::Url;
 
-#[derive(Debug, Clone, Default)]
-pub struct ForkConfig {
-    pub url: Option<Url>,
-    pub block_number: Option<u64>,
-}
+use super::starknet_config::ForkConfig;
 
 #[derive(thiserror::Error, Debug)]
 enum OriginError {

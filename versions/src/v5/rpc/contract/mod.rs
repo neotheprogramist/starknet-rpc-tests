@@ -455,7 +455,7 @@ impl HashAndFlatten for SierraClass {
         Ok(ContractClass {
             sierra_program: self.sierra_program,
             entry_points_by_type: self.entry_points_by_type,
-            abi,
+            abi: Some(abi),
             contract_class_version: self.contract_class_version,
         })
     }
@@ -481,7 +481,9 @@ impl ClassHash for ContractClass {
         ));
 
         // Hashes ABI
-        hasher.update(starknet_keccak(self.abi.clone().as_bytes()));
+        hasher.update(starknet_keccak(
+            self.abi.clone().expect("abi expected").as_bytes(),
+        ));
 
         // Hashes Sierra program
         hasher.update(poseidon_hash_many(&self.sierra_program));

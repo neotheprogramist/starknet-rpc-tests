@@ -868,7 +868,7 @@ where
             contract_address_salt: self.inner.salt,
             constructor_calldata: self.factory.calldata(),
             class_hash: self.factory.class_hash(),
-            type_: Some("DEPLOY_ACCOUNT".to_string()),
+            // type_: Some("DEPLOY_ACCOUNT".to_string()),
         };
 
         Ok(txn)

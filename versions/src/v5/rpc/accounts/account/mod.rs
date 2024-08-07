@@ -295,7 +295,9 @@ impl ContractClassHasher for ContractClass {
         hasher.update(hash_entrypoints(&self.entry_points_by_type.external));
         hasher.update(hash_entrypoints(&self.entry_points_by_type.l1_handler));
         hasher.update(hash_entrypoints(&self.entry_points_by_type.constructor));
-        hasher.update(starknet_keccak(self.abi.clone().as_bytes()));
+        hasher.update(starknet_keccak(
+            self.abi.clone().expect("abi expected").as_bytes(),
+        ));
         hasher.update(poseidon_hash_many(&self.sierra_program));
 
         normalize_address(hasher.finalize())

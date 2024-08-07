@@ -745,7 +745,7 @@ where
             nonce: self.inner.nonce,
             sender_address: self.account.address(),
             calldata: self.account.encode_calls(&self.inner.calls),
-            _type: Some("INVOKE".to_string()),
+            // _type: Some("INVOKE".to_string()),
         })
     }
 }
