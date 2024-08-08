@@ -5,7 +5,9 @@ pub mod models;
 use colored::*;
 use errors::DevnetError;
 use models::{AccountBalanceParams, AccountBalanceResponse, SerializableAccount};
-use starknet_types_rpc::{FeeUnit, Felt};
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::FeeUnit;
+
 use std::future::Future;
 use tracing::{error, info};
 use url::Url;

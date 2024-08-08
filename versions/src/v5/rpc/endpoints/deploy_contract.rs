@@ -1,8 +1,10 @@
 use std::fmt::Debug;
 
 use rand::{rngs::StdRng, RngCore, SeedableRng};
+use starknet_types_core::felt::Felt;
 use starknet_types_core::felt::FromStrError;
-use starknet_types_rpc::{AddInvokeTransactionResult, Felt};
+use starknet_types_rpc::v0_5_0::AddInvokeTransactionResult;
+
 use thiserror::Error;
 
 use crate::v5::rpc::{

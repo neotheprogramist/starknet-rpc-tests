@@ -1,0 +1,25 @@
+[
+    {
+        "AddInvokeTransaction": {
+            "max_fee": "0x16345785d8a0000",
+            "version": "0x1",
+            "signature": [
+                "0x1829f5506314289573c7ff224a8cd660f22ad2dd75a39f626603b7b7dd16ddd",
+                "0x2fc62478de0ca15f00f35e0e6ae1dfa19a33b8ca854370e403faac231d6b62c"
+            ],
+            "nonce": "0x0",
+            "sender_address": "0x1caf2df5ed5dde1ae3faef4acd72522ac3cb16e23f6dc4c7f9faed67124c511",
+            "calldata": [
+                "0x1",
+                "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+                "0x2f0b3c5710379609eb5495f1ecd348cb28167711b73609fe565a72734550354",
+                "0x0",
+                "0x3",
+                "0x3",
+                "0x211697eec2f3eb24fc1fd4fab4f6a71343777061403cd859470cac967545813",
+                "0x1332ae9739c8563",
+                "0x0"
+            ]
+        }
+    }
+]

@@ -1,5 +1,6 @@
-use starknet_types_rpc::{
-    AddInvokeTransactionResult, FeeEstimate, Felt, SimulateTransactionsResult,
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{
+    AddInvokeTransactionResult, FeeEstimate, SimulateTransactionsResult,
 };
 use tracing::info;
 
@@ -259,7 +260,7 @@ where
 
     pub async fn send(&self) -> Result<AddInvokeTransactionResult, AccountError<A::SignError>> {
         let execution: ExecutionV1<A> = self.into();
-        info!("execution object {:?}", execution);
+
         execution.send().await
     }
 }

@@ -1,6 +1,6 @@
 use reqwest::{Client, Url};
 use serde::{de::DeserializeOwned, Serialize};
-use tracing::{debug, info};
+use tracing::debug;
 
 use crate::v5::rpc::providers::jsonrpc::{JsonRpcMethod, JsonRpcResponse};
 

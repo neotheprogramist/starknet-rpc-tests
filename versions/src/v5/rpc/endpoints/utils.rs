@@ -1,8 +1,9 @@
 use reqwest::Client;
+use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::{Pedersen, StarkHash};
-use starknet_types_rpc::{ContractClass, Felt, TxnHash};
+use starknet_types_rpc::v0_5_0::{ContractClass, TxnHash};
 use tokio::io::AsyncReadExt;
-use tracing::{error, info};
+use tracing::{debug, error};
 use url::Url;
 
 use crate::v5::rpc::{
@@ -64,7 +65,7 @@ pub async fn restart_devnet(url: Url) -> Result<(), RpcError> {
     let url = url.join("/restart")?;
     let response = client.post(url).send().await?;
     if response.status().is_success() {
-        info!("Devnet restarted successfully.");
+        debug!("Devnet restarted successfully.");
         Ok(())
     } else {
         error!("Failed to restart Devnet. Status: {}", response.status());

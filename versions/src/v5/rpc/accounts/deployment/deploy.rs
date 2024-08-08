@@ -1,5 +1,5 @@
-use starknet_types_rpc::{BlockId, BlockTag, Felt, TxnHash};
-use tracing::info;
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{BlockId, BlockTag, TxnHash};
 
 use crate::v5::rpc::{
     accounts::{

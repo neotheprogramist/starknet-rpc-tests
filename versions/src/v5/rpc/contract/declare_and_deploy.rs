@@ -1,4 +1,4 @@
-use starknet_types_rpc::{BlockId, BlockTag};
+use starknet_types_rpc::v0_5_0::{BlockId, BlockTag};
 use tracing::info;
 use url::Url;
 
@@ -44,7 +44,7 @@ pub async fn decalare_and_deploy(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(_) => {}
         Err(e) => {
             return Err(e.to_string());
         }

@@ -2,12 +2,14 @@ use std::sync::Arc;
 
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 
-use starknet_types_rpc::{
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{
     AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, ContractClass,
-    DeployAccountTxn, DeployAccountTxnV1, FeeEstimate, Felt, FunctionCall, InvokeTxn, InvokeTxnV1,
-    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-    NewDeployTxnReceipt, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
+    DeployAccountTxn, DeployAccountTxnV1, DeployTxnReceipt, FeeEstimate, FunctionCall, InvokeTxn,
+    InvokeTxnV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+    StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
 };
+
 use tracing::{info, warn};
 use url::Url;
 
@@ -68,7 +70,7 @@ pub async fn add_declare_transaction(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -166,7 +168,7 @@ pub async fn add_invoke_transaction(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -295,7 +297,7 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -382,7 +384,7 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result
         }
         Err(e) => {
@@ -405,7 +407,7 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
         }
     };
 
-    match receipt.execution_status {
+    match receipt.common_receipt_properties.execution_status {
         TxnExecutionStatus::Succeeded => {}
         _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     }
@@ -449,7 +451,7 @@ pub async fn estimate_message_fee(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -539,7 +541,7 @@ pub async fn estimate_message_fee(
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result
         }
         Err(e) => {
@@ -562,7 +564,7 @@ pub async fn estimate_message_fee(
         }
     };
 
-    match receipt.execution_status {
+    match receipt.common_receipt_properties.execution_status {
         TxnExecutionStatus::Succeeded => {}
         _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     }
@@ -680,7 +682,7 @@ pub async fn get_transaction_status_succeeded(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -770,7 +772,7 @@ pub async fn get_transaction_status_succeeded(
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result
         }
         Err(e) => {
@@ -795,7 +797,7 @@ pub async fn get_transaction_status_succeeded(
 
     let status = account
         .provider()
-        .get_transaction_status(receipt.transaction_hash)
+        .get_transaction_status(receipt.common_receipt_properties.transaction_hash)
         .await
         .unwrap();
     match status.finality_status {
@@ -837,7 +839,7 @@ pub async fn get_transaction_by_hash_invoke(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -927,7 +929,7 @@ pub async fn get_transaction_by_hash_invoke(
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result.transaction_hash
         }
         Err(e) => {
@@ -971,7 +973,7 @@ pub async fn get_transaction_by_hash_deploy_acc(url: Url) -> Result<DeployAccoun
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1038,7 +1040,7 @@ pub async fn get_transaction_receipt(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
-) -> Result<NewDeployTxnReceipt, RpcError> {
+) -> Result<DeployTxnReceipt, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
@@ -1059,7 +1061,7 @@ pub async fn get_transaction_receipt(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1146,7 +1148,7 @@ pub async fn get_transaction_receipt(
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result
         }
         Err(e) => {
@@ -1169,7 +1171,7 @@ pub async fn get_transaction_receipt(
         }
     };
 
-    match receipt.execution_status {
+    match receipt.common_receipt_properties.execution_status {
         TxnExecutionStatus::Succeeded => Ok(receipt),
         _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     }
@@ -1200,7 +1202,7 @@ pub async fn get_transaction_receipt_revert(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1287,7 +1289,7 @@ pub async fn get_transaction_receipt_revert(
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result
         }
         Err(e) => {
@@ -1310,7 +1312,7 @@ pub async fn get_transaction_receipt_revert(
         }
     };
 
-    match receipt.execution_status {
+    match receipt.common_receipt_properties.execution_status {
         TxnExecutionStatus::Reverted => Ok(()),
         _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     }
@@ -1341,7 +1343,7 @@ pub async fn get_class(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1428,7 +1430,7 @@ pub async fn get_class(
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result
         }
         Err(e) => {
@@ -1471,7 +1473,7 @@ pub async fn get_class_hash_at(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1558,7 +1560,7 @@ pub async fn get_class_hash_at(
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result
         }
         Err(e) => {
@@ -1581,7 +1583,7 @@ pub async fn get_class_hash_at(
         }
     };
 
-    match receipt.execution_status {
+    match receipt.common_receipt_properties.execution_status {
         TxnExecutionStatus::Succeeded => {}
         _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     }
@@ -1620,7 +1622,7 @@ pub async fn get_class_at(
     )
     .await
     {
-        Ok(response) => info!("{} {} {:?}", "Minted tokens", u128::MAX, response),
+        Ok(response) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1707,7 +1709,7 @@ pub async fn get_class_at(
                 .send()
                 .await
                 .unwrap();
-            println!("deploy result {:?}", result);
+
             result
         }
         Err(e) => {
@@ -1730,7 +1732,7 @@ pub async fn get_class_at(
         }
     };
 
-    match receipt.execution_status {
+    match receipt.common_receipt_properties.execution_status {
         TxnExecutionStatus::Succeeded => {}
         _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     }

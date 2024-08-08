@@ -1,4 +1,4 @@
-use starknet_types_rpc::Felt;
+use starknet_types_core::felt::Felt;
 use thiserror::Error;
 
 use crate::v5::rpc::providers::provider::ProviderError;

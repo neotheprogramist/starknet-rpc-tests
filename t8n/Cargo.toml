@@ -1,0 +1,43 @@
+[package]
+name = "t8n"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+# blockifier = { version = "0.6.0-rc.1" }
+starknet-types-rpc.workspace = true
+starknet-types-core.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+thiserror.workspace = true
+blockifier = { version = "0.6.0-rc.1", features = ["testing"] }
+cairo-lang-starknet-classes = { version = "=2.6.0", package = "cairo-lang-starknet-classes" }
+cairo-lang-compiler = "=2.6.0"
+cairo-lang-casm = "=2.6.0"
+cairo-lang-defs = "=2.6.0"
+cairo-lang-diagnostics = "=2.6.0"
+cairo-lang-filesystem = "=2.6.0"
+cairo-lang-lowering = "=2.6.0"
+cairo-lang-semantic = "=2.6.0"
+cairo-lang-sierra = "=2.6.0"
+cairo-lang-sierra-generator = "=2.6.0"
+cairo-lang-sierra-to-casm = "=2.6.0"
+cairo-lang-syntax = "=2.6.0"
+cairo-lang-utils = "=2.6.0"
+clap.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+starknet_api = { version = "0.10.0", features = ["testing"] }
+starknet-devnet-types = "0.1.2"
+url.workspace = true
+reqwest.workspace = true
+starknet-rs-core = { version = "0.10.0", package = "starknet-core" }
+starknet-rs-signers = { version = "0.8.0", package = "starknet-signers" }
+usc = { version = "2.1.0", package = "universal-sierra-compiler" }
+indexmap = "2.3.0"
+nonzero_ext = "0.3.0"
+rand.workspace = true
+rand_mt = "4.2.2"
+ethers = "2.0.14"
+k256 = "0.13.3"
+hex = "0.4.3"

@@ -1,8 +1,8 @@
-use starknet_types_rpc::{
-    AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, FeeEstimate, Felt,
-    InvokeTxnV1, SimulateTransactionsResult, SimulationFlag,
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{
+    AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, FeeEstimate, InvokeTxnV1,
+    SimulateTransactionsResult, SimulationFlag,
 };
-use tracing::info;
 
 use crate::v5::rpc::{
     accounts::{call::Call, errors::NotPreparedError},
@@ -745,7 +745,7 @@ where
             nonce: self.inner.nonce,
             sender_address: self.account.address(),
             calldata: self.account.encode_calls(&self.inner.calls),
-            _type: Some("INVOKE".to_string()),
+            type_: Some("INVOKE".to_string()),
         })
     }
 }

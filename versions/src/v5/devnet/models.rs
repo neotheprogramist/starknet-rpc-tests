@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
-use starknet_types_rpc::{FeeUnit, Felt};
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::FeeUnit;
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AccountBalanceParams {

@@ -2,12 +2,12 @@ use super::errors::NotPreparedError;
 
 use serde::{Deserialize, Serialize};
 
+use starknet_types_core::felt::Felt;
 use starknet_types_core::{curve::compute_hash_on_elements, felt::NonZeroFelt};
-use starknet_types_rpc::{
+use starknet_types_rpc::v0_5_0::{
     BlockId, BlockTag, BroadcastedDeployAccountTxn, BroadcastedTxn, ContractAndTxnHash,
-    DeployAccountTxnV1, FeeEstimate, Felt, SimulateTransactionsResult, SimulationFlag,
+    DeployAccountTxnV1, FeeEstimate, SimulateTransactionsResult, SimulationFlag,
 };
-use tracing::info;
 
 use crate::v5::rpc::providers::{
     jsonrpc::StarknetError,

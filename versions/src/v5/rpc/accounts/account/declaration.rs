@@ -1,9 +1,10 @@
 use crate::v5::rpc::accounts::account::ContractClassHasher;
 use crate::v5::rpc::{accounts::errors::NotPreparedError, providers::provider::Provider};
 use starknet_types_core::curve::compute_hash_on_elements;
-use starknet_types_rpc::{
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_5_0::{
     BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedTxn, ClassAndTxnHash, ContractClass,
-    FeeEstimate, Felt, ResourceLimits, SimulateTransactionsResult, SimulationFlag,
+    FeeEstimate, ResourceLimits, SimulateTransactionsResult, SimulationFlag,
 };
 use std::sync::Arc;
 
@@ -966,7 +967,7 @@ where
             contract_class: Arc::clone(&self.inner.contract_class).as_ref().clone(),
             compiled_class_hash: self.inner.compiled_class_hash,
             sender_address: self.account.address(),
-            type_: "DECLARE".to_string(),
+            type_: Some("DECLARE".to_string()),
         })
     }
 }
