@@ -1,44 +1,109 @@
 pub mod account;
+pub mod add_declare_transaction;
+pub mod add_deploy_account_transaction;
+pub mod add_invoke_transaction;
+pub mod add_l1_handler_transaction;
 pub mod constants;
 pub mod contract_class_choice;
 pub mod defaulter;
 pub mod dict_state;
 pub mod dump;
 pub mod errors;
+pub mod estimations;
+pub mod events;
+pub mod get_class_impls;
 pub mod predeployed;
 pub mod predeployed_accounts;
+pub mod raw_execution;
 pub mod starknet_blocks;
 pub mod starknet_config;
 pub mod starknet_state;
 pub mod starknet_transactions;
 pub mod state_diff;
+pub mod state_update;
 pub mod system_contract;
 pub mod traits;
+pub mod transaction_trace;
 pub mod types;
 pub mod utils;
+use std::{num::NonZeroU128, sync::Arc};
+
 use account::Account;
-use blockifier::context::BlockContext;
+use blockifier::{
+    block::BlockInfo,
+    context::{BlockContext, ChainInfo, TransactionContext},
+    execution::entry_point::CallEntryPoint,
+    state::{
+        cached_state::{CachedState, GlobalContractCache, GLOBAL_CONTRACT_CACHE_SIZE_FOR_TEST},
+        state_api::StateReader,
+    },
+    transaction::{
+        errors::TransactionPreValidationError, objects::TransactionExecutionInfo,
+        transactions::ExecutableTransaction,
+    },
+};
 use constants::{
-    DEVNET_DEFAULT_CHAIN_ID, DEVNET_DEFAULT_DATA_GAS_PRICE, DEVNET_DEFAULT_GAS_PRICE,
-    DEVNET_DEFAULT_STARTING_BLOCK_NUMBER, ETH_ERC20_CONTRACT_ADDRESS, ETH_ERC20_NAME,
-    ETH_ERC20_SYMBOL, STRK_ERC20_CONTRACT_ADDRESS, STRK_ERC20_NAME, STRK_ERC20_SYMBOL,
+    CHARGEABLE_ACCOUNT_ADDRESS, CHARGEABLE_ACCOUNT_PRIVATE_KEY, DEVNET_DEFAULT_CHAIN_ID,
+    DEVNET_DEFAULT_DATA_GAS_PRICE, DEVNET_DEFAULT_GAS_PRICE, DEVNET_DEFAULT_STARTING_BLOCK_NUMBER,
+    ETH_ERC20_CONTRACT_ADDRESS, ETH_ERC20_NAME, ETH_ERC20_SYMBOL, STRK_ERC20_CONTRACT_ADDRESS,
+    STRK_ERC20_NAME, STRK_ERC20_SYMBOL,
 };
 use contract_class_choice::AccountContractClassChoice;
 use defaulter::StarknetDefaulter;
 use dump::DumpEvent;
-use errors::{DevnetResult, Error};
+use errors::{DevnetResult, Error, TransactionValidationError};
 use predeployed::initialize_erc20_at_address;
 use predeployed_accounts::PredeployedAccounts;
-use starknet_api::block::{BlockNumber, BlockStatus, BlockTimestamp};
-use starknet_blocks::StarknetBlocks;
+use raw_execution::{Call, RawExecution};
+use starknet_api::{
+    block::{BlockNumber, BlockStatus, BlockTimestamp, GasPrice, GasPricePerToken},
+    core::SequencerContractAddress,
+    transaction::Fee,
+};
+use starknet_blocks::{StarknetBlock, StarknetBlocks};
 use starknet_config::{StarknetConfig, StateArchiveCapacity};
-use starknet_devnet_types::felt::Felt;
-use starknet_rs_core::types::TransactionFinalityStatus;
+use starknet_devnet_types::{
+    chain_id::ChainId,
+    contract_address::ContractAddress,
+    contract_class::ContractClass,
+    emitted_event::EmittedEvent,
+    felt::{split_biguint, ClassHash, Felt, TransactionHash},
+    num_bigint::BigUint,
+    patricia_key::PatriciaKey,
+    rpc::{
+        block::{Block, BlockHeader},
+        estimate_message_fee::FeeEstimateWrapper,
+        state::ThinStateDiff,
+        transaction_receipt::{
+            DeployTransactionReceipt, L1HandlerTransactionReceipt, TransactionReceipt,
+        },
+        transactions::{
+            broadcasted_invoke_transaction_v1::BroadcastedInvokeTransactionV1,
+            l1_handler_transaction::L1HandlerTransaction, BlockTransactionTrace,
+            BroadcastedDeclareTransaction, BroadcastedDeployAccountTransaction,
+            BroadcastedInvokeTransaction, BroadcastedTransaction, BroadcastedTransactionCommon,
+            DeclareTransaction, SimulatedTransaction, SimulationFlag, Transaction,
+            TransactionTrace, TransactionWithHash, TransactionWithReceipt, Transactions,
+        },
+    },
+    traits::HashProducer,
+};
+use starknet_rs_core::{
+    types::{
+        BlockId, ExecutionResult, FieldElement, MsgFromL1, TransactionExecutionStatus,
+        TransactionFinalityStatus,
+    },
+    utils::get_selector_from_name,
+};
+use starknet_rs_signers::Signer;
 use starknet_state::{CustomState, StarknetState};
-use starknet_transactions::StarknetTransactions;
+use starknet_transactions::{StarknetTransaction, StarknetTransactions};
 use state_diff::StateDiff;
+use state_update::StateUpdate;
 use tracing::{error, info};
-use traits::{AccountGenerator, Deployed, HashIdentifiedMut};
+use traits::{AccountGenerator, Deployed, HashIdentified, HashIdentifiedMut};
+use transaction_trace::create_trace;
+use utils::get_versioned_constants;
 
 use super::messaging::MessagingBroker;
 
@@ -975,7 +1040,7 @@ impl Starknet {
         let block = self
             .blocks
             .get_by_block_id(&BlockId::Tag(starknet_rs_core::types::BlockTag::Latest))
-            .ok_or(crate::error::Error::NoBlock)?;
+            .ok_or(Error::NoBlock)?;
 
         Ok(block.clone())
     }

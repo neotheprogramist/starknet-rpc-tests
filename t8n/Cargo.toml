@@ -10,7 +10,7 @@ starknet-types-core.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 thiserror.workspace = true
-blockifier = { version = "0.6.0-rc.1" }
+blockifier = { version = "0.6.0-rc.1", features = ["testing"] }
 cairo-lang-starknet-classes = { version = "=2.6.0", package = "cairo-lang-starknet-classes" }
 cairo-lang-compiler = "=2.6.0"
 cairo-lang-casm = "=2.6.0"

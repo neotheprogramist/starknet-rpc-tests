@@ -10,7 +10,6 @@ use starknet_devnet_types::contract_class::convert_codegen_to_blockifier_compile
 use starknet_devnet_types::felt::Felt;
 use starknet_devnet_types::traits::ToHexString;
 use tracing::info;
-use url::Url;
 
 use super::starknet_config::ForkConfig;
 

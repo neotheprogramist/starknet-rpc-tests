@@ -1,3 +1,4 @@
+use blockifier::versioned_constants::VersionedConstants;
 use serde_json::Value;
 use starknet_devnet_types::{
     felt::Felt,
@@ -40,6 +41,10 @@ pub(crate) fn get_storage_var_address(
     Ok(PatriciaKey::new(Felt::new(
         storage_var_address.to_bytes_be(),
     )?)?)
+}
+
+pub(crate) fn get_versioned_constants() -> VersionedConstants {
+    VersionedConstants::create_for_testing()
 }
 
 pub mod random_number_generator {

@@ -13,12 +13,12 @@ use super::{
 };
 
 #[derive(Default)]
-pub(crate) struct PredeployedAccounts {
-    seed: u32,
-    initial_balance: Balance,
-    eth_fee_token_address: ContractAddress,
-    strk_fee_token_address: ContractAddress,
-    accounts: Vec<Account>,
+pub struct PredeployedAccounts {
+    pub seed: u32,
+    pub initial_balance: Balance,
+    pub eth_fee_token_address: ContractAddress,
+    pub strk_fee_token_address: ContractAddress,
+    pub accounts: Vec<Account>,
 }
 
 impl PredeployedAccounts {
