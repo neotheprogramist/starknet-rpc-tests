@@ -45,7 +45,7 @@ use super::state::starknet_blocks::StarknetBlock;
 use super::state::traits::HashIdentified;
 use super::state::Starknet;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct MessagingBroker {
     /// The ethereum broker to send transaction / call contracts using ethers.
     ethereum: Option<EthereumMessaging>,

@@ -40,7 +40,7 @@ pub trait CustomState {
     ) -> DevnetResult<()>;
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 /// Utility structure that makes it easier to calculate state diff later on
 pub struct CommittedClassStorage {
     staging: HashMap<ClassHash, ContractClass>,
@@ -65,7 +65,7 @@ impl CommittedClassStorage {
         self.commit();
     }
 }
-
+#[derive(Debug)]
 pub struct StarknetState {
     pub state: CachedState<DictState>,
     pub rpc_contract_classes: CommittedClassStorage,

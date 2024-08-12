@@ -23,7 +23,7 @@ use super::{
     state_diff::StateDiff,
     traits::HashIdentified,
 };
-
+#[derive(Debug)]
 pub struct StarknetBlocks {
     pub num_to_hash: IndexMap<BlockNumber, BlockHash>,
     pub hash_to_block: HashMap<BlockHash, StarknetBlock>,
@@ -172,7 +172,7 @@ impl StarknetBlocks {
     }
 }
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct StarknetBlock {
     pub(crate) header: BlockHeader,
     transaction_hashes: Vec<TransactionHash>,

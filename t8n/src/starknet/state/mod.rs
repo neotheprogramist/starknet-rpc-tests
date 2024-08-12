@@ -28,7 +28,7 @@ pub mod types;
 pub mod utils;
 use std::{num::NonZeroU128, sync::Arc};
 
-use account::Account;
+use account::{Account, UserAccount};
 use blockifier::{
     block::BlockInfo,
     context::{BlockContext, ChainInfo, TransactionContext},
@@ -53,7 +53,7 @@ use defaulter::StarknetDefaulter;
 use dump::DumpEvent;
 use errors::{DevnetResult, Error, TransactionValidationError};
 use predeployed::initialize_erc20_at_address;
-use predeployed_accounts::PredeployedAccounts;
+use predeployed_accounts::UserDeployedAccounts;
 use raw_execution::{Call, RawExecution};
 use starknet_api::{
     block::{BlockNumber, BlockStatus, BlockTimestamp, GasPrice, GasPricePerToken},
@@ -101,15 +101,16 @@ use starknet_transactions::{StarknetTransaction, StarknetTransactions};
 use state_diff::StateDiff;
 use state_update::StateUpdate;
 use tracing::{error, info};
-use traits::{AccountGenerator, Deployed, HashIdentified, HashIdentifiedMut};
+use traits::{Deployed, HashIdentified, HashIdentifiedMut, UserAccountGenerator};
 use transaction_trace::create_trace;
 use utils::get_versioned_constants;
 
 use super::messaging::MessagingBroker;
 
+#[derive(Debug)]
 pub struct Starknet {
     pub state: StarknetState,
-    pub predeployed_accounts: PredeployedAccounts,
+    pub predeployed_accounts: UserDeployedAccounts,
     pub block_context: BlockContext,
     // To avoid repeating some logic related to blocks,
     // having `blocks` public allows to re-use functions like `get_blocks()`.
@@ -188,18 +189,17 @@ impl Starknet {
             STRK_ERC20_SYMBOL,
         )?;
 
-        let mut predeployed_accounts = PredeployedAccounts::new(
-            config.seed,
-            config.predeployed_accounts_initial_balance.clone(),
+        let mut predeployed_accounts = UserDeployedAccounts::new(
             eth_erc20_fee_contract.get_address(),
             strk_erc20_fee_contract.get_address(),
         );
 
         let accounts = predeployed_accounts.generate_accounts(
-            config.total_accounts,
+            "/home/filipg/starknet-devnet/starknet-devnet-tests/t8n/src/starknet/input/acc_json",
             config.account_contract_class_hash,
             &config.account_contract_class,
-        )?;
+        ).unwrap();
+
         for account in accounts {
             account.deploy(&mut state)?;
         }
@@ -267,7 +267,7 @@ impl Starknet {
         Ok(())
     }
 
-    pub fn get_predeployed_accounts(&self) -> Vec<Account> {
+    pub fn get_predeployed_accounts(&self) -> Vec<UserAccount> {
         self.predeployed_accounts.get_accounts().to_vec()
     }
 

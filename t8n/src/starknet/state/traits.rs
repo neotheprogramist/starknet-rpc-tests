@@ -5,7 +5,7 @@ use starknet_devnet_types::{
 };
 
 use super::{
-    account::FeeToken,
+    account::{FeeToken, UserAccount},
     dict_state::DictState,
     errors::DevnetResult,
     starknet_state::{CustomState, CustomStateReader, StarknetState},
@@ -67,6 +67,16 @@ pub trait AccountGenerator {
     fn generate_accounts(
         &mut self,
         number_of_accounts: u8,
+        class_hash: ClassHash,
+        contract_class: &ContractClass,
+    ) -> DevnetResult<&Vec<Self::Acc>>;
+}
+
+pub trait UserAccountGenerator {
+    type Acc: Accounted;
+    fn generate_accounts(
+        &mut self,
+        json_path: &str,
         class_hash: ClassHash,
         contract_class: &ContractClass,
     ) -> DevnetResult<&Vec<Self::Acc>>;
