@@ -5549,6 +5549,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "t9n"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "starknet-types-core",
+ "starknet-types-rpc",
+]
+
+[[package]]
 name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

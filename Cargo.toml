@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["runner", "t8n", "versions"]
+members = ["runner", "t8n", "t9n", "versions"]
 
 [workspace.package]
 edition = "2021"
@@ -18,8 +18,8 @@ serde_json = { version = "1.0.120", default-features = false, features = [
     "raw_value",
 ] }
 serde_json_pythonic = "0.1.2"
-starknet-types-rpc = { path = "/home/filipg/dev/starknet-proposal/types-rs/crates/starknet-types-rpc" }
-starknet-types-core = { path = "/home/filipg/dev/starknet-proposal/types-rs/crates/starknet-types-core" }
+starknet-types-rpc = { path = "/home/piotrstec/dev/typesrs_forked/types-rs/crates/starknet-types-rpc" }
+starknet-types-core = { path = "/home/piotrstec/dev/typesrs_forked/types-rs/crates/starknet-types-core" }
 # starknet-types-rpc = { path = "/home/filipg/dev/forks-latest/types-rs/crates/starknet-types-rpc" } // working
 # starknet-types-core = { path = "/home/filipg/dev/forks-latest/types-rs/crates/starknet-types-core" } // working 
 # starknet-types-rpc = { path = "/home/filipg/forks/types-rs/crates/starknet-types-rpc" } // deprecated

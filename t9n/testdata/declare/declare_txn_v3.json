@@ -1,0 +1,24 @@
+{
+	"type": "DECLARE",
+	"account_deployment_data": ["0x1234567890abcdef"],
+	"class_hash": "0xabcdefabcdefabcdefabcdefabcdefabcde",
+	"compiled_class_hash": "0x5470ec9868f74334a4b992a4c0e539e8a1a043c95d7c4be4850f904837af2d2",
+	"fee_data_availability_mode": 0,
+	"nonce": "0x0000000000000001",
+	"nonce_data_availability_mode": 0,
+	"paymaster_data": [],
+	"resource_bounds": {
+		"l1_gas": {
+			"max_amount": "1000",
+			"max_price_per_unit": "0x10000000000000000000000000000000"
+		},
+		"l2_gas": {
+			"max_amount": "2000",
+			"max_price_per_unit": "0x20000000000000000000000000000000"
+		}
+	},
+	"sender_address": "0x1234567890abcdef1234567890abcdef12345678",
+	"signature": ["0x1234567890abcdef1234567890abcdef"],
+	"tip": "0x0f",
+    "version": "0x3"
+}
