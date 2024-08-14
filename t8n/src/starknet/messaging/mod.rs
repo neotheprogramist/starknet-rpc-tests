@@ -32,6 +32,7 @@
 //! contract (`mockSendMessageFromL2` entrypoint).
 use std::collections::HashMap;
 
+use serde::Serialize;
 use starknet_devnet_types::felt::TransactionHash;
 use starknet_devnet_types::rpc::messaging::{MessageToL1, MessageToL2};
 use starknet_devnet_types::rpc::transactions::l1_handler_transaction::L1HandlerTransaction;
@@ -45,9 +46,10 @@ use super::state::starknet_blocks::StarknetBlock;
 use super::state::traits::HashIdentified;
 use super::state::Starknet;
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize)]
 pub struct MessagingBroker {
     /// The ethereum broker to send transaction / call contracts using ethers.
+    #[serde(skip_serializing)]
     ethereum: Option<EthereumMessaging>,
     /// The last local (starknet) block for which messages have been collected
     /// and sent.

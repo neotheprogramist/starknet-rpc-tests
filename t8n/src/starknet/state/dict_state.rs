@@ -8,6 +8,7 @@ use blockifier::{
         state_api::{StateReader, StateResult},
     },
 };
+use serde::{ser::SerializeMap, Serialize, Serializer};
 use starknet_api::{
     core::{ClassHash, CompiledClassHash, ContractAddress, Nonce},
     hash::StarkFelt,
@@ -26,6 +27,35 @@ pub struct DictState {
     pub class_hash_to_class: HashMap<ClassHash, ContractClass>,
     pub class_hash_to_compiled_class_hash: HashMap<ClassHash, CompiledClassHash>,
     defaulter: StarknetDefaulter,
+}
+
+impl Serialize for DictState {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_map(Some(6))?;
+
+        let storage_view: HashMap<String, &StarkFelt> = self
+            .storage_view
+            .iter()
+            .map(|(k, v)| (format!("{:?}", k), v))
+            .collect();
+        state.serialize_entry("storage_view", &storage_view)?;
+
+        state.serialize_entry("address_to_nonce", &self.address_to_nonce)?;
+
+        state.serialize_entry("address_to_class_hash", &self.address_to_class_hash)?;
+
+        state.serialize_entry("class_hash_to_class", &self.class_hash_to_class)?;
+
+        state.serialize_entry(
+            "class_hash_to_compiled_class_hash",
+            &self.class_hash_to_compiled_class_hash,
+        )?;
+
+        state.end()
+    }
 }
 
 impl DictState {

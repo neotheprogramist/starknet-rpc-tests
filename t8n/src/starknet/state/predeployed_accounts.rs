@@ -1,6 +1,6 @@
 use std::{fs::File, io::BufReader};
 
-use serde::Deserialize;
+use serde::Serialize;
 use starknet_devnet_types::{
     contract_address::ContractAddress,
     contract_class::ContractClass,
@@ -17,7 +17,7 @@ use super::{
     utils::random_number_generator::generate_u128_random_numbers,
 };
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, Serialize)]
 pub struct UserDeployedAccounts {
     pub eth_fee_token_address: ContractAddress,
     pub strk_fee_token_address: ContractAddress,
@@ -81,7 +81,7 @@ pub struct PredeployedAccounts {
 }
 
 impl PredeployedAccounts {
-    pub(crate) fn new(
+    pub fn new(
         seed: u32,
         initial_balance: Balance,
         eth_fee_token_address: ContractAddress,

@@ -1,16 +1,21 @@
+pub mod args;
 pub mod starknet;
+pub mod utils;
+
+use args::Args;
+use clap::Parser;
 use starknet::state::{starknet_config::StarknetConfig, Starknet};
-use tracing::info;
+use utils::{handle_transactions, read_transactions_file, write_result_state_file};
 
 fn main() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
-    let result: Starknet = Starknet::new(&StarknetConfig::default()).unwrap();
-    for (index, acc) in result.predeployed_accounts.accounts.iter().enumerate() {
-        info!(
-            "Acc {} {:?} {:?}",
-            index, acc.account_address, acc.initial_balance
-        );
-    }
+    let args = Args::parse();
+
+    let mut starknet: Starknet = Starknet::new(&StarknetConfig::default(), &args.acc_path).unwrap();
+
+    let transactions = read_transactions_file(&args.txns_path).unwrap();
+    handle_transactions(&mut starknet, transactions);
+    write_result_state_file(&args.state_path, &starknet).unwrap();
 }

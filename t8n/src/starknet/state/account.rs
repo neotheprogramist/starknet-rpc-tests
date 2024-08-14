@@ -12,7 +12,7 @@ use super::{
     utils::get_storage_var_address,
 };
 use blockifier::{abi::sierra_types::next_storage_key, state::state_api::StateReader};
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Serialize};
 use starknet_api::core::PatriciaKey;
 use starknet_api::hash::StarkHash;
 use starknet_api::{
@@ -42,7 +42,7 @@ pub struct PartialUserAccount {
     pub initial_balance: Balance,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct UserAccount {
     pub public_key: Key,
     pub account_address: ContractAddress,

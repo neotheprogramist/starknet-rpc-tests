@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use indexmap::IndexMap;
+use serde::Serialize;
 use starknet_api::hash::StarkFelt;
 use starknet_api::{
     block::{BlockHeader, BlockNumber, BlockStatus, BlockTimestamp},
@@ -23,7 +24,7 @@ use super::{
     state_diff::StateDiff,
     traits::HashIdentified,
 };
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct StarknetBlocks {
     pub num_to_hash: IndexMap<BlockNumber, BlockHash>,
     pub hash_to_block: HashMap<BlockHash, StarknetBlock>,
@@ -172,7 +173,7 @@ impl StarknetBlocks {
     }
 }
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize)]
 pub struct StarknetBlock {
     pub(crate) header: BlockHeader,
     transaction_hashes: Vec<TransactionHash>,

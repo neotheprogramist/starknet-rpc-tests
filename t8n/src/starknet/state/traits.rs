@@ -5,7 +5,7 @@ use starknet_devnet_types::{
 };
 
 use super::{
-    account::{FeeToken, UserAccount},
+    account::FeeToken,
     dict_state::DictState,
     errors::DevnetResult,
     starknet_state::{CustomState, CustomStateReader, StarknetState},

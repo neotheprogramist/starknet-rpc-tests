@@ -28,6 +28,7 @@ pub mod types;
 pub mod utils;
 use std::{num::NonZeroU128, sync::Arc};
 
+use super::messaging::MessagingBroker;
 use account::{Account, UserAccount};
 use blockifier::{
     block::BlockInfo,
@@ -55,6 +56,7 @@ use errors::{DevnetResult, Error, TransactionValidationError};
 use predeployed::initialize_erc20_at_address;
 use predeployed_accounts::UserDeployedAccounts;
 use raw_execution::{Call, RawExecution};
+use serde::Serialize;
 use starknet_api::{
     block::{BlockNumber, BlockStatus, BlockTimestamp, GasPrice, GasPricePerToken},
     core::SequencerContractAddress,
@@ -100,26 +102,33 @@ use starknet_state::{CustomState, StarknetState};
 use starknet_transactions::{StarknetTransaction, StarknetTransactions};
 use state_diff::StateDiff;
 use state_update::StateUpdate;
+
 use tracing::{error, info};
 use traits::{Deployed, HashIdentified, HashIdentifiedMut, UserAccountGenerator};
 use transaction_trace::create_trace;
 use utils::get_versioned_constants;
 
-use super::messaging::MessagingBroker;
-
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Starknet {
     pub state: StarknetState,
+    #[serde(skip_serializing)]
     pub predeployed_accounts: UserDeployedAccounts,
+    #[serde(skip_serializing)]
     pub block_context: BlockContext,
     // To avoid repeating some logic related to blocks,
     // having `blocks` public allows to re-use functions like `get_blocks()`.
     pub blocks: StarknetBlocks,
+    #[serde(skip_serializing)]
     pub transactions: StarknetTransactions,
+    #[serde(skip_serializing)]
     pub config: StarknetConfig,
+    #[serde(skip_serializing)]
     pub pending_block_timestamp_shift: i64,
+    #[serde(skip_serializing)]
     pub next_block_timestamp: Option<u64>,
+    #[serde(skip_serializing)]
     pub messaging: MessagingBroker,
+    #[serde(skip_serializing)]
     pub dump_events: Vec<DumpEvent>,
 }
 
@@ -148,7 +157,7 @@ impl Default for Starknet {
 }
 
 impl Starknet {
-    pub fn new(config: &StarknetConfig) -> DevnetResult<Self> {
+    pub fn new(config: &StarknetConfig, acc_path: &str) -> DevnetResult<Self> {
         let defaulter = StarknetDefaulter::new(config.fork_config.clone());
         let mut state = StarknetState::new(defaulter);
 
@@ -194,11 +203,13 @@ impl Starknet {
             strk_erc20_fee_contract.get_address(),
         );
 
-        let accounts = predeployed_accounts.generate_accounts(
-            "/home/filipg/starknet-devnet/starknet-devnet-tests/t8n/src/starknet/input/acc_json",
-            config.account_contract_class_hash,
-            &config.account_contract_class,
-        ).unwrap();
+        let accounts = predeployed_accounts
+            .generate_accounts(
+                acc_path,
+                config.account_contract_class_hash,
+                &config.account_contract_class,
+            )
+            .unwrap();
 
         for account in accounts {
             account.deploy(&mut state)?;
@@ -259,9 +270,9 @@ impl Starknet {
         Ok(this)
     }
 
-    pub fn restart(&mut self) -> DevnetResult<()> {
+    pub fn restart(&mut self, acc_path: &str) -> DevnetResult<()> {
         self.config.re_execute_on_init = false;
-        *self = Starknet::new(&self.config)?;
+        *self = Starknet::new(&self.config, acc_path)?;
         info!("Starknet Devnet restarted");
 
         Ok(())
