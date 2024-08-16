@@ -71,3 +71,13 @@ pub trait AccountGenerator {
         contract_class: &ContractClass,
     ) -> DevnetResult<&Vec<Self::Acc>>;
 }
+
+pub trait UserAccountGenerator {
+    type Acc: Accounted;
+    fn generate_accounts(
+        &mut self,
+        json_path: &str,
+        class_hash: ClassHash,
+        contract_class: &ContractClass,
+    ) -> DevnetResult<&Vec<Self::Acc>>;
+}

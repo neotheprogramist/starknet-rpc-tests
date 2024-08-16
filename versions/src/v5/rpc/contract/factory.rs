@@ -2,7 +2,6 @@ use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_5_0::{
     AddInvokeTransactionResult, FeeEstimate, SimulateTransactionsResult,
 };
-use tracing::info;
 
 use crate::v5::rpc::accounts::{
     account::{Account, AccountError, ConnectedAccount, ExecutionV1},

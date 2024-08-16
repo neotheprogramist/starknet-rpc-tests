@@ -1,5 +1,4 @@
 use starknet_types_rpc::v0_5_0::{BlockId, BlockTag};
-use tracing::info;
 use url::Url;
 
 use crate::v5::rpc::{

@@ -1,3 +1,6 @@
+use std::{fs::File, io::BufReader};
+
+use serde::Serialize;
 use starknet_devnet_types::{
     contract_address::ContractAddress,
     contract_class::ContractClass,
@@ -8,11 +11,67 @@ use starknet_rs_core::types::FieldElement;
 use starknet_rs_signers::SigningKey;
 
 use super::{
-    account::Account, errors::DevnetResult, traits::AccountGenerator,
+    account::{Account, PartialUserAccount, UserAccount},
+    errors::DevnetResult,
+    traits::{AccountGenerator, UserAccountGenerator},
     utils::random_number_generator::generate_u128_random_numbers,
 };
 
-#[derive(Default)]
+#[derive(Default, Debug, Serialize)]
+pub struct UserDeployedAccounts {
+    pub eth_fee_token_address: ContractAddress,
+    pub strk_fee_token_address: ContractAddress,
+    pub accounts: Vec<UserAccount>,
+}
+
+impl UserDeployedAccounts {
+    pub fn new(
+        eth_fee_token_address: ContractAddress,
+        strk_fee_token_address: ContractAddress,
+    ) -> Self {
+        Self {
+            eth_fee_token_address,
+            strk_fee_token_address,
+            accounts: Vec::new(),
+        }
+    }
+
+    pub fn get_accounts(&self) -> &Vec<UserAccount> {
+        &self.accounts
+    }
+}
+
+impl UserAccountGenerator for UserDeployedAccounts {
+    type Acc = UserAccount;
+
+    fn generate_accounts(
+        &mut self,
+        json_path: &str,
+        class_hash: ClassHash,
+        contract_class: &ContractClass,
+    ) -> DevnetResult<&Vec<Self::Acc>> {
+        let file = File::open(json_path).expect("Unable to open file");
+        let reader = BufReader::new(file);
+        let accounts_data: Vec<PartialUserAccount> =
+            serde_json::from_reader(reader).expect("Unable to parse JSON");
+
+        self.accounts = accounts_data
+            .into_iter()
+            .map(|data| UserAccount {
+                public_key: data.public_key,
+                account_address: data.account_address,
+                initial_balance: data.initial_balance,
+                class_hash: class_hash.clone(),
+                contract_class: contract_class.clone(),
+                eth_fee_token_address: self.eth_fee_token_address.clone(),
+                strk_fee_token_address: self.strk_fee_token_address.clone(),
+            })
+            .collect();
+        Ok(&self.accounts)
+    }
+}
+
+#[derive(Default, Debug)]
 pub struct PredeployedAccounts {
     pub seed: u32,
     pub initial_balance: Balance,
@@ -22,7 +81,7 @@ pub struct PredeployedAccounts {
 }
 
 impl PredeployedAccounts {
-    pub(crate) fn new(
+    pub fn new(
         seed: u32,
         initial_balance: Balance,
         eth_fee_token_address: ContractAddress,

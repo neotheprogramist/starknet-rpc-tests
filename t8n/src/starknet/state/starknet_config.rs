@@ -1,5 +1,6 @@
 use std::num::NonZeroU128;
 
+use serde::Serialize;
 use starknet_devnet_types::{
     chain_id::ChainId, contract_class::ContractClass, felt::Felt, rpc::state::Balance,
     traits::HashProducer,
@@ -12,13 +13,13 @@ use super::constants::{
     DEVNET_DEFAULT_TOTAL_ACCOUNTS,
 };
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, clap::ValueEnum)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, clap::ValueEnum, Serialize)]
 pub enum DumpOn {
     Exit,
     Transaction,
 }
 
-#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, clap::ValueEnum)]
+#[derive(Default, Copy, Clone, Debug, Eq, PartialEq, clap::ValueEnum, Serialize)]
 pub enum StateArchiveCapacity {
     #[default]
     #[clap(name = "none")]
@@ -33,7 +34,7 @@ pub struct ForkConfig {
     pub block_number: Option<u64>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct StarknetConfig {
     pub seed: u32,
     pub total_accounts: u8,
@@ -49,6 +50,7 @@ pub struct StarknetConfig {
     /// on initialization, re-execute loaded txs (if any)
     pub re_execute_on_init: bool,
     pub state_archive: StateArchiveCapacity,
+    #[serde(skip_serializing)]
     pub fork_config: ForkConfig,
 }
 

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use blockifier::state::cached_state::CachedState;
 use blockifier::state::state_api::{State, StateReader};
+use serde::Serialize;
 use starknet_devnet_types::contract_address::ContractAddress;
 use starknet_devnet_types::error::DevnetResult;
 use starknet_devnet_types::felt::{ClassHash, Felt};
@@ -13,7 +14,7 @@ use starknet_devnet_types::rpc::state::{
 use super::starknet_state::CommittedClassStorage;
 
 /// This struct is used to store the difference between state modifications
-#[derive(PartialEq, Default, Debug, Clone)]
+#[derive(PartialEq, Default, Debug, Clone, Serialize)]
 pub struct StateDiff {
     pub(crate) storage_updates: HashMap<ContractAddress, HashMap<StorageKey, Felt>>,
     pub(crate) address_to_nonce: HashMap<ContractAddress, Felt>,

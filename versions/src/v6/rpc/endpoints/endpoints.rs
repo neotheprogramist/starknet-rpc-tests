@@ -70,7 +70,7 @@ pub async fn add_declare_transaction(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -168,7 +168,7 @@ pub async fn add_invoke_transaction(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -297,7 +297,7 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -451,7 +451,7 @@ pub async fn estimate_message_fee(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -683,7 +683,7 @@ pub async fn get_transaction_status_succeeded(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -840,7 +840,7 @@ pub async fn get_transaction_by_hash_invoke(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -974,7 +974,7 @@ pub async fn get_transaction_by_hash_deploy_acc(url: Url) -> Result<DeployAccoun
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1062,7 +1062,7 @@ pub async fn get_transaction_receipt(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1203,7 +1203,7 @@ pub async fn get_transaction_receipt_revert(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1344,7 +1344,7 @@ pub async fn get_class(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1474,7 +1474,7 @@ pub async fn get_class_hash_at(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -1623,7 +1623,7 @@ pub async fn get_class_at(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());

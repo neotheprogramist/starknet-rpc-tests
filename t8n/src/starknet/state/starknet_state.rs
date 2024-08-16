@@ -10,6 +10,7 @@ use blockifier::state::{
     cached_state::{CachedState, GlobalContractCache, GLOBAL_CONTRACT_CACHE_SIZE_FOR_TEST},
     state_api::State,
 };
+use serde::Serialize;
 use starknet_api::{core::CompiledClassHash, hash::StarkFelt};
 use starknet_devnet_types::contract_address::ContractAddress;
 use starknet_devnet_types::contract_class::ContractClass;
@@ -40,7 +41,7 @@ pub trait CustomState {
     ) -> DevnetResult<()>;
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug, Serialize)]
 /// Utility structure that makes it easier to calculate state diff later on
 pub struct CommittedClassStorage {
     staging: HashMap<ClassHash, ContractClass>,
@@ -65,7 +66,7 @@ impl CommittedClassStorage {
         self.commit();
     }
 }
-
+#[derive(Debug, Serialize)]
 pub struct StarknetState {
     pub state: CachedState<DictState>,
     pub rpc_contract_classes: CommittedClassStorage,

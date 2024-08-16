@@ -1,2 +1,3 @@
 /target
 .cargo
+t8n/src/starknet/output/state.json
