@@ -7,7 +7,7 @@ use serde_json::{from_reader, from_value, Value};
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_7_1::starknet_api_openrpc::*;
 use starknet_types_rpc::{
-    BroadcastedDeclareTxn, BroadcastedDeployAccountTxn, BroadcastedInvokeTxn,
+    BroadcastedDeclareTxn, DeployAccountTxn, BroadcastedInvokeTxn,
 };
 use std::fs::File;
 
@@ -86,16 +86,21 @@ pub fn validate_txn_json(file_path: &str) -> SerdeResult<()> {
         "DEPLOY_ACCOUNT" => match version {
             "0x1" => {
                 let txn: DeployAccountTxnV1<Felt> = from_value(value)?;
+                match verify_deploy_account_signature(DeployAccountTxn::V1(txn))
+                {
+                    Ok(true) => println!("Signature is valid"),
+                    Ok(false) => return Err(serde_json::Error::custom("Signature is invalid")),
+                    Err(e) => println!("Verification error: {:?}", e),
+                }
+
+            }
+            "0X3" => {
+                let txn: DeployAccountTxnV3<Felt> = from_value(value)?;
                 println!(
                     "{:?}",
-                    verify_deploy_account_signature(BroadcastedDeployAccountTxn::V1(txn))
+                    verify_deploy_account_signature(DeployAccountTxn::V3(txn))
                 );
             }
-            // TODO: V3 in BroadcastedDeployAccountTxn not available "0x3" => {
-            //     let txn: DeployAccountTxnV3<Felt> = from_value(value)?;
-            //     BroadcastedDeployAccountTxn::V3(txn);
-
-            // }
             _ => return Err(serde_json::Error::custom("Unsupported version")),
         },
         _ => return Err(Error::custom("Invalid or missing transaction type")),

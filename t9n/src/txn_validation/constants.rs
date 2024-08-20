@@ -1,0 +1,49 @@
+use starknet_types_core::felt::{Felt, NonZeroFelt};
+
+
+/// Cairo string for "invoke"
+pub const PREFIX_INVOKE: Felt = Felt::from_raw([
+    513398556346534256,
+    18446744073709551615,
+    18446744073709551615,
+    18443034532770911073,
+]);
+
+/// Cairo string for "deploy_account"
+pub const PREFIX_DEPLOY_ACCOUNT: Felt = Felt::from_raw([
+    461298303000467581,
+    18446744073709551615,
+    18443211694809419988,
+    3350261884043292318,
+]);
+
+/// Cairo string for "declare"
+pub const PREFIX_DECLARE: Felt = Felt::from_raw([
+    191557713328401194,
+    18446744073709551615,
+    18446744073709551615,
+    17542456862011667323,
+]);
+
+pub const PREFIX_CONTRACT_CLASS_V0_1_0: Felt = Felt::from_raw([
+    37302452645455172,
+    18446734822722598327,
+    15539482671244488427,
+    5800711240972404213,
+]);
+
+/// Cairo string for "STARKNET_CONTRACT_ADDRESS"
+pub const PREFIX_CONTRACT_ADDRESS: Felt = Felt::from_raw([
+    533439743893157637,
+    8635008616843941496,
+    17289941567720117366,
+    3829237882463328880,
+]);
+
+// 2 ** 251 - 256
+pub const ADDR_BOUND: NonZeroFelt = NonZeroFelt::from_raw([
+    576459263475590224,
+    18446744073709255680,
+    160989183,
+    18446743986131443745,
+]);

@@ -5,7 +5,7 @@ use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_5_0::{BlockId, BlockTag};
 
 use super::{
-    account::{Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawExecutionV1},
+    account::{Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3, RawExecutionV1, RawExecutionV3},
     call::Call,
     errors::ComputeClassHashError,
 };

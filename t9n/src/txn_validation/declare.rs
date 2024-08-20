@@ -6,20 +6,7 @@ use starknet_types_core::{
 };
 use starknet_types_rpc::v0_7_1::SierraEntryPoint;
 use starknet_types_rpc::{v0_7_1::starknet_api_openrpc::*, BroadcastedDeclareTxn};
-/// Cairo string for "declare"
-const PREFIX_DECLARE: Felt = Felt::from_raw([
-    191557713328401194,
-    18446744073709551615,
-    18446744073709551615,
-    17542456862011667323,
-]);
-
-const PREFIX_CONTRACT_CLASS_V0_1_0: Felt = Felt::from_raw([
-    37302452645455172,
-    18446734822722598327,
-    15539482671244488427,
-    5800711240972404213,
-]);
+use super::constants::{PREFIX_CONTRACT_CLASS_V0_1_0, PREFIX_DECLARE};
 
 // 2 ** 251 - 256
 const ADDR_BOUND: NonZeroFelt = NonZeroFelt::from_raw([
@@ -32,23 +19,37 @@ const ADDR_BOUND: NonZeroFelt = NonZeroFelt::from_raw([
 pub fn verify_declare_signature(txn: &BroadcastedDeclareTxn<Felt>) -> Result<bool, VerifyError> {
     // checking version
     match txn {
-        BroadcastedDeclareTxn::V1(declare_txn) => {
-            // Handle V1 specific signature verification
-            // TODO: verify_v1_signature(declare_txn))
-            println!("{:?}", declare_txn);
-            Ok(true)
-        }
+        BroadcastedDeclareTxn::V1(declare_txn) => verify_declare_v1_signature(declare_txn),
         BroadcastedDeclareTxn::V2(declare_txn) => verify_declare_v2_signature(declare_txn),
-        BroadcastedDeclareTxn::V3(declare_txn) => {
-            // Handle V3 specific signature verification
-            // TODO: verify_v3_signature(declare_txn)
-            println!("{:?}", declare_txn);
-            Ok(true)
-        }
+        BroadcastedDeclareTxn::V3(declare_txn) => verify_declare_v3_signature(declare_txn),
         BroadcastedDeclareTxn::QueryV1(_) => todo!(),
         BroadcastedDeclareTxn::QueryV2(_) => todo!(),
         BroadcastedDeclareTxn::QueryV3(_) => todo!(),
     }
+}
+
+fn verify_declare_v1_signature(txn: &BroadcastedDeclareTxnV1<Felt>) -> Result<bool, VerifyError> {
+    let chain_id = Felt::from_hex_unchecked("0x534e5f5345504f4c4941");
+
+    let stark_key = Felt::from_hex_unchecked(
+        "0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b",
+    );
+
+    let msg_hash = compute_hash_on_elements(&[
+        PREFIX_DECLARE,
+        Felt::ONE, // version
+        txn.sender_address,
+        Felt::ZERO, // entry_point_selector
+        compute_hash_on_elements(&[class_hash(txn.contract_class.clone())]),
+        txn.max_fee,
+        chain_id,
+        txn.nonce,
+    ]);
+
+    let r_bytes = txn.signature[0];
+    let s_bytes = txn.signature[1];
+
+    verify(&stark_key, &msg_hash, &r_bytes, &s_bytes)
 }
 
 fn verify_declare_v2_signature(txn: &BroadcastedDeclareTxnV2<Felt>) -> Result<bool, VerifyError> {
@@ -75,6 +76,35 @@ fn verify_declare_v2_signature(txn: &BroadcastedDeclareTxnV2<Felt>) -> Result<bo
 
     verify(&stark_key, &msg_hash, &r_bytes, &s_bytes)
 }
+
+fn verify_declare_v3_signature(txn: &BroadcastedDeclareTxnV3<Felt>) -> Result<bool, VerifyError> {
+    let chain_id = Felt::from_hex_unchecked("0x534e5f5345504f4c4941");
+
+    let stark_key = Felt::from_hex_unchecked(
+        "0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b",
+    );
+
+    let msg_hash = compute_hash_on_elements(&[
+        PREFIX_DECLARE,
+        Felt::THREE, // version
+        txn.sender_address,
+        // compute_hash_on_elements(&[txn.tip, l1_gas_bounds, l2_gas_bounds]),
+        compute_hash_on_elements(&txn.paymaster_data),
+        chain_id,
+        txn.nonce,
+        // data availability modes
+        compute_hash_on_elements(&txn.account_deployment_data),
+        compute_hash_on_elements(&[class_hash(txn.contract_class.clone())]),
+        txn.compiled_class_hash,
+    ]);
+
+    let r_bytes = txn.signature[0];
+    let s_bytes = txn.signature[1];
+
+    verify(&stark_key, &msg_hash, &r_bytes, &s_bytes)
+}
+
+
 
 fn class_hash(contract_class: ContractClass<Felt>) -> Felt {
     let mut hasher = PoseidonHasher::new();

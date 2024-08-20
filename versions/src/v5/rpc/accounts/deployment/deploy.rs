@@ -1,5 +1,6 @@
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_5_0::{BlockId, BlockTag, TxnHash};
+use tracing::info;
 
 use crate::v5::rpc::{
     accounts::{
@@ -29,7 +30,7 @@ pub async fn deploy_account(
     }
 
     let public_key = account_data.signing_key.verifying_key();
-
+    info!("Deploying account with public key: {:?}", public_key);
     let address = match account_data.account_type {
         AccountType::Oz => get_contract_address(
             account_data.salt,

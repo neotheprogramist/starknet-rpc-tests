@@ -3,12 +3,15 @@ use super::errors::NotPreparedError;
 use serde::{Deserialize, Serialize};
 
 use starknet_types_core::felt::Felt;
+use starknet_types_core::hash::PoseidonHasher;
 use starknet_types_core::{curve::compute_hash_on_elements, felt::NonZeroFelt};
 use starknet_types_rpc::v0_5_0::{
     BlockId, BlockTag, BroadcastedDeployAccountTxn, BroadcastedTxn, ContractAndTxnHash,
     DeployAccountTxnV1, FeeEstimate, SimulateTransactionsResult, SimulationFlag,
 };
+use starknet_types_rpc::{ResourceBounds, ResourceBoundsMapping};
 
+use crate::v5::rpc::providers::provider::SimulationFlagForEstimateFee;
 use crate::v5::rpc::providers::{
     jsonrpc::StarknetError,
     provider::{Provider, ProviderError},
@@ -616,14 +619,14 @@ where
 //                 let gas = match self.gas {
 //                     Some(gas) => gas,
 //                     None => {
-//                         let overall_fee_bytes = fee_estimate.overall_fee.to_bytes_le();
+//                         let overall_fee_bytes = fee_estimate.overall_fee.to_le_bytes();
 //                         if overall_fee_bytes.iter().skip(8).any(|&x| x != 0) {
 //                             return Err(AccountFactoryError::FeeOutOfRange);
 //                         }
 //                         let overall_fee =
 //                             u64::from_le_bytes(overall_fee_bytes[..8].try_into().unwrap());
 
-//                         let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
+//                         let gas_price_bytes = fee_estimate.gas_price.to_le_bytes();
 //                         if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
 //                             return Err(AccountFactoryError::FeeOutOfRange);
 //                         }
@@ -638,7 +641,7 @@ where
 //                 let gas_price = match self.gas_price {
 //                     Some(gas_price) => gas_price,
 //                     None => {
-//                         let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
+//                         let gas_price_bytes = fee_estimate.gas_price.to_le_bytes();
 //                         if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
 //                             return Err(AccountFactoryError::FeeOutOfRange);
 //                         }
@@ -687,7 +690,7 @@ where
 //         self.factory
 //             .provider()
 //             .estimate_fee_single(
-//                 BroadcastedTransaction::DeployAccount(BroadcastedDeployAccountTransaction::V3(
+//                 BroadcastedTxn::DeployAccount(BroadcastedDeployAccountTransaction::V3(
 //                     deploy,
 //                 )),
 //                 if skip_signature {
@@ -746,7 +749,7 @@ where
 //             .provider()
 //             .simulate_transaction(
 //                 self.factory.block_id(),
-//                 BroadcastedTransaction::DeployAccount(BroadcastedDeployAccountTransaction::V3(
+//                 BroadcastedTxn::DeployAccount(BroadcastedDeployAccountTxn::V3(
 //                     deploy,
 //                 )),
 //                 &flags,

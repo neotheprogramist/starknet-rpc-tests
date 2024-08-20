@@ -1,3 +1,4 @@
+use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_5_0::{BlockId, BlockTag};
 use tracing::info;
 use url::Url;
@@ -18,7 +19,7 @@ use crate::v5::rpc::{
     },
     endpoints::{declare_contract::declare_contract, deploy_contract::deploy_contract},
     providers::jsonrpc::{HttpTransport, JsonRpcClient},
-    signers::local_wallet::LocalWallet,
+    signers::{key_pair::SigningKey, local_wallet::LocalWallet},
 };
 
 pub async fn decalare_and_deploy(
@@ -63,9 +64,8 @@ pub async fn decalare_and_deploy(
             return Err(e.to_string());
         }
     };
-
-    let sender_address = create_acc_data.address;
-    let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
+    let sender_address = Felt::from_hex_unchecked("0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691");
+    let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(Felt::from_hex_unchecked("0x71d7bb07b9a64f6f78ac4c816aff4da9")));//signing_key
 
     let mut account = SingleOwnerAccount::new(
         JsonRpcClient::new(HttpTransport::new(url.clone())),

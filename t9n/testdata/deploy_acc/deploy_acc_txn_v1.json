@@ -1,16 +1,15 @@
 {
     "type": "DEPLOY_ACCOUNT",
     "version": "0x1",
-    "class_hash": "0xabcdefabcdefabcdefabcdefabcdefabcde",
+    "class_hash": "0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
     "constructor_calldata": [
-        "0x1234567890abcdef",
-        "0xabcdef1234567890"
+        "0x917acc840787b45091ce55cd50c82e65cb0a7344cf18fd6d337f3a54f8b70c"
     ],
-    "contract_address_salt": "0x0000000000000001",
-    "max_fee": "0x10000000000000000000000000000000",
-    "nonce": "0x01",
+    "contract_address_salt": "0xb1167c1714136ac3",
+    "max_fee": "0x0",
+    "nonce": "0x0",
     "signature": [
-        "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
-        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+        "0x7a7b25cc2f0cf5353f6ed824d5f5b77b56e146fe894561b5c52cfea8ad46933",
+        "0xa7624b52a80f836761faa5e56fd0f6c89ba0ad4b9e2e65a0b5875dccf674d7"
     ]
 }

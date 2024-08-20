@@ -5552,8 +5552,10 @@ dependencies = [
 name = "t9n"
 version = "0.1.0"
 dependencies = [
+ "hex",
  "serde",
  "serde_json",
+ "sha3",
  "starknet-types-core",
  "starknet-types-rpc",
 ]
@@ -6152,6 +6154,7 @@ dependencies = [
  "serde_json_pythonic",
  "serde_with 3.9.0",
  "sha3",
+ "starknet-core",
  "starknet-types-core",
  "starknet-types-rpc",
  "thiserror",

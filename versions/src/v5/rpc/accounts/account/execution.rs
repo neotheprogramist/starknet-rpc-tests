@@ -1,4 +1,4 @@
-use starknet_types_core::felt::Felt;
+use starknet_types_core::{felt::Felt, hash::PoseidonHasher};
 use starknet_types_rpc::v0_5_0::{
     AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, FeeEstimate, InvokeTxnV1,
     SimulateTransactionsResult, SimulationFlag,
@@ -11,8 +11,7 @@ use crate::v5::rpc::{
 use starknet_types_core::curve::compute_hash_on_elements;
 
 use super::{
-    Account, AccountError, ConnectedAccount, ExecutionEncoder, ExecutionV1, PreparedExecutionV1,
-    RawExecutionV1,
+    Account, AccountError, ConnectedAccount, ExecutionEncoder, ExecutionV1, ExecutionV3, PreparedExecutionV1, PreparedExecutionV3, RawExecutionV1, RawExecutionV3
 };
 
 /// Cairo string for "invoke"
@@ -88,72 +87,72 @@ impl<'a, A> ExecutionV1<'a, A> {
     }
 }
 
-// impl<'a, A> ExecutionV3<'a, A> {
-//     pub fn new(calls: Vec<Call>, account: &'a A) -> Self {
-//         Self {
-//             account,
-//             calls,
-//             nonce: None,
-//             gas: None,
-//             gas_price: None,
-//             gas_estimate_multiplier: 1.5,
-//             gas_price_estimate_multiplier: 1.5,
-//         }
-//     }
+impl<'a, A> ExecutionV3<'a, A> {
+    pub fn new(calls: Vec<Call>, account: &'a A) -> Self {
+        Self {
+            account,
+            calls,
+            nonce: None,
+            gas: None,
+            gas_price: None,
+            gas_estimate_multiplier: 1.5,
+            gas_price_estimate_multiplier: 1.5,
+        }
+    }
 
-//     pub fn nonce(self, nonce: Felt) -> Self {
-//         Self {
-//             nonce: Some(nonce),
-//             ..self
-//         }
-//     }
+    pub fn nonce(self, nonce: Felt) -> Self {
+        Self {
+            nonce: Some(nonce),
+            ..self
+        }
+    }
 
-//     pub fn gas(self, gas: u64) -> Self {
-//         Self {
-//             gas: Some(gas),
-//             ..self
-//         }
-//     }
+    pub fn gas(self, gas: u64) -> Self {
+        Self {
+            gas: Some(gas),
+            ..self
+        }
+    }
 
-//     pub fn gas_price(self, gas_price: u128) -> Self {
-//         Self {
-//             gas_price: Some(gas_price),
-//             ..self
-//         }
-//     }
+    pub fn gas_price(self, gas_price: u128) -> Self {
+        Self {
+            gas_price: Some(gas_price),
+            ..self
+        }
+    }
 
-//     pub fn gas_estimate_multiplier(self, gas_estimate_multiplier: f64) -> Self {
-//         Self {
-//             gas_estimate_multiplier,
-//             ..self
-//         }
-//     }
+    pub fn gas_estimate_multiplier(self, gas_estimate_multiplier: f64) -> Self {
+        Self {
+            gas_estimate_multiplier,
+            ..self
+        }
+    }
 
-//     pub fn gas_price_estimate_multiplier(self, gas_price_estimate_multiplier: f64) -> Self {
-//         Self {
-//             gas_price_estimate_multiplier,
-//             ..self
-//         }
-//     }
+    pub fn gas_price_estimate_multiplier(self, gas_price_estimate_multiplier: f64) -> Self {
+        Self {
+            gas_price_estimate_multiplier,
+            ..self
+        }
+    }
 
-//     /// Calling this function after manually specifying `nonce`, `gas` and `gas_price` turns
-//     /// [ExecutionV3] into [PreparedExecutionV3]. Returns `Err` if any field is `None`.
-//     pub fn prepared(self) -> Result<PreparedExecutionV3<'a, A>, NotPreparedError> {
-//         let nonce = self.nonce.ok_or(NotPreparedError)?;
-//         let gas = self.gas.ok_or(NotPreparedError)?;
-//         let gas_price = self.gas_price.ok_or(NotPreparedError)?;
+    /// Calling this function after manually specifying `nonce`, `gas` and `gas_price` turns
+    /// [ExecutionV3] into [PreparedExecutionV3]. Returns `Err` if any field is `None`.
+    pub fn prepared(self) -> Result<PreparedExecutionV3<'a, A>, NotPreparedError> {
+        let nonce = self.nonce.ok_or(NotPreparedError)?;
+        let gas = self.gas.ok_or(NotPreparedError)?;
+        let gas_price = self.gas_price.ok_or(NotPreparedError)?;
 
-//         Ok(PreparedExecutionV3 {
-//             account: self.account,
-//             inner: RawExecutionV3 {
-//                 calls: self.calls,
-//                 nonce,
-//                 gas,
-//                 gas_price,
-//             },
-//         })
-//     }
-// }
+        Ok(PreparedExecutionV3 {
+            account: self.account,
+            inner: RawExecutionV3 {
+                calls: self.calls,
+                nonce,
+                gas,
+                gas_price,
+            },
+        })
+    }
+}
 
 impl<'a, A> ExecutionV1<'a, A>
 where
@@ -357,7 +356,7 @@ where
 //             .await
 //     }
 
-//     pub async fn send(&self) -> Result<InvokeTransactionResult, AccountError<A::SignError>> {
+//     pub async fn send(&self) -> Result<AddInvokeTransactionResult, AccountError<A::SignError>> {
 //         self.prepare().await?.send().await
 //     }
 
@@ -409,14 +408,14 @@ where
 //                 let gas = match self.gas {
 //                     Some(gas) => gas,
 //                     None => {
-//                         let overall_fee_bytes = fee_estimate.overall_fee.to_bytes_le();
+//                         let overall_fee_bytes = fee_estimate.overall_fee.to_le_bytes();
 //                         if overall_fee_bytes.iter().skip(8).any(|&x| x != 0) {
 //                             return Err(AccountError::FeeOutOfRange);
 //                         }
 //                         let overall_fee =
 //                             u64::from_le_bytes(overall_fee_bytes[..8].try_into().unwrap());
 
-//                         let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
+//                         let gas_price_bytes = fee_estimate.gas_price.to_le_bytes();
 //                         if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
 //                             return Err(AccountError::FeeOutOfRange);
 //                         }
@@ -431,7 +430,7 @@ where
 //                 let gas_price = match self.gas_price {
 //                     Some(gas_price) => gas_price,
 //                     None => {
-//                         let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
+//                         let gas_price_bytes = fee_estimate.gas_price.to_le_bytes();
 //                         if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
 //                             return Err(AccountError::FeeOutOfRange);
 //                         }

@@ -1,7 +1,9 @@
 use crate::v5::rpc::accounts::account::ContractClassHasher;
+use crate::v5::rpc::providers::provider::SimulationFlagForEstimateFee;
 use crate::v5::rpc::{accounts::errors::NotPreparedError, providers::provider::Provider};
 use starknet_types_core::curve::compute_hash_on_elements;
 use starknet_types_core::felt::Felt;
+use starknet_types_core::hash::PoseidonHasher;
 use starknet_types_rpc::v0_5_0::{
     BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedTxn, ClassAndTxnHash, ContractClass,
     FeeEstimate, ResourceLimits, SimulateTransactionsResult, SimulationFlag,
@@ -9,7 +11,7 @@ use starknet_types_rpc::v0_5_0::{
 use std::sync::Arc;
 
 use super::{
-    Account, AccountError, ConnectedAccount, DeclarationV2, PreparedDeclarationV2, RawDeclarationV2,
+    Account, AccountError, ConnectedAccount, DeclarationV2, PreparedDeclarationV2, RawDeclarationV2
 };
 
 pub struct ResourceLimitsMapping {
@@ -270,7 +272,7 @@ where
 
 // impl<'a, A> DeclarationV3<'a, A> {
 //     pub fn new(
-//         contract_class: Arc<FlattenedSierraClass>,
+//         contract_class: Arc<ContractClass>,
 //         compiled_class_hash: Felt,
 //         account: &'a A,
 //     ) -> Self {
@@ -500,7 +502,7 @@ where
 //         self.account
 //             .provider()
 //             .estimate_fee_single(
-//                 BroadcastedTransaction::Declare(BroadcastedDeclareTransaction::V3(declare)),
+//                 BroadcastedTxn::Declare(BroadcastedDeclareTxn::V3(declare)),
 //                 if skip_signature {
 //                     // Validation would fail since real signature was not requested
 //                     vec![SimulationFlagForEstimateFee::SkipValidate]
@@ -863,7 +865,7 @@ impl RawDeclarationV2 {
 //         hasher.finalize()
 //     }
 
-//     pub fn contract_class(&self) -> &FlattenedSierraClass {
+//     pub fn contract_class(&self) -> &ContractClass {
 //         &self.contract_class
 //     }
 
