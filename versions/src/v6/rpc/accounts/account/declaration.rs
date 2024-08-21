@@ -386,79 +386,79 @@ where
 //                 .map_err(AccountError::Provider)?,
 //         };
 
-//         // Resolves fee settings
-//         let (gas, gas_price) = match (self.gas, self.gas_price) {
-//             (Some(gas), Some(gas_price)) => (gas, gas_price),
-//             (Some(gas), _) => {
-//                 // When `gas` is specified, we only need the L1 gas price in FRI. By specifying a
-//                 // a `gas` value, the user might be trying to avoid a full fee estimation (e.g.
-//                 // flaky dependencies), so it's in appropriate to call `estimate_fee` here.
+        // Resolves fee settings
+        // let (gas, gas_price) = match (self.gas, self.gas_price) {
+        //     (Some(gas), Some(gas_price)) => (gas, gas_price),
+        //     (Some(gas), _) => {
+        //         // When `gas` is specified, we only need the L1 gas price in FRI. By specifying a
+        //         // a `gas` value, the user might be trying to avoid a full fee estimation (e.g.
+        //         // flaky dependencies), so it's in appropriate to call `estimate_fee` here.
 
-//                 // This is the lightest-weight block we can get
-//                 let block_l1_gas_price = self
-//                     .account
-//                     .provider()
-//                     .get_block_with_tx_hashes(self.account.block_id())
-//                     .await
-//                     .map_err(AccountError::Provider)?
-//                     .l1_gas_price()
-//                     .price_in_fri;
+        //         // This is the lightest-weight block we can get
+        //         let block_l1_gas_price = self
+        //             .account
+        //             .provider()
+        //             .get_block_with_tx_hashes(self.account.block_id())
+        //             .await
+        //             .map_err(AccountError::Provider)?
+        //             .l1_gas_price()
+        //             .price_in_fri;
 
-//                 let block_l1_gas_price_bytes = block_l1_gas_price.to_bytes_le();
-//                 if block_l1_gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
-//                     return Err(AccountError::FeeOutOfRange);
-//                 }
-//                 let block_l1_gas_price =
-//                     u64::from_le_bytes(block_l1_gas_price_bytes[..8].try_into().unwrap());
+        //         let block_l1_gas_price_bytes = block_l1_gas_price.to_bytes_le();
+        //         if block_l1_gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
+        //             return Err(AccountError::FeeOutOfRange);
+        //         }
+        //         let block_l1_gas_price =
+        //             u64::from_le_bytes(block_l1_gas_price_bytes[..8].try_into().unwrap());
 
-//                 let gas_price =
-//                     ((block_l1_gas_price as f64) * self.gas_price_estimate_multiplier) as u128;
+        //         let gas_price =
+        //             ((block_l1_gas_price as f64) * self.gas_price_estimate_multiplier) as u128;
 
-//                 (gas, gas_price)
-//             }
-//             // We have to perform fee estimation as long as gas is not specified
-//             _ => {
-//                 let fee_estimate = self.estimate_fee_with_nonce(nonce).await?;
+        //         (gas, gas_price)
+        //     }
+        //     // We have to perform fee estimation as long as gas is not specified
+        //     _ => {
+        //         let fee_estimate = self.estimate_fee_with_nonce(nonce).await?;
 
-//                 let gas = match self.gas {
-//                     Some(gas) => gas,
-//                     None => {
-//                         let overall_fee_bytes = fee_estimate.overall_fee.to_bytes_le();
-//                         if overall_fee_bytes.iter().skip(8).any(|&x| x != 0) {
-//                             return Err(AccountError::FeeOutOfRange);
-//                         }
-//                         let overall_fee =
-//                             u64::from_le_bytes(overall_fee_bytes[..8].try_into().unwrap());
+        //         let gas = match self.gas {
+        //             Some(gas) => gas,
+        //             None => {
+        //                 let overall_fee_bytes = fee_estimate.overall_fee.to_bytes_le();
+        //                 if overall_fee_bytes.iter().skip(8).any(|&x| x != 0) {
+        //                     return Err(AccountError::FeeOutOfRange);
+        //                 }
+        //                 let overall_fee =
+        //                     u64::from_le_bytes(overall_fee_bytes[..8].try_into().unwrap());
 
-//                         let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
-//                         if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
-//                             return Err(AccountError::FeeOutOfRange);
-//                         }
-//                         let gas_price =
-//                             u64::from_le_bytes(gas_price_bytes[..8].try_into().unwrap());
+        //                 let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
+        //                 if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
+        //                     return Err(AccountError::FeeOutOfRange);
+        //                 }
+        //                 let gas_price =
+        //                     u64::from_le_bytes(gas_price_bytes[..8].try_into().unwrap());
 
-//                         (((overall_fee + gas_price - 1) / gas_price) as f64
-//                             * self.gas_estimate_multiplier) as u64
-//                     }
-//                 };
+        //                 (((overall_fee + gas_price - 1) / gas_price) as f64
+        //                     * self.gas_estimate_multiplier) as u64
+        //             }
+        //         };
 
-//                 let gas_price = match self.gas_price {
-//                     Some(gas_price) => gas_price,
-//                     None => {
-//                         let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
-//                         if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
-//                             return Err(AccountError::FeeOutOfRange);
-//                         }
-//                         let gas_price =
-//                             u64::from_le_bytes(gas_price_bytes[..8].try_into().unwrap());
+        //         let gas_price = match self.gas_price {
+        //             Some(gas_price) => gas_price,
+        //             None => {
+        //                 let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
+        //                 if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
+        //                     return Err(AccountError::FeeOutOfRange);
+        //                 }
+        //                 let gas_price =
+        //                     u64::from_le_bytes(gas_price_bytes[..8].try_into().unwrap());
 
-//                         ((gas_price as f64) * self.gas_price_estimate_multiplier) as u128
-//                     }
-//                 };
+        //                 ((gas_price as f64) * self.gas_price_estimate_multiplier) as u128
+        //             }
+        //         };
 
-//                 (gas, gas_price)
-//             }
-//         };
+        //         (gas, gas_price)
+        //     }
+        // };
 
 //         Ok(PreparedDeclarationV3 {
 //             account: self.account,

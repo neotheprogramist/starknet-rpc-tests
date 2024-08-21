@@ -1,8 +1,7 @@
 {
-	"type": "DECLARE",
 	"version": "0x3",
 	"account_deployment_data": [],
-	"compiled_class_hash": "0x5470ec9868f74334a4b992a4c0e539e8a1a043c95d7c4be4850f904837af2d2",
+	"compiled_class_hash": "0x1add56d64bebf8140f3b8a38bdf102b7874437f0c861ab4ca7526ec33b4d0f8",
 	"contract_class": {
 		"abi": "[{\"type\": \"impl\", \"name\": \"HelloStarknetImpl\", \"interface_name\": \"cairo_contracts::IHelloStarknet\"}, {\"type\": \"enum\", \"name\": \"cairo_contracts::BalanceResult\", \"variants\": [{\"name\": \"Zero\", \"type\": \"()\"}, {\"name\": \"Positive\", \"type\": \"()\"}, {\"name\": \"Negative\", \"type\": \"()\"}, {\"name\": \"Overdrawn\", \"type\": \"()\"}]}, {\"type\": \"interface\", \"name\": \"cairo_contracts::IHelloStarknet\", \"items\": [{\"type\": \"function\", \"name\": \"increase_balance\", \"inputs\": [{\"name\": \"amount\", \"type\": \"core::felt252\"}], \"outputs\": [], \"state_mutability\": \"external\"}, {\"type\": \"function\", \"name\": \"get_balance\", \"inputs\": [], \"outputs\": [{\"type\": \"cairo_contracts::BalanceResult\"}], \"state_mutability\": \"view\"}]}, {\"type\": \"event\", \"name\": \"cairo_contracts::HelloStarknet::Event\", \"kind\": \"enum\", \"variants\": []}]",
 		"contract_class_version": "0.1.0",
@@ -306,17 +305,18 @@
 		]
 	},
 	"fee_data_availability_mode": "L1",
-	"nonce": "0x0",
+	"nonce": "0x1",
 	"nonce_data_availability_mode": "L1",
 	"paymaster_data": [],
 	"resource_bounds": {
-		"l1_gas": { "max_amount": "0", "max_price_per_unit": "0" },
-		"l2_gas": { "max_amount": "0", "max_price_per_unit": "0" }
+		"l1_gas": { "max_amount": "0x186a0", "max_price_per_unit": "0x2540be400" },
+		"l2_gas": { "max_amount": "0x0", "max_price_per_unit": "0x0" }
 	},
-	"sender_address": "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+	"sender_address": "0x2fab82e4aef1d8664874e1f194951856d48463c3e6bf9a8c68e234a629a6f50",
 	"signature": [
-		"0x689914f83e1429e9d1b962d36109b30d526a49d92f757e8e389835da57d4490",
-		"0x180b348c4586f8f9d8173bedb58c2ac323ed4ab08a4a9f5fa367438814cd0bb"
+		"0x29a49dff154fede73dd7b5ca5a0beadf40b4b069f3a850cd8428e54dc809ccc",
+		"0x429d142a17223b4f2acde0f5ecb9ad453e188b245003c86fab5c109bad58fc3"
 	],
-	"tip": "0x0"
+	"tip": "0x0",
+	"type": "DECLARE"
 }

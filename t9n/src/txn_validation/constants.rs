@@ -47,3 +47,12 @@ pub const ADDR_BOUND: NonZeroFelt = NonZeroFelt::from_raw([
     160989183,
     18446743986131443745,
 ]);
+
+pub const DATA_AVAILABILITY_MODE_BITS: u8 = 32;
+
+pub const TESTNET: Felt = Felt::from_raw([
+    398700013197595345,
+    18446744073709551615,
+    18446744073709548950,
+    3753493103916128178,
+]);

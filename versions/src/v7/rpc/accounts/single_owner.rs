@@ -2,7 +2,7 @@ use crate::v7::rpc::providers::provider::Provider;
 use crate::v7::rpc::signers::signer::Signer;
 
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_7_1::{BlockId, BlockTag};
+use starknet_types_rpc::v0_7_1::{BlockId, BlockTag,};
 use tracing::info;
 
 use super::{

@@ -1,17 +1,18 @@
 use crate::v7::rpc::accounts::account::ContractClassHasher;
 use crate::v7::rpc::accounts::factory::DataAvailabilityMode;
 use crate::v7::rpc::{accounts::errors::NotPreparedError, providers::provider::Provider};
+use std::error::Error; 
 
 use starknet_types_core::curve::compute_hash_on_elements;
 use starknet_types_core::felt::Felt;
-use starknet_types_core::hash::PoseidonHasher;
+use starknet_types_core::hash::{poseidon_hash_many, PoseidonHasher};
 use starknet_types_rpc::v0_7_1::{
     BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedDeclareTxnV3, BroadcastedTxn,
     ClassAndTxnHash, ContractClass, FeeEstimate, SimulateTransactionsResult, SimulationFlag,
     SimulationFlagForEstimateFee,
 };
 use starknet_types_rpc::{
-    DaMode, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping,
+    DaMode, MaybePendingBlockWithTxHashes, Resource, ResourceBounds, ResourceBoundsMapping
 };
 use tracing::{debug, info};
 use tracing::error;
@@ -53,6 +54,8 @@ const QUERY_VERSION_THREE: Felt = Felt::from_raw([
     17407,
     18446744073700081569,
 ]);
+
+const DATA_AVAILABILITY_MODE_BITS: u8 = 32;
 
 impl<'a, A> DeclarationV2<'a, A> {
     pub fn new(
@@ -399,90 +402,90 @@ where
         info!("After nonce");
         info!("Before gas and gas_price");
         // Resolves fee settings
-        // let (gas, gas_price) = match (self.gas, self.gas_price) {
-        //     (Some(gas), Some(gas_price)) => (gas, gas_price),
-        //     (Some(gas), _) => {
-        //         // When `gas` is specified, we only need the L1 gas price in FRI. By specifying a
-        //         // a `gas` value, the user might be trying to avoid a full fee estimation (e.g.
-        //         // flaky dependencies), so it's in appropriate to call `estimate_fee` here.
+        let (gas, gas_price) = match (self.gas, self.gas_price) {
+            (Some(gas), Some(gas_price)) => (gas, gas_price),
+            (Some(gas), _) => {
+                // When `gas` is specified, we only need the L1 gas price in FRI. By specifying a
+                // a `gas` value, the user might be trying to avoid a full fee estimation (e.g.
+                // flaky dependencies), so it's in appropriate to call `estimate_fee` here.
 
-        //         let block_result = self
-        //             .account
-        //             .provider()
-        //             .get_block_with_tx_hashes(self.account.block_id())
-        //             .await
-        //             .map_err(AccountError::Provider)?;
+                let block_result = self
+                    .account
+                    .provider()
+                    .get_block_with_tx_hashes(self.account.block_id())
+                    .await
+                    .map_err(AccountError::Provider)?;
 
-        //         let block_l1_gas_price = match block_result {
-        //             MaybePendingBlockWithTxHashes::Block(block) => {
-        //                 // Extract the L1 gas price from the Block
-        //                 block.block_header.l1_gas_price.price_in_fri
-        //             }
-        //             MaybePendingBlockWithTxHashes::Pending(pending_block) => {
-        //                 // Extract the L1 gas price from the PendingBlock
-        //                 pending_block.pending_block_header.l1_gas_price.price_in_fri
-        //             }
-        //         };
-        //         let block_l1_gas_price_bytes = block_l1_gas_price.to_bytes_le();
-        //         if block_l1_gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
-        //             return Err(AccountError::FeeOutOfRange);
-        //         }
-        //         let block_l1_gas_price =
-        //             u64::from_le_bytes(block_l1_gas_price_bytes[..8].try_into().unwrap());
+                let block_l1_gas_price = match block_result {
+                    MaybePendingBlockWithTxHashes::Block(block) => {
+                        // Extract the L1 gas price from the Block
+                        block.block_header.l1_gas_price.price_in_fri
+                    }
+                    MaybePendingBlockWithTxHashes::Pending(pending_block) => {
+                        // Extract the L1 gas price from the PendingBlock
+                        pending_block.pending_block_header.l1_gas_price.price_in_fri
+                    }
+                };
+                let block_l1_gas_price_bytes = block_l1_gas_price.to_bytes_le();
+                if block_l1_gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
+                    return Err(AccountError::FeeOutOfRange);
+                }
+                let block_l1_gas_price =
+                    u64::from_le_bytes(block_l1_gas_price_bytes[..8].try_into().unwrap());
 
-        //         let gas_price =
-        //             ((block_l1_gas_price as f64) * self.gas_price_estimate_multiplier) as u128;
-        //         (gas, gas_price)
+                let gas_price =
+                    ((block_l1_gas_price as f64) * self.gas_price_estimate_multiplier) as u128;
+                (gas, gas_price)
 
-        //     }
-        //     // We have to perform fee estimation as long as gas is not specified
-        //     _ => {
-        //         info!("test gas1");
-        //         let fee_estimate = self.estimate_fee_with_nonce(nonce).await?;
-        //         info!("test gas2");
+            }
+            // We have to perform fee estimation as long as gas is not specified
+            _ => {
+                info!("test gas1");
+                let fee_estimate = self.estimate_fee_with_nonce(nonce).await?;
+                info!("test gas2");
 
-        //         let gas = match self.gas {
-        //             Some(gas) => gas,
-        //             None => {
-        //                 let overall_fee_bytes = fee_estimate.overall_fee.to_bytes_le();
-        //                 if overall_fee_bytes.iter().skip(8).any(|&x| x != 0) {
-        //                     return Err(AccountError::FeeOutOfRange);
-        //                 }
-        //                 let overall_fee =
-        //                     u64::from_le_bytes(overall_fee_bytes[..8].try_into().unwrap());
+                let gas = match self.gas {
+                    Some(gas) => gas,
+                    None => {
+                        let overall_fee_bytes = fee_estimate.overall_fee.to_bytes_le();
+                        if overall_fee_bytes.iter().skip(8).any(|&x| x != 0) {
+                            return Err(AccountError::FeeOutOfRange);
+                        }
+                        let overall_fee =
+                            u64::from_le_bytes(overall_fee_bytes[..8].try_into().unwrap());
 
-        //                 let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
-        //                 if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
-        //                     return Err(AccountError::FeeOutOfRange);
-        //                 }
-        //                 let gas_price =
-        //                     u64::from_le_bytes(gas_price_bytes[..8].try_into().unwrap());
+                        let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
+                        if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
+                            return Err(AccountError::FeeOutOfRange);
+                        }
+                        let gas_price =
+                            u64::from_le_bytes(gas_price_bytes[..8].try_into().unwrap());
 
-        //                 (((overall_fee + gas_price - 1) / gas_price) as f64
-        //                     * self.gas_estimate_multiplier) as u64
-        //             }
-        //         };
+                        (((overall_fee + gas_price - 1) / gas_price) as f64
+                            * self.gas_estimate_multiplier) as u64
+                    }
+                };
 
 
-        //         let gas_price = match self.gas_price {
-        //             Some(gas_price) => gas_price,
-        //             None => {
-        //                 let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
-        //                 if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
-        //                     return Err(AccountError::FeeOutOfRange);
-        //                 }
-        //                 let gas_price =
-        //                     u64::from_le_bytes(gas_price_bytes[..8].try_into().unwrap());
+                let gas_price = match self.gas_price {
+                    Some(gas_price) => gas_price,
+                    None => {
+                        let gas_price_bytes = fee_estimate.gas_price.to_bytes_le();
+                        if gas_price_bytes.iter().skip(8).any(|&x| x != 0) {
+                            return Err(AccountError::FeeOutOfRange);
+                        }
+                        let gas_price =
+                            u64::from_le_bytes(gas_price_bytes[..8].try_into().unwrap());
 
-        //                 ((gas_price as f64) * self.gas_price_estimate_multiplier) as u128
-        //             }
-        //         };
+                        ((gas_price as f64) * self.gas_price_estimate_multiplier) as u128
+                    }
+                };
 
-        //         (gas, gas_price)
-        //     }
-        // };
-        let gas = self.gas.unwrap_or_default();
-        let gas_price = self.gas_price.unwrap_or_default();
+                (gas, gas_price)
+            }
+        };
+        // let gas = self.gas.unwrap_or_default();
+        // let gas_price = self.gas_price.unwrap_or_default();
 
         Ok(PreparedDeclarationV3 {
             account: self.account,
@@ -841,6 +844,128 @@ impl RawDeclarationV2 {
 }
 
 impl RawDeclarationV3 {
+    // pub fn calculate_transaction_hash(
+    //     &self, chain_id: Felt, address: Felt, query_only: bool) -> Result<Felt, Box<dyn Error>> {
+    //     let common_fields =
+    //         Self::common_fields_for_hash(&self,PREFIX_DECLARE, chain_id, address)?;
+    //     println!("common_fields {:?}", common_fields);
+    //     let account_deployment_data_hash = poseidon_hash_many(&self.account_deployment_data);
+    
+    //     let fields_to_hash = [
+    //         common_fields.as_slice(),
+    //         &[account_deployment_data_hash],
+    //         &[self.contract_class.class_hash()],
+    //         &[self.compiled_class_hash],
+    //     ]
+    //     .concat();
+    
+    //     let txn_hash = poseidon_hash_many(fields_to_hash.as_slice());
+    //     Ok(txn_hash)
+    // }
+    
+    // /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
+    // fn get_resource_bounds_array(txn: &BroadcastedDeclareTxnV3<Felt>) -> Result<Vec<Felt>, Box<dyn Error>> {
+    //     let mut array = Vec::<Felt>::new();
+    //     array.push(txn.tip);
+    
+    //     array.push(Self::field_element_from_resource_bounds(
+    //         Resource::L1Gas,
+    //         &txn.resource_bounds.l1_gas,
+    //     )?);
+    //     array.push(Self::field_element_from_resource_bounds(
+    //         Resource::L2Gas,
+    //         &txn.resource_bounds.l2_gas,
+    //     )?);
+    //     println!("{:?}", array);
+    
+    //     Ok(array)
+    // }
+    
+    // fn field_element_from_resource_bounds(
+    //     resource: Resource,
+    //     resource_bounds: &ResourceBounds,
+    // ) -> Result<Felt, Box<dyn Error>> {
+    //     let resource_name_as_json_string =
+    //         serde_json::to_value(resource)?;
+    
+    //     // Ensure it's a string and get bytes
+    //     let resource_name_bytes = resource_name_as_json_string
+    //         .as_str()
+    //         .ok_or("Resource name is not a string")? 
+    //         .as_bytes();
+    //     println!("0 {:?}", resource_name_bytes);
+        
+    //     let max_amount_hex_str = resource_bounds.max_amount.as_str().trim_start_matches( "0x");
+    //     let max_amount_u64 = u64::from_str_radix(max_amount_hex_str, 16)?;
+    
+    //     let max_price_per_unit_hex_str = resource_bounds.max_price_per_unit.as_str().trim_start_matches( "0x");
+    //     let max_price_per_unit_u64 = u128::from_str_radix(max_price_per_unit_hex_str, 16)?;
+    
+    
+    //     // println!("1 {}", max_amount_u64);
+    //     // println!("2 {}", max_price_per_unit_u64);
+    //     // (resource||max_amount||max_price_per_unit) from SNIP-8 https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-8.md#protocol-changes
+    //     let bytes: Vec<u8> = [
+    //         resource_name_bytes,
+    //         max_amount_u64.to_be_bytes().as_slice(),
+    //         max_price_per_unit_u64.to_be_bytes().as_slice(),
+    //     ]
+    //     .into_iter()
+    //     .flatten()
+    //     .copied()
+    //     .collect();
+    
+    //     Ok(Felt::from_bytes_be_slice(&bytes))
+    // }
+    
+    // fn common_fields_for_hash(
+    //     &self,
+    //     tx_prefix: Felt,
+    //     chain_id: Felt,
+    //     sender: Felt,
+    //     txn: &BroadcastedDeclareTxnV3<Felt>,
+    // ) -> Result<Vec<Felt>, Box<dyn Error>> {
+    //     // println!("get_resource_bounds_array {:?}", Self::get_resource_bounds_array(txn)?);
+    //     // println!("get_data_availability_modes_field_element {:?}", Self::get_data_availability_modes_field_element(txn));
+    //     let array: Vec<Felt> = vec![
+    //         tx_prefix,                                                   // TX_PREFIX
+    //         Felt::THREE,                                                     // version
+    //         sender,                                                     // address
+    //         // poseidon_hash_many(&[Felt::from_hex_unchecked("0x0"), Felt::from_hex_unchecked("0x4c315f47415300000000000186a0000000000000000000000002540be400"),Felt::from_hex_unchecked("0x4c325f474153000000000000000000000000000000000000000000000000"), ]), /* h(tip, resource_bounds_for_fee) */
+    //         poseidon_hash_many(Self::get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
+    //         poseidon_hash_many(&txn.paymaster_data),                          // h(paymaster_data)
+    //         chain_id,                                                    // chain_id
+    //         self.nonce,                                                       // nonce
+    //         Self::get_data_availability_modes_field_element(txn),                 /* nonce_data_availability ||
+    //                                                                       * fee_data_availability_mode */
+    //     ];
+    
+    //     Ok(array)
+    // }
+    
+    // fn get_data_availability_mode_value_as_u64(
+    //     data_availability_mode: DaMode,
+    // ) -> u64 {
+    //     match data_availability_mode {
+    //         DaMode::L1 => 0,
+    //         DaMode::L2 => 1,
+    //     }
+    // }
+    
+    // /// Returns Felt that encodes the data availability modes of the transaction
+    // fn get_data_availability_modes_field_element(txn: &BroadcastedDeclareTxnV3<Felt>) -> Felt {
+    
+    
+    //     let da_mode = Self::get_data_availability_mode_value_as_u64(txn.nonce_data_availability_mode.clone())
+    //         << DATA_AVAILABILITY_MODE_BITS;
+    //     let da_mode =
+    //         da_mode + Self::get_data_availability_mode_value_as_u64(txn.fee_data_availability_mode.clone());
+    //     Felt::from(da_mode)
+    // }
+    
+    
+
+
     pub fn transaction_hash(&self, chain_id: Felt, address: Felt, query_only: bool) -> Felt {
         let mut hasher = PoseidonHasher::new();
 
@@ -1034,6 +1159,7 @@ where
         skip_signature: bool,
     ) -> Result<BroadcastedDeclareTxnV3<Felt>, AccountError<A::SignError>> {
         Ok(BroadcastedDeclareTxnV3 {
+            // transaction_hash: self.transaction_hash(query_only),
             sender_address: self.account.address(),
             compiled_class_hash: self.inner.compiled_class_hash,
             signature: if skip_signature {
@@ -1048,8 +1174,8 @@ where
             contract_class: self.inner.contract_class.clone(),
             resource_bounds: ResourceBoundsMapping {
                 l1_gas: ResourceBounds {
-                    max_amount: "0x155".to_string(),
-                    max_price_per_unit: "0x174876E800".to_string(),
+                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string()).unwrap().to_hex_string(),        
+                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string()).unwrap().to_hex_string(),
                 },
                 // L2 resources are hard-coded to 0
                 l2_gas: ResourceBounds {
@@ -1068,7 +1194,7 @@ where
             fee_data_availability_mode: DaMode::L1,
             // is_query: query_only,
             type_: Some("DECLARE".to_string()),
-            version: Felt::THREE,
+            // version: Felt::THREE,
         })
     }
 }

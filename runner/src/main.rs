@@ -3,7 +3,7 @@ use args::Args;
 use clap::Parser;
 use colored::*;
 use tracing::error;
-use versions::v7::{rpc::endpoints::test_rpc_endpoints_v0_0_7};
+use versions::v7::rpc::endpoints::test_rpc_endpoints_v0_0_7;
 
 #[tokio::main]
 async fn main() -> Result<(), String> {
