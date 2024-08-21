@@ -79,25 +79,16 @@ fn verify_declare_v2_signature(txn: &BroadcastedDeclareTxnV2<Felt>) -> Result<bo
 }
 
 fn verify_declare_v3_signature(txn: &BroadcastedDeclareTxnV3<Felt>) -> Result<bool, VerifyError> {
-    // let chain_id = Felt::from_hex_unchecked("0x534e5f5345504f4c4941");
+    let chain_id = Felt::from_hex_unchecked("0x534e5f5345504f4c4941");
 
     let stark_key = Felt::from_hex_unchecked(
         "0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b",
     );
-    // let class_hash = class_hash(txn.contract_class.clone());
-    // let msg_hash = calculate_transaction_hash(&chain_id, txn, class_hash).unwrap();
-
-    let chain_id = TESTNET;
-    let class_hash = Felt::from_hex_unchecked("0x5ae9d09292a50ed48c5930904c880dab56e85b825022a7d689cfc9e65e01ee7");
-    // println!("{:?}", class_hash);
+    let class_hash = class_hash(txn.contract_class.clone());
+    let msg_hash = calculate_transaction_v3_hash(&chain_id, txn, class_hash).unwrap();
 
     let r_bytes = txn.signature[0];
     let s_bytes = txn.signature[1];
-
-    let msg_hash = calculate_transaction_hash(&chain_id, txn, class_hash).unwrap();
-
-    println!("HASH: {:?}", msg_hash);
-
 
     verify(&stark_key, &msg_hash, &r_bytes, &s_bytes)
 }
@@ -147,7 +138,7 @@ fn starknet_keccak(data: &[u8]) -> Felt {
     Felt::from_bytes_be(unsafe { &*(hash[..].as_ptr() as *const [u8; 32]) })
 }
 
-fn calculate_transaction_hash(
+fn calculate_transaction_v3_hash(
     chain_id: &Felt,
     txn: &BroadcastedDeclareTxnV3<Felt>,
     class_hash: Felt,
@@ -229,13 +220,11 @@ fn common_fields_for_hash(
     chain_id: Felt,
     txn: &BroadcastedDeclareTxnV3<Felt>,
 ) -> Result<Vec<Felt>, Box<dyn Error>> {
-    println!("get_resource_bounds_array {:?}", get_resource_bounds_array(txn)?);
-    println!("get_data_availability_modes_field_element {:?}", get_data_availability_modes_field_element(txn));
+
     let array: Vec<Felt> = vec![
         tx_prefix,                                                   // TX_PREFIX
         Felt::THREE,                                                     // version
         txn.sender_address,                                                     // address
-        // poseidon_hash_many(&[Felt::from_hex_unchecked("0x0"), Felt::from_hex_unchecked("0x4c315f47415300000000000186a0000000000000000000000002540be400"),Felt::from_hex_unchecked("0x4c325f474153000000000000000000000000000000000000000000000000"), ]), /* h(tip, resource_bounds_for_fee) */
         poseidon_hash_many(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
         poseidon_hash_many(&txn.paymaster_data),                          // h(paymaster_data)
         chain_id,                                                    // chain_id
