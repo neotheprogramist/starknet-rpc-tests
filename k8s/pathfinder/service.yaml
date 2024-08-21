@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pathfinder-service
+spec:
+  type: NodePort
+  selector:
+    name: pathfinder-1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pathfinder-service-2
+spec:
+  type: NodePort
+  selector:
+    name: pathfinder-2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30002
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pathfinder-service-3
+spec:
+  type: NodePort
+  selector:
+    name: pathfinder-3
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30003
