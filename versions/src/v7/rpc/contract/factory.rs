@@ -130,8 +130,8 @@ where
         constructor_calldata: Vec<Felt>,
         salt: Felt,
         unique: bool,
-    ) -> DeploymentV1<A> {
-        self.deploy_v1(constructor_calldata, salt, unique)
+    ) -> DeploymentV3<A> {
+        self.deploy_v3(constructor_calldata, salt, unique)
     }
 }
 

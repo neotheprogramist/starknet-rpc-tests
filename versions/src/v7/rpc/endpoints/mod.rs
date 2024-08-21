@@ -303,21 +303,22 @@ pub async fn test_rpc_endpoints_v0_0_7(
     info!("{}", "⌛ Testing Rpc V6 endpoints -- START ⌛".yellow());
 
     let rpc = Rpc::new(url.clone())?;
-    match rpc.add_declare_transaction_v3(&sierra_path, &casm_path).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc add_declare_transaction COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc add_declare_transaction INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // restart_devnet(url.clone()).await?;
+    // match rpc.add_declare_transaction_v3(&sierra_path, &casm_path).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc add_declare_transaction COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc add_declare_transaction INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
     // restart_devnet(url.clone()).await?;
     // info!("{}", "🔁 Restarting Devnet-------------------------------------------- 🔄".yellow());
     // match rpc.add_invoke_transaction_v1(&sierra_path, &casm_path).await {
@@ -337,24 +338,23 @@ pub async fn test_rpc_endpoints_v0_0_7(
     // }
     // info!("{}", "🔁 Restarting Devnet-------------------------------------------- 🔄".red());
 
-    // restart_devnet(url.clone()).await?;
-    // info!("{}", "🔁 Restarting Devnet-------------------------------------------- 🔄".yellow());
-    // match rpc.add_invoke_transaction_v3(&sierra_path, &casm_path).await {
-    //     Ok(_) => {
-    //         info!(
-    //             "{} {}",
-    //             "✓ Rpc add_invoke_transaction COMPATIBLE".green(),
-    //             "✓".green()
-    //         )
-    //     }
-    //     Err(e) => error!(
-    //         "{} {} {}",
-    //         "✗ Rpc add_invoke_transaction INCOMPATIBLE:".red(),
-    //         e.to_string().red(),
-    //         "✗".red()
-    //     ),
-    // }
-    // info!("{}", "🔁 Restarting Devnet-------------------------------------------- 🔄".red());
+    restart_devnet(url.clone()).await?;
+    info!("{}", "🔁 Restarting Devnet-------------------------------------------- 🔄".yellow());
+    match rpc.add_invoke_transaction_v3(&sierra_path, &casm_path).await {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Rpc add_invoke_transaction COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Rpc add_invoke_transaction INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
 
 
     // match rpc.block_number(url.clone()).await {

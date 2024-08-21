@@ -195,6 +195,8 @@ pub async fn add_declare_transaction_v3(
     let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(
         Felt::from_hex_unchecked("0x71d7bb07b9a64f6f78ac4c816aff4da9"),
     )); //signing_key
+    // let sender_address = create_acc_data.address;
+    // let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
     let mut account = SingleOwnerAccount::new(
         JsonRpcClient::new(HttpTransport::new(url.clone())),

@@ -127,7 +127,6 @@ pub trait Provider {
         simulation_flags: Vec<String>,
         block_id: BlockId<Felt>,
     ) -> Result<FeeEstimate<Felt>, ProviderError> {
-        info!("Estimating fee for a single transaction");
         let mut result = self
             .estimate_fee(vec![request], simulation_flags, block_id)
             .await?;

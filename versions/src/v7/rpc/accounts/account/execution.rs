@@ -461,7 +461,6 @@ where
                 (gas, gas_price)
             }
         };
-
         Ok(PreparedExecutionV3 {
             account: self.account,
             inner: RawExecutionV3 {
@@ -810,8 +809,8 @@ where
             nonce: self.inner.nonce,
             resource_bounds: ResourceBoundsMapping {
                 l1_gas: ResourceBounds {
-                    max_amount: "0".to_string(),
-                    max_price_per_unit: "0".to_string(),
+                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string()).unwrap().to_hex_string(),        
+                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string()).unwrap().to_hex_string(),
                 },
                 // L2 resources are hard-coded to 0
                 l2_gas: ResourceBounds {

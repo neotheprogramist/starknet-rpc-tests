@@ -82,7 +82,6 @@ where
     T: AccountFactory + Sync,
 {
     let deployment = account_factory.deploy_v1(salt);
-
     Ok((deployment.address(), get_deployment_fee(&deployment).await?))
 }
 

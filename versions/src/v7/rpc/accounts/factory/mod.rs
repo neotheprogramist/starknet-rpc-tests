@@ -10,6 +10,7 @@ use starknet_types_rpc::v0_7_1::{
     DeployAccountTxnV1, FeeEstimate, SimulateTransactionsResult, SimulationFlag, SimulationFlagForEstimateFee,
 };
 use starknet_types_rpc::{DaMode, DeployAccountTxnV3, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping};
+use tracing::info;
 
 use crate::v7::rpc::providers::{
     jsonrpc::StarknetError,
@@ -113,9 +114,9 @@ pub trait AccountFactory: Sized {
         AccountDeploymentV1::new(salt, self)
     }
 
-    // fn deploy_v3(&self, salt: Felt) -> AccountDeploymentV3<Self> {
-    //     AccountDeploymentV3::new(salt, self)
-    // }
+    fn deploy_v3(&self, salt: Felt) -> AccountDeploymentV3<Self> {
+        AccountDeploymentV3::new(salt, self)
+    }
 
     #[deprecated = "use version specific variants (`deploy_v1` & `deploy_v3`) instead"]
     fn deploy(&self, salt: Felt) -> AccountDeploymentV1<Self> {
@@ -443,7 +444,7 @@ where
         };
 
         let deploy = prepared
-            .get_deploy_request(true, skip_signature)
+            .get_deploy_request(false, skip_signature)
             .await
             .map_err(AccountFactoryError::Signing)?;
 
@@ -692,7 +693,7 @@ where
             },
         };
         let deploy = prepared
-            .get_deploy_request(true, skip_signature)
+            .get_deploy_request(false, skip_signature)
             .await
             .map_err(AccountFactoryError::Signing)?;
 
@@ -741,7 +742,7 @@ where
             },
         };
         let deploy = prepared
-            .get_deploy_request(true, skip_signature)
+            .get_deploy_request(false, skip_signature)
             .await
             .map_err(AccountFactoryError::Signing)?;
 
@@ -985,7 +986,7 @@ where
                 vec![]
             } else {
                 self.factory
-                    .sign_deployment_v3(&self.inner, query_only)
+                    .sign_deployment_v3(&self.inner, false)
                     .await?
             },
             nonce: self.inner.nonce,
@@ -994,8 +995,8 @@ where
             class_hash: self.factory.class_hash(),
             resource_bounds: ResourceBoundsMapping {
                 l1_gas: ResourceBounds {
-                    max_amount: "0".to_string(),
-                    max_price_per_unit: "0".to_string(),
+                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string()).unwrap().to_hex_string(),        
+                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string()).unwrap().to_hex_string(),
                 },
                 // L2 resources are hard-coded to 0
                 l2_gas: ResourceBounds {
@@ -1004,13 +1005,15 @@ where
                 },
             },
             // Fee market has not been been activated yet so it's hard-coded to be 0
-            tip: 0,
+            tip: Felt::ZERO,
             // Hard-coded empty `paymaster_data`
             paymaster_data: vec![],
             // Hard-coded L1 DA mode for nonce and fee
             nonce_data_availability_mode: DaMode::L1,
             fee_data_availability_mode: DaMode::L1,
             // is_query: query_only,
+            type_: Some("DEPLOY_ACCOUNT".to_string()),
+
         })
     }
 }

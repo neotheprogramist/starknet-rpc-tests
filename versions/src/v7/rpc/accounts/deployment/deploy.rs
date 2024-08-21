@@ -28,7 +28,7 @@ pub async fn deploy_account(
         tracing::warn!("Account already deployed!");
         return Ok(Felt::ZERO);
     }
-
+    info!("Deploying account with public key: {:?}", account_data.signing_key.verifying_key());
     let public_key = account_data.signing_key.verifying_key();
 
     let address = match account_data.account_type {
