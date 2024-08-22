@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pathfinder-service-1
+spec:
+  type: NodePort
+  selector:
+    name: pathfinder-1
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30001
+    - name: monitor
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+      nodePort: 30011
+    - name: rpc
+      protocol: TCP
+      port: 9545
+      targetPort: 9545
+      nodePort: 30021
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pathfinder-service-2
+spec:
+  type: NodePort
+  selector:
+    name: pathfinder-2
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30002
+    - name: monitor
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+      nodePort: 30012
+    - name: rpc
+      protocol: TCP
+      port: 9545
+      targetPort: 9545
+      nodePort: 30022
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pathfinder-service-3
+spec:
+  type: NodePort
+  selector:
+    name: pathfinder-3
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: 30003
+    - name: monitor
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+      nodePort: 30013
+    - name: rpc
+      protocol: TCP
+      port: 9545
+      targetPort: 9545
+      nodePort: 30023
