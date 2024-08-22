@@ -98,8 +98,8 @@ async fn deploy_account<T>(
 ) -> Result<Felt, CreationError>
 where
     T: AccountFactory + Sync,
-{
-    let deployment = account_factory.deploy_v1(salt);
+{   
+    let deployment = account_factory.deploy_v3(salt);
     let deploy_max_fee = if let Some(max_fee) = max_fee {
         max_fee
     } else {
@@ -108,7 +108,7 @@ where
             Err(error) => return Err(CreationError::RpcError(error.to_string())),
         }
     };
-    let result = deployment.max_fee(deploy_max_fee).send().await.unwrap();
+    let result = deployment.send().await.unwrap();
 
     Ok(result.transaction_hash)
 }

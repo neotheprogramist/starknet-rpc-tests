@@ -92,7 +92,7 @@ where
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
         let tx_hash = PreparedAccountDeploymentV3::from_raw(deployment.clone(), self)
-            .transaction_hash(query_only);
+            .transaction_hash(false);
         let signature = self.signer.sign_hash(&tx_hash).await?;
 
         Ok(vec![signature.r, signature.s])

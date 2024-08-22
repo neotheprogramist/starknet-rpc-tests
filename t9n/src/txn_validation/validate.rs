@@ -94,12 +94,14 @@ pub fn validate_txn_json(file_path: &str) -> SerdeResult<()> {
                 }
 
             }
-            "0X3" => {
+            "0x3" => {
                 let txn: DeployAccountTxnV3<Felt> = from_value(value)?;
-                println!(
-                    "{:?}",
-                    verify_deploy_account_signature(DeployAccountTxn::V3(txn))
-                );
+                match verify_deploy_account_signature(DeployAccountTxn::V3(txn))
+                {
+                    Ok(true) => println!("Signature is valid"),
+                    Ok(false) => return Err(serde_json::Error::custom("Signature is invalid")),
+                    Err(e) => println!("Verification error: {:?}", e),
+                }
             }
             _ => return Err(serde_json::Error::custom("Unsupported version")),
         },

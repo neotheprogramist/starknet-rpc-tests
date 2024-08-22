@@ -3,7 +3,7 @@ use reqwest::{Client, StatusCode};
 use thiserror::Error;
 use url::Url;
 
-use crate::v7::rpc::accounts::creation::structs::{MintRequest, MintResponse};
+use crate::v7::rpc::accounts::creation::structs::{MintRequest, MintRequest2, MintResponse};
 
 #[derive(Error, Debug)]
 pub enum MintError {
@@ -25,7 +25,7 @@ pub enum MintError {
     JoinUrlError(#[from] url::ParseError),
 }
 
-pub async fn mint(base_url: Url, mint_request: &MintRequest) -> Result<MintResponse, MintError> {
+pub async fn mint(base_url: Url, mint_request: &MintRequest2) -> Result<MintResponse, MintError> {
     let mint_url = match base_url.join("mint") {
         Ok(url) => url,
         Err(e) => return Err(MintError::JoinUrlError(e)),

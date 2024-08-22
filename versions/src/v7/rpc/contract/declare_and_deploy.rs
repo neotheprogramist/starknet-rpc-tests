@@ -1,4 +1,4 @@
-use starknet_types_rpc::v0_7_1::{BlockId, BlockTag};
+use starknet_types_rpc::{v0_7_1::{BlockId, BlockTag}, PriceUnit};
 
 use url::Url;
 
@@ -7,7 +7,7 @@ use crate::v7::rpc::{
         creation::{
             create::{create_account, AccountType},
             helpers::get_chain_id,
-            structs::MintRequest,
+            structs::{MintRequest, MintRequest2},
         },
         deployment::{
             deploy::deploy_account,
@@ -37,9 +37,10 @@ pub async fn decalare_and_deploy(
 
     match mint(
         url.clone(),
-        &MintRequest {
+        &MintRequest2 {
             amount: u128::MAX,
             address: create_acc_data.address,
+            unit: PriceUnit::Fri
         },
     )
     .await

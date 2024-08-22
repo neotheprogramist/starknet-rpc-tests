@@ -66,7 +66,6 @@ fn calculate_invoke_v3_transaction_hash(
     txn: &InvokeTxnV3<Felt>,
 ) -> Result<Felt, Box<dyn Error>> {
     let common_fields = common_fields_for_hash(PREFIX_INVOKE, *chain_id, txn)?;
-    println!("common_fields {:?}", common_fields);
     let account_deployment_data_hash = poseidon_hash_many(&txn.account_deployment_data);
 
     let call_data_hash = poseidon_hash_many(&txn.calldata);
@@ -97,7 +96,6 @@ fn get_resource_bounds_array(
         Resource::L2Gas,
         &txn.resource_bounds.l2_gas,
     )?);
-    println!("{:?}", array);
 
     Ok(array)
 }
@@ -113,7 +111,6 @@ fn field_element_from_resource_bounds(
         .as_str()
         .ok_or("Resource name is not a string")?
         .as_bytes();
-    println!("0 {:?}", resource_name_bytes);
 
     let max_amount_hex_str = resource_bounds.max_amount.as_str().trim_start_matches("0x");
     let max_amount_u64 = u64::from_str_radix(max_amount_hex_str, 16)?;

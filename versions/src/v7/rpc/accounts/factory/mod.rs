@@ -119,8 +119,8 @@ pub trait AccountFactory: Sized {
     }
 
     #[deprecated = "use version specific variants (`deploy_v1` & `deploy_v3`) instead"]
-    fn deploy(&self, salt: Felt) -> AccountDeploymentV1<Self> {
-        self.deploy_v1(salt)
+    fn deploy(&self, salt: Felt) -> AccountDeploymentV3<Self> {
+        self.deploy_v3(salt)
     }
 }
 
@@ -906,7 +906,7 @@ where
 
         hasher.update(PREFIX_DEPLOY_ACCOUNT);
         hasher.update(if query_only {
-            QUERY_VERSION_THREE
+            Felt::THREE
         } else {
             Felt::THREE
         });

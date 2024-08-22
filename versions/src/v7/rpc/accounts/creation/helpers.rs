@@ -1,7 +1,7 @@
 use crate::v7::rpc::{
     accounts::{
         errors::CreationError,
-        factory::{open_zeppelin::OpenZeppelinAccountFactory, AccountDeploymentV1, AccountFactory},
+        factory::{open_zeppelin::OpenZeppelinAccountFactory, AccountDeploymentV3, AccountFactory},
     },
     providers::{
         jsonrpc::{HttpTransport, JsonRpcClient, StarknetError},
@@ -81,12 +81,12 @@ async fn get_address_and_deployment_fee<T>(
 where
     T: AccountFactory + Sync,
 {
-    let deployment = account_factory.deploy_v1(salt);
+    let deployment = account_factory.deploy_v3(salt);
     Ok((deployment.address(), get_deployment_fee(&deployment).await?))
 }
 
 async fn get_deployment_fee<'a, T>(
-    account_deployment: &AccountDeploymentV1<'a, T>,
+    account_deployment: &AccountDeploymentV3<'a, T>,
 ) -> Result<FeeEstimate<Felt>, String>
 where
     T: AccountFactory + Sync,

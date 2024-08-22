@@ -19,7 +19,7 @@ use crate::v7::rpc::{
         creation::{
             create::{create_account, AccountType},
             helpers::get_chain_id,
-            structs::MintRequest,
+            structs::{MintRequest, MintRequest2},
         },
         deployment::{
             deploy::deploy_account,
@@ -61,21 +61,21 @@ pub async fn add_declare_transaction_v2(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -150,53 +150,72 @@ pub async fn add_declare_transaction_v3(
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
-    // let create_acc_data =
-    //     match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
-    //         Ok(value) => value,
-    //         Err(e) => {
-    //             warn!("{}", "Could not create an account");
-    //             return Err(e.into());
-    //         }
-    //     };
+    let create_acc_data =
+        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+            Ok(value) => value,
+            Err(e) => {
+                warn!("{}", "Could not create an account");
+                return Err(e.into());
+            }
+        };
 
-    // match mint(
-    //     url.clone(),
-    //     &MintRequest {
-    //         amount: u128::MAX,
-    //         address: create_acc_data.address,
-    //     },
-    // )
-    // .await
-    // {
-    //     Ok(response) => {}
-    //     Err(e) => {
-    //         info!("{}", "Could not mint tokens");
-    //         return Err(e.into());
-    //     }
-    // };
 
-    // let wait_conifg = WaitForTx {
-    //     wait: true,
-    //     wait_params: ValidatedWaitParams::default(),
-    // };
+        match mint(
+            url.clone(),
+            &MintRequest2 {
+                amount: u128::MAX,
+                address: create_acc_data.address,
+                unit: PriceUnit::Fri,
+            },
+        )
+        .await
+        {
+            Ok(response) => {info!("{:?}", response);}
+            Err(e) => {
+                info!("{}", "Could not mint tokens");
+                return Err(e.into());
+            }
+        };
+
+        match mint(
+            url.clone(),
+            &MintRequest2 {
+                amount: u128::MAX,
+                address: create_acc_data.address,
+                unit: PriceUnit::Wei,
+            },
+        )
+        .await
+        {
+            Ok(response) => {info!("{:?}", response);}
+            Err(e) => {
+                info!("{}", "Could not mint tokens");
+                return Err(e.into());
+            }
+        };
+
+    let wait_conifg = WaitForTx {
+        wait: true,
+        wait_params: ValidatedWaitParams::default(),
+    };
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    // match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-    //     Ok(value) => Some(value),
-    //     Err(e) => {
-    //         info!("{}", "Could not deploy an account");
-    //         return Err(e.into());
-    //     }
-    // };
-    let sender_address = Felt::from_hex_unchecked(
-        "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-    );
-    let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(
-        Felt::from_hex_unchecked("0x71d7bb07b9a64f6f78ac4c816aff4da9"),
-    )); //signing_key
-    // let sender_address = create_acc_data.address;
-    // let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
+    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+        Ok(value) => Some(value),
+        Err(e) => {
+            info!("{}", "Could not deploy an account");
+            return Err(e.into());
+        }
+    };
+    // let sender_address = Felt::from_hex_unchecked(
+    //     "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+    // );
+    // let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(
+    //     Felt::from_hex_unchecked("0x71d7bb07b9a64f6f78ac4c816aff4da9"),
+    // )); //signing_key
+    let sender_address = create_acc_data.address;
+    let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
     let mut account = SingleOwnerAccount::new(
         JsonRpcClient::new(HttpTransport::new(url.clone())),
@@ -525,21 +544,21 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -679,21 +698,21 @@ pub async fn estimate_message_fee(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -913,21 +932,21 @@ pub async fn get_transaction_status_succeeded(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1070,21 +1089,21 @@ pub async fn get_transaction_by_hash_invoke(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1206,21 +1225,21 @@ pub async fn get_transaction_by_hash_deploy_acc(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1296,21 +1315,21 @@ pub async fn get_transaction_receipt(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1438,21 +1457,21 @@ pub async fn get_transaction_receipt_revert(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1581,21 +1600,21 @@ pub async fn get_class(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1711,21 +1730,21 @@ pub async fn get_class_hash_at(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1860,21 +1879,21 @@ pub async fn get_class_at(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-        },
-    )
-    .await
-    {
-        Ok(response) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    // match mint(
+    //     url.clone(),
+    //     &MintRequest {
+    //         amount: u128::MAX,
+    //         address: create_acc_data.address,
+    //     },
+    // )
+    // .await
+    // {
+    //     Ok(response) => {}
+    //     Err(e) => {
+    //         info!("{}", "Could not mint tokens");
+    //         return Err(e.into());
+    //     }
+    // };
 
     let wait_conifg = WaitForTx {
         wait: true,

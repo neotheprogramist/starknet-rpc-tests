@@ -117,7 +117,7 @@ pub trait Account: ExecutionEncoder + Sized {
     // #[deprecated = "use version specific variants (`execute_v1` & `execute_v3`) instead"]
     // fn execute(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
     //     self.execute_v1(calls)
-    // }
+    // }    
 
     fn declare_v2(
         &self,

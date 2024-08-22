@@ -145,7 +145,6 @@ fn calculate_transaction_v3_hash(
 ) -> Result<Felt, Box<dyn Error>> {
     let common_fields =
         common_fields_for_hash(PREFIX_DECLARE, *chain_id, txn)?;
-    println!("common_fields {:?}", common_fields);
     let account_deployment_data_hash = poseidon_hash_many(&txn.account_deployment_data);
 
     let fields_to_hash = [
@@ -173,7 +172,6 @@ fn get_resource_bounds_array(txn: &BroadcastedDeclareTxnV3<Felt>) -> Result<Vec<
         Resource::L2Gas,
         &txn.resource_bounds.l2_gas,
     )?);
-    println!("{:?}", array);
 
     Ok(array)
 }
@@ -190,7 +188,6 @@ fn field_element_from_resource_bounds(
         .as_str()
         .ok_or("Resource name is not a string")? 
         .as_bytes();
-    println!("0 {:?}", resource_name_bytes);
     
     let max_amount_hex_str = resource_bounds.max_amount.as_str().trim_start_matches( "0x");
     let max_amount_u64 = u64::from_str_radix(max_amount_hex_str, 16)?;
@@ -198,9 +195,6 @@ fn field_element_from_resource_bounds(
     let max_price_per_unit_hex_str = resource_bounds.max_price_per_unit.as_str().trim_start_matches( "0x");
     let max_price_per_unit_u64 = u128::from_str_radix(max_price_per_unit_hex_str, 16)?;
 
-
-    println!("1 {}", max_amount_u64);
-    println!("2 {}", max_price_per_unit_u64);
     // (resource||max_amount||max_price_per_unit) from SNIP-8 https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-8.md#protocol-changes
     let bytes: Vec<u8> = [
         resource_name_bytes,
