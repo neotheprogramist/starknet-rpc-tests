@@ -1,0 +1,19 @@
+{
+    "block_hash": "0x3762785aa3eb38d2608f86c41a5e6b0d5f113ad394c452211b39acba8926ab1",
+	"block_number": 671380,
+	"l1_da_mode": "BLOB",
+	"l1_data_gas_price": {
+		"price_in_fri": "0x1ab7",
+		"price_in_wei": "0x1"
+	},
+	"l1_gas_price": {
+		"price_in_fri": "0x288041b6b723",
+		"price_in_wei": "0x18418c35c"
+	},
+	"new_root": "0x5902c7e5e7e76fe4d74420951084e7d7ff6b7941574c9020666039e3a4b0b3f",
+	"parent_hash": "0x662fe6e1dd3840fe17f9964a39497357d44d6082ac301900569d7b3e497d519",
+	"sequencer_address": "0x1176a1bd84444c89232ec27754698e5d2e7e1a7f1539f12027f28b23ec9f3d8",
+	"starknet_version": "0.13.1.1",
+	"status": "ACCEPTED_ON_L2",
+	"timestamp": 1724684529
+}

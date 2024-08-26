@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["runner", "t8n", "t9n", "versions"]
+members = [ "b11r","runner", "t8n", "t9n", "versions"]
 
 [workspace.package]
 edition = "2021"
