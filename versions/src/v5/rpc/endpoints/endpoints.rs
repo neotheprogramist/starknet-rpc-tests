@@ -150,48 +150,48 @@ pub async fn add_invoke_transaction(
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
-    // let create_acc_data =
-    //     match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
-    //         Ok(value) => value,
-    //         Err(e) => {
-    //             info!("{}", "Could not create an account");
-    //             return Err(e.into());
-    //         }
-    //     };
+    let create_acc_data =
+        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not create an account");
+                return Err(e.into());
+            }
+        };
 
-    // match mint(
-    //     url.clone(),
-    //     &MintRequest {
-    //         amount: u128::MAX,
-    //         address: create_acc_data.address,
-    //     },
-    // )
-    // .await
-    // {
-    //     Ok(response) => {}
-    //     Err(e) => {
-    //         info!("{}", "Could not mint tokens");
-    //         return Err(e.into());
-    //     }
-    // };
+    match mint(
+        url.clone(),
+        &MintRequest {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+        },
+    )
+    .await
+    {
+        Ok(response) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-    // let wait_conifg = WaitForTx {
-    //     wait: true,
-    //     wait_params: ValidatedWaitParams::default(),
-    // };
+    let wait_conifg = WaitForTx {
+        wait: true,
+        wait_params: ValidatedWaitParams::default(),
+    };
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    // match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-    //     Ok(value) => Some(value),
-    //     Err(e) => {
-    //         info!("{}", "Could not deploy an account");
-    //         return Err(e.into());
-    //     }
-    // };
-    //Felt::felt_from_hex
-    let sender_address = Felt::from_hex_unchecked("0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691");
-    let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(Felt::from_hex_unchecked("0x71d7bb07b9a64f6f78ac4c816aff4da9")));//signing_key
+    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+        Ok(value) => Some(value),
+        Err(e) => {
+            info!("{}", "Could not deploy an account");
+            return Err(e.into());
+        }
+    };
+    
+    let sender_address = create_acc_data.address;
+    let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
     let mut account = SingleOwnerAccount::new(
         JsonRpcClient::new(HttpTransport::new(url.clone())),
