@@ -7,7 +7,7 @@ fn main() {
     let block = build_block_tx_hashes(
         "b11r/testdata/header.json",
         "b11r/testdata/txs.json",
-        BlockStatus::Pending,
+        BlockStatus::AcceptedOnL2,
     )
     .unwrap();
 
