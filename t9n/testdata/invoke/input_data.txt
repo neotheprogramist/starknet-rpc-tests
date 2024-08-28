@@ -1,0 +1,2 @@
+- public_key = "0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b"
+- chain_id = "0x534e5f5345504f4c4941"

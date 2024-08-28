@@ -1,0 +1,16 @@
+{
+    "type": "DEPLOY_ACCOUNT",
+    "version": "0x1",
+    "class_hash": "0xabcdefabcdefabcdefabcdefabcdefabcde",
+    "constructor_calldata": [
+        "0x1234567890abcdef",
+        "0xabcdef1234567890"
+    ],
+    "contract_address_salt": "0x0000000000000001",
+    "max_fee": "0x10000000000000000000000000000000",
+    "nonce": "0x01",
+    "signature": [
+        "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    ]
+}
