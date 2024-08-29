@@ -1,7 +1,0 @@
-deploy_acc_txn_v1.json
-- public_key = "0x539751391da90f5789033ecf54ba0bdb4cbad7f92068418e22951e9973c05ea"
-- chain_id = "0x534e5f5345504f4c4941"
-
-deploy_acc_txn_v3.json
-- public_key = "0x6ac091f93bebf5d88f4905415d9878ad2c1892e8b4a72fa3c3a497df76f3bb0"
-- chain_id = "0x534e5f5345504f4c4941"

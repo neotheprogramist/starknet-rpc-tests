@@ -5190,6 +5190,7 @@ dependencies = [
 name = "t9n"
 version = "0.1.0"
 dependencies = [
+ "clap",
  "hex",
  "serde",
  "serde_json",
