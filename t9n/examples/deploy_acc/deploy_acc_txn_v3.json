@@ -1,0 +1,25 @@
+{
+    "version": "0x3",
+    "class_hash": "0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
+    "constructor_calldata": [
+        "0x6ac091f93bebf5d88f4905415d9878ad2c1892e8b4a72fa3c3a497df76f3bb0"
+    ],
+    "contract_address_salt": "0x7cf0e1ccc6d7c56e",
+    "fee_data_availability_mode": "L1",
+    "nonce": "0x0",
+    "nonce_data_availability_mode": "L1",
+    "paymaster_data": [],
+    "resource_bounds": {
+        "l1_gas": {
+            "max_amount": "0x1c9",
+            "max_price_per_unit": "0x22ecb25c00"
+        },
+        "l2_gas": { "max_amount": "0", "max_price_per_unit": "0" }
+    },
+    "signature": [
+        "0x7af33e61d33effd2245a005d474f28a33eea4ac542d0fc6607f50437129b748",
+        "0x60a83f97bf23d0630a98078556ab4983bf7754614d072dd4e62572d7b42c6b"
+    ],
+    "tip": "0x0",
+    "type": "DEPLOY_ACCOUNT"
+}

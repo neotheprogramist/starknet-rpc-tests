@@ -1,0 +1,13 @@
+[package]
+name = "t9n"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+starknet-types-core.workspace = true
+starknet-types-rpc.workspace = true
+hex = "0.4.3"
+sha3.workspace = true
+clap.workspace = true
