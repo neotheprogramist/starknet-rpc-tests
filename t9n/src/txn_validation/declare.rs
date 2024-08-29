@@ -1,13 +1,13 @@
-use std::error::Error; 
-use super::constants::{PREFIX_CONTRACT_CLASS_V0_1_0, PREFIX_DECLARE, DATA_AVAILABILITY_MODE_BITS,};
+use super::constants::{DATA_AVAILABILITY_MODE_BITS, PREFIX_CONTRACT_CLASS_V0_1_0, PREFIX_DECLARE};
 use sha3::{Digest, Keccak256};
 use starknet_types_core::curve::*;
 use starknet_types_core::{
     felt::{Felt, NonZeroFelt},
     hash::{poseidon_hash_many, PoseidonHasher},
 };
-use starknet_types_rpc::v0_7_1::SierraEntryPoint;
 use starknet_types_rpc::v0_7_1::starknet_api_openrpc::*;
+use starknet_types_rpc::v0_7_1::SierraEntryPoint;
+use std::error::Error;
 
 // 2 ** 251 - 256
 const ADDR_BOUND: NonZeroFelt = NonZeroFelt::from_raw([
@@ -17,10 +17,12 @@ const ADDR_BOUND: NonZeroFelt = NonZeroFelt::from_raw([
     18446743986131443745,
 ]);
 
-
-pub fn verify_declare_v2_signature(txn: &BroadcastedDeclareTxnV2<Felt>, public_key: &str, chain_id_input: &str) -> Result<bool, VerifyError> {
+pub fn verify_declare_v2_signature(
+    txn: &BroadcastedDeclareTxnV2<Felt>,
+    public_key: &str,
+    chain_id_input: &str,
+) -> Result<(bool, Felt), VerifyError> {
     let chain_id = Felt::from_hex_unchecked(chain_id_input);
-
     let stark_key = Felt::from_hex_unchecked(public_key);
 
     let msg_hash = compute_hash_on_elements(&[
@@ -38,21 +40,30 @@ pub fn verify_declare_v2_signature(txn: &BroadcastedDeclareTxnV2<Felt>, public_k
     let r_bytes = txn.signature[0];
     let s_bytes = txn.signature[1];
 
-    verify(&stark_key, &msg_hash, &r_bytes, &s_bytes)
+    match verify(&stark_key, &msg_hash, &r_bytes, &s_bytes) {
+        Ok(is_valid) => Ok((is_valid, msg_hash)),
+        Err(e) => Err(e), 
+    }
 }
 
-pub fn verify_declare_v3_signature(txn: &BroadcastedDeclareTxnV3<Felt>, public_key: &str, chain_id_input: &str) -> Result<bool, VerifyError> {
+pub fn verify_declare_v3_signature(
+    txn: &BroadcastedDeclareTxnV3<Felt>,
+    public_key: &str,
+    chain_id_input: &str,
+) -> Result<(bool, Felt), VerifyError> {
     let chain_id = Felt::from_hex_unchecked(chain_id_input);
-
     let stark_key = Felt::from_hex_unchecked(public_key);
-    
+
     let class_hash = class_hash(txn.contract_class.clone());
     let msg_hash = calculate_transaction_v3_hash(&chain_id, txn, class_hash).unwrap();
 
     let r_bytes = txn.signature[0];
     let s_bytes = txn.signature[1];
 
-    verify(&stark_key, &msg_hash, &r_bytes, &s_bytes)
+    match verify(&stark_key, &msg_hash, &r_bytes, &s_bytes) {
+        Ok(is_valid) => Ok((is_valid, msg_hash)),
+        Err(e) => Err(e),
+    }
 }
 
 fn class_hash(contract_class: ContractClass<Felt>) -> Felt {
@@ -105,8 +116,7 @@ fn calculate_transaction_v3_hash(
     txn: &BroadcastedDeclareTxnV3<Felt>,
     class_hash: Felt,
 ) -> Result<Felt, Box<dyn Error>> {
-    let common_fields =
-        common_fields_for_hash(PREFIX_DECLARE, *chain_id, txn)?;
+    let common_fields = common_fields_for_hash(PREFIX_DECLARE, *chain_id, txn)?;
     let account_deployment_data_hash = poseidon_hash_many(&txn.account_deployment_data);
 
     let fields_to_hash = [
@@ -122,7 +132,9 @@ fn calculate_transaction_v3_hash(
 }
 
 /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
-fn get_resource_bounds_array(txn: &BroadcastedDeclareTxnV3<Felt>) -> Result<Vec<Felt>, Box<dyn Error>> {
+fn get_resource_bounds_array(
+    txn: &BroadcastedDeclareTxnV3<Felt>,
+) -> Result<Vec<Felt>, Box<dyn Error>> {
     let mut array = Vec::<Felt>::new();
     array.push(txn.tip);
 
@@ -142,19 +154,21 @@ fn field_element_from_resource_bounds(
     resource: Resource,
     resource_bounds: &ResourceBounds,
 ) -> Result<Felt, Box<dyn Error>> {
-    let resource_name_as_json_string =
-        serde_json::to_value(resource)?;
+    let resource_name_as_json_string = serde_json::to_value(resource)?;
 
     // Ensure it's a string and get bytes
     let resource_name_bytes = resource_name_as_json_string
         .as_str()
-        .ok_or("Resource name is not a string")? 
+        .ok_or("Resource name is not a string")?
         .as_bytes();
-    
-    let max_amount_hex_str = resource_bounds.max_amount.as_str().trim_start_matches( "0x");
+
+    let max_amount_hex_str = resource_bounds.max_amount.as_str().trim_start_matches("0x");
     let max_amount_u64 = u64::from_str_radix(max_amount_hex_str, 16)?;
 
-    let max_price_per_unit_hex_str = resource_bounds.max_price_per_unit.as_str().trim_start_matches( "0x");
+    let max_price_per_unit_hex_str = resource_bounds
+        .max_price_per_unit
+        .as_str()
+        .trim_start_matches("0x");
     let max_price_per_unit_u64 = u128::from_str_radix(max_price_per_unit_hex_str, 16)?;
 
     // (resource||max_amount||max_price_per_unit) from SNIP-8 https://github.com/starknet-io/SNIPs/blob/main/SNIPS/snip-8.md#protocol-changes
@@ -176,25 +190,22 @@ fn common_fields_for_hash(
     chain_id: Felt,
     txn: &BroadcastedDeclareTxnV3<Felt>,
 ) -> Result<Vec<Felt>, Box<dyn Error>> {
-
     let array: Vec<Felt> = vec![
-        tx_prefix,                                                   // TX_PREFIX
-        Felt::THREE,                                                     // version
-        txn.sender_address,                                                     // address
+        tx_prefix,                                                      // TX_PREFIX
+        Felt::THREE,                                                    // version
+        txn.sender_address,                                             // address
         poseidon_hash_many(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
-        poseidon_hash_many(&txn.paymaster_data),                          // h(paymaster_data)
-        chain_id,                                                    // chain_id
-        txn.nonce,                                                       // nonce
-        get_data_availability_modes_field_element(txn),                 /* nonce_data_availability ||
-                                                                      * fee_data_availability_mode */
+        poseidon_hash_many(&txn.paymaster_data),                        // h(paymaster_data)
+        chain_id,                                                       // chain_id
+        txn.nonce,                                                      // nonce
+        get_data_availability_modes_field_element(txn), /* nonce_data_availability ||
+                                                         * fee_data_availability_mode */
     ];
 
     Ok(array)
 }
 
-fn get_data_availability_mode_value_as_u64(
-    data_availability_mode: DaMode,
-) -> u64 {
+fn get_data_availability_mode_value_as_u64(data_availability_mode: DaMode) -> u64 {
     match data_availability_mode {
         DaMode::L1 => 0,
         DaMode::L2 => 1,
@@ -203,12 +214,9 @@ fn get_data_availability_mode_value_as_u64(
 
 /// Returns Felt that encodes the data availability modes of the transaction
 fn get_data_availability_modes_field_element(txn: &BroadcastedDeclareTxnV3<Felt>) -> Felt {
-
-
     let da_mode = get_data_availability_mode_value_as_u64(txn.nonce_data_availability_mode.clone())
         << DATA_AVAILABILITY_MODE_BITS;
     let da_mode =
         da_mode + get_data_availability_mode_value_as_u64(txn.fee_data_availability_mode.clone());
     Felt::from(da_mode)
 }
-

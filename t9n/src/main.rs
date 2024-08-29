@@ -17,7 +17,11 @@ struct Args {
 fn main() {
     let args = Args::parse();
     match validate_txn_json(&args.file_path, &args.public_key, &args.chain_id) {
-        Ok(_) => println!("JSON is valid"),
-        Err(e) => println!("Validation error: {}", e),
+        Ok(json_result) => {
+            println!("Validation successful: {}", json_result);
+        }
+        Err(e) => {
+            println!("Validation error: {}", e);
+        }
     }
 }
