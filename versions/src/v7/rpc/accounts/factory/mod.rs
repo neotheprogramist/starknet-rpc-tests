@@ -7,9 +7,13 @@ use starknet_types_core::hash::PoseidonHasher;
 use starknet_types_core::{curve::compute_hash_on_elements, felt::NonZeroFelt};
 use starknet_types_rpc::v0_7_1::{
     BlockId, BlockTag, BroadcastedDeployAccountTxn, BroadcastedTxn, ContractAndTxnHash,
-    DeployAccountTxnV1, FeeEstimate, SimulateTransactionsResult, SimulationFlag, SimulationFlagForEstimateFee,
+    DeployAccountTxnV1, FeeEstimate, SimulateTransactionsResult, SimulationFlag,
+    SimulationFlagForEstimateFee,
 };
-use starknet_types_rpc::{DaMode, DeployAccountTxnV3, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping};
+use starknet_types_rpc::{
+    DaMode, DeployAccountTxnV3, MaybePendingBlockWithTxHashes, ResourceBounds,
+    ResourceBoundsMapping,
+};
 
 use crate::v7::rpc::providers::{
     jsonrpc::StarknetError,
@@ -345,7 +349,9 @@ where
         }
     }
 
-    pub async fn estimate_fee(&self) -> Result<FeeEstimate<Felt>, AccountFactoryError<F::SignError>> {
+    pub async fn estimate_fee(
+        &self,
+    ) -> Result<FeeEstimate<Felt>, AccountFactoryError<F::SignError>> {
         // Resolves nonce
         let nonce = match self.nonce {
             Some(value) => value,
@@ -376,7 +382,9 @@ where
             .await
     }
 
-    pub async fn send(&self) -> Result<ContractAndTxnHash<Felt>, AccountFactoryError<F::SignError>> {
+    pub async fn send(
+        &self,
+    ) -> Result<ContractAndTxnHash<Felt>, AccountFactoryError<F::SignError>> {
         self.prepare().await?.send().await
     }
 
@@ -534,7 +542,9 @@ where
         }
     }
 
-    pub async fn estimate_fee(&self) -> Result<FeeEstimate<Felt>, AccountFactoryError<F::SignError>> {
+    pub async fn estimate_fee(
+        &self,
+    ) -> Result<FeeEstimate<Felt>, AccountFactoryError<F::SignError>> {
         // Resolves nonce
         let nonce = match self.nonce {
             Some(value) => value,
@@ -565,7 +575,9 @@ where
             .await
     }
 
-    pub async fn send(&self) -> Result<ContractAndTxnHash<Felt>, AccountFactoryError<F::SignError>> {
+    pub async fn send(
+        &self,
+    ) -> Result<ContractAndTxnHash<Felt>, AccountFactoryError<F::SignError>> {
         self.prepare().await?.send().await
     }
 
@@ -596,7 +608,6 @@ where
                     .get_block_with_tx_hashes(self.factory.block_id())
                     .await
                     .map_err(AccountFactoryError::Provider)?;
-
 
                 let block_l1_gas_price = match block_result {
                     MaybePendingBlockWithTxHashes::Block(block) => {
@@ -699,9 +710,7 @@ where
         self.factory
             .provider()
             .estimate_fee_single(
-                BroadcastedTxn::DeployAccount(BroadcastedDeployAccountTxn::V3(
-                    deploy,
-                )),
+                BroadcastedTxn::DeployAccount(BroadcastedDeployAccountTxn::V3(deploy)),
                 if skip_signature {
                     // Validation would fail since real signature was not requested
                     vec![]
@@ -758,9 +767,7 @@ where
             .provider()
             .simulate_transaction(
                 self.factory.block_id(),
-                BroadcastedTxn::DeployAccount(BroadcastedDeployAccountTxn::V3(
-                    deploy,
-                )),
+                BroadcastedTxn::DeployAccount(BroadcastedDeployAccountTxn::V3(deploy)),
                 flags,
             )
             .await
@@ -847,7 +854,9 @@ where
         ])
     }
 
-    pub async fn send(&self) -> Result<ContractAndTxnHash<Felt>, AccountFactoryError<F::SignError>> {
+    pub async fn send(
+        &self,
+    ) -> Result<ContractAndTxnHash<Felt>, AccountFactoryError<F::SignError>> {
         let tx_request = self
             .get_deploy_request(false, false)
             .await
@@ -904,11 +913,7 @@ where
         let mut hasher = PoseidonHasher::new();
 
         hasher.update(PREFIX_DEPLOY_ACCOUNT);
-        hasher.update(if query_only {
-            Felt::THREE
-        } else {
-            Felt::THREE
-        });
+        hasher.update(if query_only { Felt::THREE } else { Felt::THREE });
         hasher.update(self.address());
 
         hasher.update({
@@ -984,9 +989,7 @@ where
             signature: if skip_signature {
                 vec![]
             } else {
-                self.factory
-                    .sign_deployment_v3(&self.inner, false)
-                    .await?
+                self.factory.sign_deployment_v3(&self.inner, false).await?
             },
             nonce: self.inner.nonce,
             contract_address_salt: self.inner.salt,
@@ -994,8 +997,12 @@ where
             class_hash: self.factory.class_hash(),
             resource_bounds: ResourceBoundsMapping {
                 l1_gas: ResourceBounds {
-                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string()).unwrap().to_hex_string(),        
-                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string()).unwrap().to_hex_string(),
+                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string())
+                        .unwrap()
+                        .to_hex_string(),
+                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string())
+                        .unwrap()
+                        .to_hex_string(),
                 },
                 // L2 resources are hard-coded to 0
                 l2_gas: ResourceBounds {
@@ -1012,7 +1019,6 @@ where
             fee_data_availability_mode: DaMode::L1,
             // is_query: query_only,
             type_: Some("DEPLOY_ACCOUNT".to_string()),
-
         })
     }
 }

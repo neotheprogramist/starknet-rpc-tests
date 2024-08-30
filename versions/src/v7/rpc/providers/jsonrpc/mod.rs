@@ -16,8 +16,8 @@ use starknet_types_rpc::v0_7_1::{
     TraceBlockTransactionsResult, TraceTransactionParams, TransactionTrace, Txn,
     TxnFinalityAndExecutionStatus, TxnHash, TxnReceipt,
 };
-use tracing::info;
 use std::{any::Any, error::Error, fmt::Display};
+use tracing::info;
 
 use super::provider::{Provider, ProviderError, ProviderImplError};
 use starknet_types_core::felt::Felt as FeltPrimitive;
@@ -369,7 +369,10 @@ where
     }
 
     /// Get the number of transactions in a block given a block id
-    async fn get_block_transaction_count(&self, block_id: BlockId<FeltPrimitive>) -> Result<u64, ProviderError> {
+    async fn get_block_transaction_count(
+        &self,
+        block_id: BlockId<FeltPrimitive>,
+    ) -> Result<u64, ProviderError> {
         self.send_request(
             JsonRpcMethod::GetBlockTransactionCount,
             GetBlockTransactionCountParams { block_id },
@@ -428,7 +431,9 @@ where
     }
 
     /// Get the most recent accepted block hash and number
-    async fn block_hash_and_number(&self) -> Result<BlockHashAndNumber<FeltPrimitive>, ProviderError> {
+    async fn block_hash_and_number(
+        &self,
+    ) -> Result<BlockHashAndNumber<FeltPrimitive>, ProviderError> {
         self.send_request(
             JsonRpcMethod::BlockHashAndNumber,
             BlockHashAndNumberParams {},
@@ -494,7 +499,6 @@ where
         &self,
         declare_transaction: BroadcastedDeclareTxn<FeltPrimitive>,
     ) -> Result<ClassAndTxnHash<FeltPrimitive>, ProviderError> {
-
         self.send_request(
             JsonRpcMethod::AddDeclareTransaction,
             AddDeclareTransactionParams {
@@ -565,27 +569,40 @@ where
         )
         .await
     }
-    
-    #[doc = " Same as [estimate_fee], but only with one estimate."]
-    async fn estimate_fee_single(&self,request:BroadcastedTxn<FeltPrimitive> ,simulation_flags:Vec<String> ,block_id:BlockId<FeltPrimitive>) -> Result<FeeEstimate<FeltPrimitive> ,ProviderError>{
-    info!("Estimating fee for a single transaction");
-    let mut result = self.estimate_fee(vec![request],simulation_flags,block_id).await?;
 
-    if result.len()==1 {
-        Ok(result.pop().unwrap())
-    }else {
-        Err(ProviderError::ArrayLengthMismatch)
+    #[doc = " Same as [estimate_fee], but only with one estimate."]
+    async fn estimate_fee_single(
+        &self,
+        request: BroadcastedTxn<FeltPrimitive>,
+        simulation_flags: Vec<String>,
+        block_id: BlockId<FeltPrimitive>,
+    ) -> Result<FeeEstimate<FeltPrimitive>, ProviderError> {
+        let mut result = self
+            .estimate_fee(vec![request], simulation_flags, block_id)
+            .await?;
+
+        if result.len() == 1 {
+            Ok(result.pop().unwrap())
+        } else {
+            Err(ProviderError::ArrayLengthMismatch)
+        }
     }
-    }
-    
+
     #[doc = " Same as [simulate_transactions], but only with one simulation."]
-    async fn simulate_transaction(&self,block_id:BlockId<FeltPrimitive> ,transaction:BroadcastedTxn<FeltPrimitive> ,simulation_flags:Vec<SimulationFlag> ,) -> Result<SimulateTransactionsResult<FeltPrimitive> ,ProviderError>{
-    let mut result = self.simulate_transactions(block_id,vec![transaction],simulation_flags).await? ;
-    if result.len()==1 {
-        Ok(result.pop().unwrap())
-    }else {
-        Err(ProviderError::ArrayLengthMismatch)
-    }
+    async fn simulate_transaction(
+        &self,
+        block_id: BlockId<FeltPrimitive>,
+        transaction: BroadcastedTxn<FeltPrimitive>,
+        simulation_flags: Vec<SimulationFlag>,
+    ) -> Result<SimulateTransactionsResult<FeltPrimitive>, ProviderError> {
+        let mut result = self
+            .simulate_transactions(block_id, vec![transaction], simulation_flags)
+            .await?;
+        if result.len() == 1 {
+            Ok(result.pop().unwrap())
+        } else {
+            Err(ProviderError::ArrayLengthMismatch)
+        }
     }
 }
 
@@ -611,8 +628,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                     .map_err(error_mapper)?,
             ),
             JsonRpcMethod::GetBlockWithTxHashes => JsonRpcRequestData::GetBlockWithTxHashes(
-                serde_json::from_value::<GetBlockWithTxHashesParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<GetBlockWithTxHashesParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
             JsonRpcMethod::GetBlockWithTxs => JsonRpcRequestData::GetBlockWithTxs(
                 serde_json::from_value::<GetBlockWithTxsParams<FeltPrimitive>>(raw_request.params)
@@ -627,12 +646,16 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                     .map_err(error_mapper)?,
             ),
             JsonRpcMethod::GetTransactionStatus => JsonRpcRequestData::GetTransactionStatus(
-                serde_json::from_value::<GetTransactionStatusParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<GetTransactionStatusParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
             JsonRpcMethod::GetTransactionByHash => JsonRpcRequestData::GetTransactionByHash(
-                serde_json::from_value::<GetTransactionByHashParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<GetTransactionByHashParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
             JsonRpcMethod::GetTransactionByBlockIdAndIndex => {
                 JsonRpcRequestData::GetTransactionByBlockIdAndIndex(
@@ -643,8 +666,10 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                 )
             }
             JsonRpcMethod::GetTransactionReceipt => JsonRpcRequestData::GetTransactionReceipt(
-                serde_json::from_value::<GetTransactionReceiptParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<GetTransactionReceiptParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
             JsonRpcMethod::GetClass => JsonRpcRequestData::GetClass(
                 serde_json::from_value::<GetClassParams<FeltPrimitive>>(raw_request.params)
@@ -660,20 +685,25 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
             ),
             JsonRpcMethod::GetBlockTransactionCount => {
                 JsonRpcRequestData::GetBlockTransactionCount(
-                    serde_json::from_value::<GetBlockTransactionCountParams<FeltPrimitive>>(raw_request.params)
-                        .map_err(error_mapper)?,
+                    serde_json::from_value::<GetBlockTransactionCountParams<FeltPrimitive>>(
+                        raw_request.params,
+                    )
+                    .map_err(error_mapper)?,
                 )
             }
             JsonRpcMethod::Call => JsonRpcRequestData::Call(
-                serde_json::from_value::<CallParams<FeltPrimitive>>(raw_request.params).map_err(error_mapper)?,
+                serde_json::from_value::<CallParams<FeltPrimitive>>(raw_request.params)
+                    .map_err(error_mapper)?,
             ),
             JsonRpcMethod::EstimateFee => JsonRpcRequestData::EstimateFee(
                 serde_json::from_value::<EstimateFeeParams<FeltPrimitive>>(raw_request.params)
                     .map_err(error_mapper)?,
             ),
             JsonRpcMethod::EstimateMessageFee => JsonRpcRequestData::EstimateMessageFee(
-                serde_json::from_value::<EstimateMessageFeeParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<EstimateMessageFeeParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
             JsonRpcMethod::BlockNumber => JsonRpcRequestData::BlockNumber(
                 serde_json::from_value::<BlockNumberParams>(raw_request.params)
@@ -700,17 +730,23 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                     .map_err(error_mapper)?,
             ),
             JsonRpcMethod::AddInvokeTransaction => JsonRpcRequestData::AddInvokeTransaction(
-                serde_json::from_value::<AddInvokeTransactionParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<AddInvokeTransactionParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
             JsonRpcMethod::AddDeclareTransaction => JsonRpcRequestData::AddDeclareTransaction(
-                serde_json::from_value::<AddDeclareTransactionParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<AddDeclareTransactionParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
             JsonRpcMethod::AddDeployAccountTransaction => {
                 JsonRpcRequestData::AddDeployAccountTransaction(
-                    serde_json::from_value::<AddDeployAccountTransactionParams<FeltPrimitive>>(raw_request.params)
-                        .map_err(error_mapper)?,
+                    serde_json::from_value::<AddDeployAccountTransactionParams<FeltPrimitive>>(
+                        raw_request.params,
+                    )
+                    .map_err(error_mapper)?,
                 )
             }
             JsonRpcMethod::TraceTransaction => JsonRpcRequestData::TraceTransaction(
@@ -718,12 +754,16 @@ impl<'de> Deserialize<'de> for JsonRpcRequest {
                     .map_err(error_mapper)?,
             ),
             JsonRpcMethod::SimulateTransactions => JsonRpcRequestData::SimulateTransactions(
-                serde_json::from_value::<SimulateTransactionsParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<SimulateTransactionsParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
             JsonRpcMethod::TraceBlockTransactions => JsonRpcRequestData::TraceBlockTransactions(
-                serde_json::from_value::<TraceBlockTransactionsParams<FeltPrimitive>>(raw_request.params)
-                    .map_err(error_mapper)?,
+                serde_json::from_value::<TraceBlockTransactionsParams<FeltPrimitive>>(
+                    raw_request.params,
+                )
+                .map_err(error_mapper)?,
             ),
         };
 

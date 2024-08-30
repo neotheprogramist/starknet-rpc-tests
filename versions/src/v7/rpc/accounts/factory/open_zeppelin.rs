@@ -4,7 +4,10 @@ use crate::v7::rpc::signers::signer::Signer;
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_7_1::{BlockId, BlockTag};
 
-use super::{AccountFactory, PreparedAccountDeploymentV1, PreparedAccountDeploymentV3, RawAccountDeploymentV1, RawAccountDeploymentV3};
+use super::{
+    AccountFactory, PreparedAccountDeploymentV1, PreparedAccountDeploymentV3,
+    RawAccountDeploymentV1, RawAccountDeploymentV3,
+};
 
 pub struct OpenZeppelinAccountFactory<S, P> {
     class_hash: Felt,
@@ -91,8 +94,8 @@ where
         deployment: &RawAccountDeploymentV3,
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
-        let tx_hash = PreparedAccountDeploymentV3::from_raw(deployment.clone(), self)
-            .transaction_hash(false);
+        let tx_hash =
+            PreparedAccountDeploymentV3::from_raw(deployment.clone(), self).transaction_hash(false);
         let signature = self.signer.sign_hash(&tx_hash).await?;
 
         Ok(vec![signature.r, signature.s])

@@ -10,11 +10,11 @@ use starknet_types_rpc::v0_7_1::{
     ClassAndTxnHash, ContractClass, FeeEstimate, SimulateTransactionsResult, SimulationFlag,
 };
 use starknet_types_rpc::{
-    DaMode, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping
+    DaMode, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping,
 };
-use tracing::info;
-use tracing::error;
 use std::sync::Arc;
+use tracing::error;
+use tracing::info;
 
 use super::{
     Account, AccountError, ConnectedAccount, DeclarationV2, DeclarationV3, PreparedDeclarationV2,
@@ -29,7 +29,6 @@ const PREFIX_DECLARE: Felt = Felt::from_raw([
     17542456862011667323,
 ]);
 
-
 /// 2 ^ 128 + 2
 const QUERY_VERSION_TWO: Felt = Felt::from_raw([
     576460752142433232,
@@ -37,8 +36,6 @@ const QUERY_VERSION_TWO: Felt = Felt::from_raw([
     17407,
     18446744073700081601,
 ]);
-
-
 
 impl<'a, A> DeclarationV2<'a, A> {
     pub fn new(
@@ -373,7 +370,6 @@ where
 
     async fn prepare(&self) -> Result<PreparedDeclarationV3<'a, A>, AccountError<A::SignError>> {
         // Resolves nonce
-        info!("Before nonce");
         let nonce = match self.nonce {
             Some(value) => value,
             None => self
@@ -382,8 +378,7 @@ where
                 .await
                 .map_err(AccountError::Provider)?,
         };
-        info!("After nonce");
-        info!("Before gas and gas_price");
+
         // Resolves fee settings
         let (gas, gas_price) = match (self.gas, self.gas_price) {
             (Some(gas), Some(gas_price)) => (gas, gas_price),
@@ -419,13 +414,10 @@ where
                 let gas_price =
                     ((block_l1_gas_price as f64) * self.gas_price_estimate_multiplier) as u128;
                 (gas, gas_price)
-
             }
             // We have to perform fee estimation as long as gas is not specified
             _ => {
-                info!("test gas1");
                 let fee_estimate = self.estimate_fee_with_nonce(nonce).await?;
-                info!("test gas2");
 
                 let gas = match self.gas {
                     Some(gas) => gas,
@@ -449,7 +441,6 @@ where
                     }
                 };
 
-
                 let gas_price = match self.gas_price {
                     Some(gas_price) => gas_price,
                     None => {
@@ -467,8 +458,6 @@ where
                 (gas, gas_price)
             }
         };
-        // let gas = self.gas.unwrap_or_default();
-        // let gas_price = self.gas_price.unwrap_or_default();
 
         Ok(PreparedDeclarationV3 {
             account: self.account,
@@ -499,36 +488,27 @@ where
         };
 
         let declare = prepared.get_declare_request(true, skip_signature).await?;
-        info!("Before account");
 
-        let result = self.account
-        .provider()
-        .estimate_fee_single(
-            BroadcastedTxn::Declare(BroadcastedDeclareTxn::V3(declare)),
-            if skip_signature {
-                // Validation would fail since real signature was not requested
-                vec![]
-            } else {
-                // With the correct signature in place, run validation for accurate results
-                vec![]
-            },
-            self.account.block_id(),
-        )
-        .await;
-    
-    match result {
-        Ok(fee_estimate) => {
-            // Log the successful result
-            info!("Fee estimation succeeded: {:?}", fee_estimate);
-            Ok(fee_estimate) // Return the result or handle it as needed
-        },
-        Err(e) => {
-            // Log the error
-            error!("Fee estimation failed: {:?}", e);
-            Err(AccountError::Provider(e))
-        },
-    }
-            
+        let result = self
+            .account
+            .provider()
+            .estimate_fee_single(
+                BroadcastedTxn::Declare(BroadcastedDeclareTxn::V3(declare)),
+                if skip_signature {
+                    // Validation would fail since real signature was not requested
+                    vec![]
+                } else {
+                    // With the correct signature in place, run validation for accurate results
+                    vec![]
+                },
+                self.account.block_id(),
+            )
+            .await;
+
+        match result {
+            Ok(fee_estimate) => Ok(fee_estimate),
+            Err(e) => Err(AccountError::Provider(e)),
+        }
     }
 
     async fn simulate_with_nonce(
@@ -831,11 +811,7 @@ impl RawDeclarationV3 {
         let mut hasher = PoseidonHasher::new();
 
         hasher.update(PREFIX_DECLARE);
-        hasher.update(if query_only {
-            Felt::THREE
-        } else {
-            Felt::THREE
-        });
+        hasher.update(if query_only { Felt::THREE } else { Felt::THREE });
         hasher.update(address);
 
         hasher.update({
@@ -1034,8 +1010,12 @@ where
             contract_class: self.inner.contract_class.clone(),
             resource_bounds: ResourceBoundsMapping {
                 l1_gas: ResourceBounds {
-                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string()).unwrap().to_hex_string(),        
-                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string()).unwrap().to_hex_string(),
+                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string())
+                        .unwrap()
+                        .to_hex_string(),
+                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string())
+                        .unwrap()
+                        .to_hex_string(),
                 },
                 // L2 resources are hard-coded to 0
                 l2_gas: ResourceBounds {

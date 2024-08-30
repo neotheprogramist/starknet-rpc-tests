@@ -497,21 +497,21 @@ where
 //         };
 //         let declare = prepared.get_declare_request(true, skip_signature).await?;
 
-//         self.account
-//             .provider()
-//             .estimate_fee_single(
-//                 BroadcastedTransaction::Declare(BroadcastedDeclareTransaction::V3(declare)),
-//                 if skip_signature {
-//                     // Validation would fail since real signature was not requested
-//                     vec![SimulationFlagForEstimateFee::SkipValidate]
-//                 } else {
-//                     // With the correct signature in place, run validation for accurate results
-//                     vec![]
-//                 },
-//                 self.account.block_id(),
-//             )
-//             .await
-//             .map_err(AccountError::Provider)
+        // self.account
+        //     .provider()
+        //     .estimate_fee_single(
+        //         BroadcastedTransaction::Declare(BroadcastedDeclareTransaction::V3(declare)),
+        //         if skip_signature {
+        //             // Validation would fail since real signature was not requested
+        //             vec![SimulationFlagForEstimateFee::SkipValidate]
+        //         } else {
+        //             // With the correct signature in place, run validation for accurate results
+        //             vec![]
+        //         },
+        //         self.account.block_id(),
+        //     )
+        //     .await
+        //     .map_err(AccountError::Provider)
 //     }
 
 //     async fn simulate_with_nonce(

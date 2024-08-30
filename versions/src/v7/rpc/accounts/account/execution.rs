@@ -9,7 +9,8 @@ use starknet_types_rpc::{
 use tracing::info;
 
 use crate::v7::rpc::{
-    accounts::{call::Call, errors::NotPreparedError}, providers::provider::Provider,
+    accounts::{call::Call, errors::NotPreparedError},
+    providers::provider::Provider,
 };
 use starknet_types_core::curve::compute_hash_on_elements;
 
@@ -807,8 +808,12 @@ where
             nonce: self.inner.nonce,
             resource_bounds: ResourceBoundsMapping {
                 l1_gas: ResourceBounds {
-                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string()).unwrap().to_hex_string(),        
-                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string()).unwrap().to_hex_string(),
+                    max_amount: Felt::from_dec_str(&self.inner.gas.to_string())
+                        .unwrap()
+                        .to_hex_string(),
+                    max_price_per_unit: Felt::from_dec_str(&self.inner.gas_price.to_string())
+                        .unwrap()
+                        .to_hex_string(),
                 },
                 // L2 resources are hard-coded to 0
                 l2_gas: ResourceBounds {

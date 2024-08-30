@@ -126,7 +126,6 @@ pub trait Provider {
         simulation_flags: Vec<String>,
         block_id: BlockId<Felt>,
     ) -> Result<FeeEstimate<Felt>, ProviderError> {
-
         let mut result = self
             .estimate_fee(vec![request], simulation_flags, block_id)
             .await?;
@@ -157,7 +156,9 @@ pub trait Provider {
     fn chain_id(&self) -> impl std::future::Future<Output = Result<Felt, ProviderError>>;
 
     /// Returns an object about the sync status, or false if the node is not synching
-    fn syncing(&self) -> impl std::future::Future<Output = Result<SyncingStatus<Felt>, ProviderError>>;
+    fn syncing(
+        &self,
+    ) -> impl std::future::Future<Output = Result<SyncingStatus<Felt>, ProviderError>>;
 
     /// Returns all events matching the given filter
     fn get_events(

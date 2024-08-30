@@ -1,0 +1,16 @@
+{
+  "name": "starknet-rpc-tests",
+  "workspaces": [
+    "t8n",
+    "t9n",
+    "versions"
+  ],
+  "scripts": {
+    "prettier:check": "npx prettier --plugin=prettier-plugin-toml --check '**/*.{js,jsx,ts,tsx,json,css,scss,yaml,toml,md}'"
+  },
+  "devDependencies": {
+    "prettier": "3.3.3",
+    "prettier-plugin-toml": "^2.0.1",
+    "tailwindcss": "3.4.10"
+  }
+}

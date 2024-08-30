@@ -1,5 +1,5 @@
 [package]
-name = "cairo_contracts"
+name = "contracts"
 version.workspace = true
 edition.workspace = true
 

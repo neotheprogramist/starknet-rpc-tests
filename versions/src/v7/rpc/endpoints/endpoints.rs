@@ -3,12 +3,16 @@ use std::sync::Arc;
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::{v0_7_1::{
-    AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, ContractClass,
-    DeployAccountTxn, DeployAccountTxnV1, DeployTxnReceipt, FeeEstimate, FunctionCall, InvokeTxn,
-    InvokeTxnV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-    PriceUnit, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
-}, MsgFromL1};
+use starknet_types_rpc::{
+    v0_7_1::{
+        AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs,
+        ContractClass, DeployAccountTxn, DeployAccountTxnV1, DeployAccountTxnV3, DeployTxnReceipt, FeeEstimate,
+        FunctionCall, InvokeTxn, InvokeTxnV1, MaybePendingBlockWithTxHashes,
+        MaybePendingBlockWithTxs, MaybePendingStateUpdate, PriceUnit, StateUpdate, Txn,
+        TxnExecutionStatus, TxnReceipt, TxnStatus,
+    },
+    MsgFromL1,
+};
 
 use tracing::{info, warn};
 use url::Url;
@@ -71,7 +75,7 @@ pub async fn add_declare_transaction_v2(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -88,7 +92,7 @@ pub async fn add_declare_transaction_v2(
     )
     .await
     {
-        Ok(response) => {}
+        Ok(_) => {}
         Err(e) => {
             info!("{}", "Could not mint tokens");
             return Err(e.into());
@@ -177,40 +181,39 @@ pub async fn add_declare_transaction_v3(
             }
         };
 
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
-
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -300,39 +303,39 @@ pub async fn add_invoke_transaction_v1(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -441,39 +444,39 @@ pub async fn add_invoke_transaction_v3(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -508,8 +511,6 @@ pub async fn add_invoke_transaction_v3(
     );
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
-
-    info!("--------------------------------test1");
 
     let hash = match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
@@ -547,7 +548,6 @@ pub async fn add_invoke_transaction_v3(
             ))))
         }
     };
-    info!("--------------------------------test2");
     match hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account);
@@ -598,39 +598,39 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -770,39 +770,39 @@ pub async fn estimate_message_fee(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -915,16 +915,15 @@ pub async fn estimate_message_fee(
     //     _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     // }
 
-    let estimate = provider
-        .estimate_message_fee(
-            MsgFromL1 {
-                from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-                to_address: receipt.contract_address,
-                entry_point_selector: get_selector_from_name("get_balance").unwrap(),
-                payload: vec![],
-            },
-            BlockId::Tag(BlockTag::Latest),
-        );
+    let estimate = provider.estimate_message_fee(
+        MsgFromL1 {
+            from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+            to_address: receipt.contract_address,
+            entry_point_selector: get_selector_from_name("get_balance").unwrap(),
+            payload: vec![],
+        },
+        BlockId::Tag(BlockTag::Latest),
+    );
     // TODO:
     Ok(FeeEstimate::<Felt> {
         gas_consumed: Felt::ZERO,
@@ -1021,39 +1020,39 @@ pub async fn get_transaction_status_succeeded(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1196,39 +1195,39 @@ pub async fn get_transaction_by_hash_invoke(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1338,7 +1337,7 @@ pub async fn get_transaction_by_hash_invoke(
 
 pub async fn get_transaction_by_hash_deploy_acc(
     url: Url,
-) -> Result<DeployAccountTxnV1<Felt>, RpcError> {
+) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
@@ -1350,39 +1349,39 @@ pub async fn get_transaction_by_hash_deploy_acc(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1403,7 +1402,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
     let txn = provider.get_transaction_by_hash(txn_hash).await.unwrap();
 
     let txn = match txn {
-        Txn::DeployAccount(DeployAccountTxn::V1(tx)) => tx,
+        Txn::DeployAccount(DeployAccountTxn::V3(tx)) => tx,
         _ => panic!("unexpected tx response type"),
     };
 
@@ -1458,39 +1457,39 @@ pub async fn get_transaction_receipt(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1524,7 +1523,7 @@ pub async fn get_transaction_receipt(
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
 
     let hash = match account
-        .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
+        .declare_v3(flattened_sierra_class, compiled_class_hash)
         .send()
         .await
     {
@@ -1618,39 +1617,39 @@ pub async fn get_transaction_receipt_revert(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1727,8 +1726,8 @@ pub async fn get_transaction_receipt_revert(
             rng.fill_bytes(&mut salt_buffer[1..]);
 
             let result = factory
-                .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("1").unwrap())
+                .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
+                // .max_fee(Felt::from_dec_str("1").unwrap())
                 .send()
                 .await
                 .unwrap();
@@ -1779,39 +1778,39 @@ pub async fn get_class(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1927,39 +1926,39 @@ pub async fn get_class_hash_at(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -2094,39 +2093,39 @@ pub async fn get_class_at(
             }
         };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
-        match mint(
-            url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Wei,
-            },
-        )
-        .await
-        {
-            Ok(response) => {info!("{:?}", response);}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
+    match mint(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
 
     let wait_conifg = WaitForTx {
         wait: true,

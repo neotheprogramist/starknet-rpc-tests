@@ -1,4 +1,7 @@
-use starknet_types_rpc::{v0_7_1::{BlockId, BlockTag}, PriceUnit};
+use starknet_types_rpc::{
+    v0_7_1::{BlockId, BlockTag},
+    PriceUnit,
+};
 
 use url::Url;
 
@@ -40,7 +43,7 @@ pub async fn decalare_and_deploy(
         &MintRequest2 {
             amount: u128::MAX,
             address: create_acc_data.address,
-            unit: PriceUnit::Fri
+            unit: PriceUnit::Fri,
         },
     )
     .await

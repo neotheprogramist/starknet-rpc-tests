@@ -1,18 +1,8 @@
 pub mod txn_validation;
-use txn_validation::validate::validate_txn_json;
+mod args;
+use args::Args;
 use clap::Parser;
-
-#[derive(Parser)]
-struct Args {
-    #[arg(short, long)]
-    file_path: String,
-
-    #[arg(short, long)]
-    public_key: String,
-
-    #[arg(short, long)]
-    chain_id: String,
-}
+use txn_validation::validate::validate_txn_json;
 
 fn main() {
     let args = Args::parse();

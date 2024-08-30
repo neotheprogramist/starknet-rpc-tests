@@ -6,7 +6,10 @@ use starknet_types_rpc::v0_7_1::{BlockId, BlockTag};
 use tracing::info;
 
 use super::{
-    account::{Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3, RawExecutionV1, RawExecutionV3},
+    account::{
+        Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3,
+        RawExecutionV1, RawExecutionV3,
+    },
     call::Call,
     errors::ComputeClassHashError,
 };

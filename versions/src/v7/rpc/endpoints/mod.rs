@@ -6,19 +6,20 @@ pub mod utils;
 
 use colored::*;
 use endpoints::{
-    add_declare_transaction_v2, add_declare_transaction_v3, add_invoke_transaction_v1, add_invoke_transaction_v3, block_number, call, chain_id,
-    estimate_message_fee, get_block_transaction_count, get_block_with_tx_hashes,
-    get_block_with_txs, get_class, get_class_at, get_class_hash_at, get_state_update,
-    get_storage_at, get_transaction_by_block_id_and_index, get_transaction_by_hash_deploy_acc,
+    add_declare_transaction_v2, add_declare_transaction_v3, add_invoke_transaction_v1,
+    add_invoke_transaction_v3, block_number, call, chain_id, estimate_message_fee,
+    get_block_transaction_count, get_block_with_tx_hashes, get_block_with_txs, get_class,
+    get_class_at, get_class_hash_at, get_state_update, get_storage_at,
+    get_transaction_by_block_id_and_index, get_transaction_by_hash_deploy_acc,
     get_transaction_by_hash_invoke, get_transaction_by_hash_non_existent_tx,
     get_transaction_receipt, get_transaction_status_succeeded,
 };
 use errors::RpcError;
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_7_1::{
-    AddInvokeTransactionResult, BlockWithTxHashes, BlockWithTxs, ContractClass, DeployAccountTxnV1,
+use starknet_types_rpc::{v0_7_1::{
+    AddInvokeTransactionResult, BlockWithTxHashes, BlockWithTxs, ContractClass, DeployAccountTxnV1, DeployAccountTxnV3,
     DeployTxnReceipt, FeeEstimate, InvokeTxnV1, StateUpdate, TxnStatus,
-};
+}};
 
 use tracing::{error, info};
 use url::Url;
@@ -59,7 +60,6 @@ pub trait RpcEndpoints {
         casm_path: &str,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
 
-
     async fn block_number(&self, url: Url) -> Result<u64, RpcError>;
 
     async fn chain_id(&self, url: Url) -> Result<Felt, RpcError>;
@@ -80,7 +80,8 @@ pub trait RpcEndpoints {
 
     async fn get_block_transaction_count(&self, url: Url) -> Result<u64, RpcError>;
 
-    async fn get_block_with_tx_hashes(&self, url: Url) -> Result<BlockWithTxHashes<Felt>, RpcError>;
+    async fn get_block_with_tx_hashes(&self, url: Url)
+        -> Result<BlockWithTxHashes<Felt>, RpcError>;
 
     async fn get_block_with_txs(&self, url: Url) -> Result<BlockWithTxs<Felt>, RpcError>;
 
@@ -105,7 +106,7 @@ pub trait RpcEndpoints {
     async fn get_transaction_by_hash_deploy_acc(
         &self,
         url: Url,
-    ) -> Result<DeployAccountTxnV1<Felt>, RpcError>;
+    ) -> Result<DeployAccountTxnV3<Felt>, RpcError>;
 
     async fn get_transaction_by_block_id_and_index(
         &self,
@@ -206,7 +207,10 @@ impl RpcEndpoints for Rpc {
         get_block_transaction_count(url.clone()).await
     }
 
-    async fn get_block_with_tx_hashes(&self, url: Url) -> Result<BlockWithTxHashes<Felt>, RpcError> {
+    async fn get_block_with_tx_hashes(
+        &self,
+        url: Url,
+    ) -> Result<BlockWithTxHashes<Felt>, RpcError> {
         get_block_with_tx_hashes(url.clone()).await
     }
 
@@ -243,7 +247,7 @@ impl RpcEndpoints for Rpc {
     async fn get_transaction_by_hash_deploy_acc(
         &self,
         url: Url,
-    ) -> Result<DeployAccountTxnV1<Felt>, RpcError> {
+    ) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
         get_transaction_by_hash_deploy_acc(url.clone()).await
     }
 
@@ -336,7 +340,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
     restart_devnet(url.clone()).await?;
-    info!("{}", "🔁 Restarting Devnet-------------------------------------------- 🔄".yellow());
     match rpc.add_invoke_transaction_v3(&sierra_path, &casm_path).await {
         Ok(_) => {
             info!(
@@ -378,7 +381,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
     //     ),
     // }
 
-    
     // NOT WORKING
     // restart_devnet(url.clone()).await?;
     // match rpc.call(url.clone(), sierra_path, casm_path).await {
@@ -412,6 +414,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
     //         "✗ Rpc estimate_message_fee INCOMPATIBLE:".red(),
     //         e.to_string().red(),
     //     ),
+    //  }
     // match rpc.get_block_transaction_count(url.clone()).await {
     //     Ok(_) => {
     //         info!(
@@ -527,8 +530,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
     //         "✗".red()
     //     ),
     // }
-    
-    // NOT WORKING
+
     // match rpc.get_transaction_by_hash_deploy_acc(url.clone()).await {
     //     Ok(_) => {
     //         info!(
@@ -557,7 +559,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
     //     ),
     // }
 
-
     // restart_devnet(url.clone()).await?;
     // match rpc
     //     .get_transaction_by_hash_non_existent_tx(url.clone())
@@ -579,6 +580,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
     // }
 
     //  NOT WORKING
+    // restart_devnet(url.clone()).await?;
     // match rpc
     //     .get_transaction_receipt(url.clone(), &sierra_path, &casm_path)
     //     .await
@@ -620,10 +622,10 @@ pub async fn test_rpc_endpoints_v0_0_7(
     //         )
     //     }
     //     Err(e) => error!(
-    //         "{} {} {}",
+    //         "{} {}",
     //         "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
-    //         "✗".red()
-
+    //         "✗".red())
+    // }
     // NOT WORKING
     // restart_devnet(url.clone()).await?;
 
@@ -641,7 +643,9 @@ pub async fn test_rpc_endpoints_v0_0_7(
     //     Err(e) => error!(
     //         "{} {} {}",
     //         "✗ Rpc get_class_at INCOMPATIBLE:".red(),
-    //         e.to_string().red(),
+    //         e.to_string().red(),)
+    // }
+
     info!("{}", "🏁 Testing Devnet V7 endpoints -- END 🏁".yellow());
 
     Ok(())

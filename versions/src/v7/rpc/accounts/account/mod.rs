@@ -58,8 +58,6 @@ pub enum CairoShortStringToFeltError {
     StringTooLong,
 }
 pub trait Account: ExecutionEncoder + Sized {
-
-
     type SignError: Error + Send + Sync;
 
     fn address(&self) -> Felt;
@@ -90,8 +88,6 @@ pub trait Account: ExecutionEncoder + Sized {
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError>;
 
-
-
     // async fn sign_legacy_declaration(
     //     &self,
     //     legacy_declaration: &RawLegacyDeclaration,
@@ -117,7 +113,7 @@ pub trait Account: ExecutionEncoder + Sized {
     // #[deprecated = "use version specific variants (`execute_v1` & `execute_v3`) instead"]
     // fn execute(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
     //     self.execute_v1(calls)
-    // }    
+    // }
 
     fn declare_v2(
         &self,

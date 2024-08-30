@@ -257,7 +257,9 @@ where
         execution.simulate(skip_validate, skip_fee_charge).await
     }
 
-    pub async fn send(&self) -> Result<AddInvokeTransactionResult<Felt>, AccountError<A::SignError>> {
+    pub async fn send(
+        &self,
+    ) -> Result<AddInvokeTransactionResult<Felt>, AccountError<A::SignError>> {
         let execution: ExecutionV1<A> = self.into();
 
         execution.send().await
@@ -282,7 +284,9 @@ where
         execution.simulate(skip_validate, skip_fee_charge).await
     }
 
-    pub async fn send(&self) -> Result<AddInvokeTransactionResult<Felt>, AccountError<A::SignError>> {
+    pub async fn send(
+        &self,
+    ) -> Result<AddInvokeTransactionResult<Felt>, AccountError<A::SignError>> {
         let execution: ExecutionV3<A> = self.into();
         execution.send().await
     }
