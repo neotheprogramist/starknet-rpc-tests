@@ -14,7 +14,6 @@ Before running the `t8n` tool, you need to set up the necessary environment vari
 - `TXNS_PATH`: Path to the JSON file containing the list of transactions to be processed.
 - `STATE_PATH`: Path to the JSON file where the resulting state will be stored after processing the transactions.
 
-
 ### Example Configuration in `.cargo/config.toml`
 
 ```toml
@@ -22,3 +21,4 @@ Before running the `t8n` tool, you need to set up the necessary environment vari
 TXNS_PATH = "t8n/src/starknet/input/txns.json"
 STATE_PATH = "t8n/src/starknet/output/state.json"
 ACC_PATH = "t8n/src/starknet/input/acc.json"
+```

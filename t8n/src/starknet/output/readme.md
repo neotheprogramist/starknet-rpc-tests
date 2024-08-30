@@ -14,7 +14,8 @@ touch state.json
 
 Next, add the path to this file to your environment variable named `STATE_PATH` in the `.cargo/config.toml` file. This will ensure that the t8n tool can locate and use the state.json file.
 
-It shall look like this: 
+It shall look like this:
+
 ```rust
 STATE_PATH = /path/to/the/file
 ```
