@@ -17,7 +17,7 @@ cargo run --bin checker -- --url http://127.0.0.1:5050/ --sierra-path target/dev
 
 ## Overview
 
-The `t8n` tool is designed to process transactions and manage state changes in the Starknet ecosystem. It reads input transactions from a JSON file, processes them, and outputs the resulting state to another JSON file. The tool is flexible and can be configured using environment variables to point to the necessary input and output files.\
+The `t8n` tool is designed to process transactions and manage state changes in the Starknet ecosystem. It reads input transactions from a JSON file, processes them, and outputs the resulting state to another JSON file. The tool is flexible and can be configured using environment variables to point to the necessary input and output files. 
 
 For more details, see [t8n](./t8n/README.md)
 
