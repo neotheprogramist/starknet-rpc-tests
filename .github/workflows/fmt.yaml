@@ -1,0 +1,52 @@
+name: Code Quality Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  cargo_fmt:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    name: Run cargo fmt - rust ${{ matrix.toolchain }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust toolchain
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: Check code formatting with cargo fmt
+        run: cargo fmt -- --check
+
+  cargo_clippy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    name: Run cargo clippy - rust ${{ matrix.toolchain }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust toolchain
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: Lint code with cargo clippy
+        run: cargo clippy -- -D warnings
+
+  leptosfmt:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+    name: Run leptosfmt - rust ${{ matrix.toolchain }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust toolchain
+        run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - name: Install leptosfmt
+        run: cargo install leptosfmt
+      - name: Check code formatting with leptosfmt
+        run: leptosfmt --check .
