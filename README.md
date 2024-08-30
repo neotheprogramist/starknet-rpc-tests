@@ -1,3 +1,4 @@
+# CHECKER
 ### Create `.cargo/conifg.toml`
 
 - Set envs:
@@ -7,13 +8,18 @@
 
 `cargo build`
 
+
+```
+cargo run --bin checker -- --url http://127.0.0.1:5050/ --sierra-path target/dev/cairo_contracts_HelloStarknet.contract_class.json --casm-path target/dev/cairo_contracts_HelloStarknet.compiled_contract_class.json --version v5
+```
+
 # t8n Tool
 
 ## Overview
 
 The `t8n` tool is designed to process transactions and manage state changes in the Starknet ecosystem. It reads input transactions from a JSON file, processes them, and outputs the resulting state to another JSON file. The tool is flexible and can be configured using environment variables to point to the necessary input and output files.\
 
-For more details, see [t8n](./t8n/readme.md)
+For more details, see [t8n](./t8n/README.md)
 
 # t9n Tool
 
@@ -25,4 +31,10 @@ The `t9n` tool is a command-line utility designed to ensure the integrity and co
 
 2. **Transaction Structure Validation**: It checks the structure of the transaction JSON file to ensure it conforms to the expected format and includes all required fields.
 
-For more details, see [t9n](./t9n/README.md)
+## Example
+`Invoke_V1`
+
+```bash
+cargo run --bin t9n -- --file-path t9n/examples/invoke/invoke_txn_v1.json --public-key 0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b --chain-id 0x534e5f5345504f4c4941
+```
+For more examples, see [t9n](./t9n/README.md)

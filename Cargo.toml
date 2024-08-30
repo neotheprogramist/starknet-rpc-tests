@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["runner", "t8n", "t9n", "versions"]
+members = ["checker", "t8n", "t9n"]
 
 [workspace.package]
 edition = "2021"
@@ -15,6 +15,7 @@ version = "0.1.0"
 # starknet-types-rpc = { path = "/home/filipg/forks/types-rs/crates/starknet-types-rpc" } // deprecated
 auto_impl = "1.2.0"
 clap = { version = "4.5.16", features = ["derive", "env"] }
+clap_derive = "4.5.13"
 colored = "2.1.0"
 crypto-bigint = "0.5.5"
 lambdaworks-math = { version = "0.7.0", default-features = false }
