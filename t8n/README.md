@@ -11,7 +11,9 @@ cargo run -p t8n -- --txns-path t8n/src/starknet/input/txns.json --state-path t8
 ```
 
 ## Notify
-Environment variables are also working 
+
+Environment variables are also working
+
 ### Required Environment Variables
 
 - `ACC_PATH`: Path to the JSON file containing account details used during transaction processing.
@@ -19,13 +21,16 @@ Environment variables are also working
 - `STATE_PATH`: Path to the JSON file where the resulting state will be stored after processing the transactions
 
 ### Create `.cargo/conifg.toml`
+
 ```toml
 [env]
 TXNS_PATH = "t8n/src/starknet/input/txns.json"
 STATE_PATH = "t8n/src/starknet/output/state.json"
 ACC_PATH = "t8n/src/starknet/input/acc.json"
 ```
+
 Now simply run:
+
 ```bash
 cargo run -p t8n
 ```

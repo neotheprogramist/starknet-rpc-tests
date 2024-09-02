@@ -51,17 +51,22 @@ cargo run -p t9n -- --file-path t9n/examples/deploy_acc/deploy_acc_txn_v1.json -
 ```bash
 cargo run -p t9n -- --file-path t9n/examples/deploy_acc/deploy_acc_txn_v3.json --public-key 0x6ac091f93bebf5d88f4905415d9878ad2c1892e8b4a72fa3c3a497df76f3bb0 --chain-id 0x534e5f5345504f4c4941
 ```
+
 ## Notify
-Environment variables are also working 
+
+Environment variables are also working
 
 ### Create `.cargo/conifg.toml`
+
 ```toml
 [env]
 FILE_PATH = "t9n/examples/invoke/invoke_txn_v1.json"
 PUBLIC_KEY = "0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b"
 CHAIN_ID = "0x534e5f5345504f4c4941"
 ```
+
 Now simply run:
+
 ```bash
 cargo run -p t9n
 ```

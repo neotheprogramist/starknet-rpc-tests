@@ -5,7 +5,7 @@ version.workspace = true
 
 [dependencies]
 blockifier = { git = "https://github.com/neotheprogramist/blockifier.git", branch = "feat/1-serde", features = [
-     "testing",
+  "testing",
 ] }
 cairo-lang-casm = "=2.6.0"
 cairo-lang-compiler = "=2.6.0"
