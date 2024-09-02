@@ -27,7 +27,7 @@ starknet-devnet
 After building the crate, you can use it to check the compatibility between the supported versions of Starknet Devnet.
 
 ```bash
-cargo run -p checker -- --url http://127.0.0.1:5050/ --sierra-path target/dev/cairo_contracts_HelloStarknet.contract_class.json --casm-path target/dev/cairo_contracts_HelloStarknet.compiled_contract_class.json --version v5
+cargo run -p checker -- --url http://127.0.0.1:5050/ --sierra-path target/dev/contracts_HelloStarknet.contract_class.json --casm-path target/dev/contracts_HelloStarknet.compiled_contract_class.json --version v5
 ```
 
 For more details, see [checker readme](./checker/README.md)

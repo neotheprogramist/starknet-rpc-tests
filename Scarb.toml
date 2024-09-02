@@ -1,5 +1,5 @@
 [workspace]
-members = ["cairo_contracts"]
+members = ["contracts"]
 
 [workspace.package]
 edition = "2023_10"

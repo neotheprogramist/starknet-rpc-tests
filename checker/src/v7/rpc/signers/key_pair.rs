@@ -15,6 +15,7 @@ pub struct VerifyingKey {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
 pub enum KeystoreError {
     #[error("invalid path")]
