@@ -715,10 +715,7 @@ where
             .await
             .map_err(AccountError::Signing)?;
 
-        
-
-        self
-            .account
+        self.account
             .provider()
             .add_invoke_transaction(BroadcastedInvokeTxn::V1(tx_request))
             .await

@@ -39,7 +39,7 @@ pub async fn deploy_contract<P: Provider + Send + Sync + Debug>(
     let mut salt_buffer = [0u8; 32];
     let mut rng = StdRng::from_entropy();
     rng.fill_bytes(&mut salt_buffer[1..]);
-    
+
     factory
         .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
         // .max_fee(Felt::from_dec_str("100000000000000000").unwrap())

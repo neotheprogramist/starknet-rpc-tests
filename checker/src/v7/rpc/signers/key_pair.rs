@@ -55,7 +55,6 @@ impl SigningKey {
     }
 
     pub fn sign(&self, hash: &Felt) -> Result<Signature, EcdsaSignError> {
-        
         StarkCurve::ecdsa_sign(&self.secret_scalar, hash).map(|sig| sig.into())
     }
 }

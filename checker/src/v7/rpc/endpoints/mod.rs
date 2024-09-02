@@ -356,7 +356,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-
     match rpc.block_number(url.clone()).await {
         Ok(_) => {
             info!(
@@ -417,9 +416,8 @@ pub async fn test_rpc_endpoints_v0_0_7(
             "✗ Rpc estimate_message_fee INCOMPATIBLE:".red(),
             e.to_string().red(),
             "✗".red()
-
         ),
-     }
+    }
     match rpc.get_block_transaction_count(url.clone()).await {
         Ok(_) => {
             info!(
@@ -639,7 +637,8 @@ pub async fn test_rpc_endpoints_v0_0_7(
         Err(e) => error!(
             "{} {}",
             "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
-            "✗".red())
+            "✗".red()
+        ),
     }
     restart_devnet(url.clone()).await?;
 
@@ -657,7 +656,8 @@ pub async fn test_rpc_endpoints_v0_0_7(
         Err(e) => error!(
             "{} {}",
             "✗ Rpc get_class_at INCOMPATIBLE:".red(),
-            e.to_string().red(),)
+            e.to_string().red(),
+        ),
     }
 
     info!("{}", "🏁 Testing Devnet V7 endpoints -- END 🏁".yellow());

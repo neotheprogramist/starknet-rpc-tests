@@ -1,5 +1,5 @@
-pub mod txn_validation;
 mod args;
+pub mod txn_validation;
 use args::Args;
 use clap::Parser;
 use txn_validation::validate::validate_txn_json;

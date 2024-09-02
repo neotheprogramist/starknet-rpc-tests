@@ -378,8 +378,6 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
 
-            
-
             factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
@@ -534,8 +532,6 @@ pub async fn estimate_message_fee(
             let mut salt_buffer = [0u8; 32];
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
-
-            
 
             factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
@@ -767,8 +763,6 @@ pub async fn get_transaction_status_succeeded(
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
 
-            
-
             factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
@@ -988,14 +982,13 @@ pub async fn get_transaction_by_hash_deploy_acc(url: Url) -> Result<DeployAccoun
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    let txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(txn_hash) => txn_hash,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+    let txn_hash = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+        Ok(txn_hash) => txn_hash,
+        Err(e) => {
+            info!("{}", "Could not deploy an account");
+            return Err(e.into());
+        }
+    };
 
     let txn = provider.get_transaction_by_hash(txn_hash).await.unwrap();
 
@@ -1143,8 +1136,6 @@ pub async fn get_transaction_receipt(
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
 
-            
-
             factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
@@ -1283,8 +1274,6 @@ pub async fn get_transaction_receipt_revert(
             let mut salt_buffer = [0u8; 32];
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
-
-            
 
             factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
@@ -1425,8 +1414,6 @@ pub async fn get_class(
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
 
-            
-
             factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
@@ -1554,8 +1541,6 @@ pub async fn get_class_hash_at(
             let mut salt_buffer = [0u8; 32];
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
-
-            
 
             factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
@@ -1703,8 +1688,6 @@ pub async fn get_class_at(
             let mut salt_buffer = [0u8; 32];
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
-
-            
 
             factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)

@@ -307,14 +307,11 @@ where
         &self,
         transaction_hash: TxnHash<FeltPrimitive>,
     ) -> Result<TxnReceipt<FeltPrimitive>, ProviderError> {
-        
-
-        self
-            .send_request(
-                JsonRpcMethod::GetTransactionReceipt,
-                GetTransactionReceiptParams { transaction_hash },
-            )
-            .await
+        self.send_request(
+            JsonRpcMethod::GetTransactionReceipt,
+            GetTransactionReceiptParams { transaction_hash },
+        )
+        .await
     }
 
     /// Get the contract class definition in the given block associated with the given hash
