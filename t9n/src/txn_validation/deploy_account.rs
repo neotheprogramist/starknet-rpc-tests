@@ -1,14 +1,16 @@
 use std::error::Error;
 
-use super::constants::{ADDR_BOUND, DATA_AVAILABILITY_MODE_BITS, PREFIX_CONTRACT_ADDRESS, PREFIX_DEPLOY_ACCOUNT};
-use starknet_types_core::{curve::*, hash::poseidon_hash_many};
+use super::constants::{
+    ADDR_BOUND, DATA_AVAILABILITY_MODE_BITS, PREFIX_CONTRACT_ADDRESS, PREFIX_DEPLOY_ACCOUNT,
+};
 use starknet_types_core::felt::Felt;
+use starknet_types_core::{curve::*, hash::poseidon_hash_many};
 use starknet_types_rpc::{v0_7_1::starknet_api_openrpc::*, DeployAccountTxn};
 
 pub fn verify_deploy_account_signature(
-    txn: DeployAccountTxn<Felt>, 
-    public_key: &str, 
-    chain_id_input: &str
+    txn: DeployAccountTxn<Felt>,
+    public_key: &str,
+    chain_id_input: &str,
 ) -> Result<(bool, Felt), VerifyError> {
     match txn {
         DeployAccountTxn::V1(deploy_account_txn) => {
@@ -22,9 +24,9 @@ pub fn verify_deploy_account_signature(
 }
 
 fn verify_deploy_account_v1_signature(
-    txn: &DeployAccountTxnV1<Felt>, 
-    public_key: &str, 
-    chain_id_input: &str
+    txn: &DeployAccountTxnV1<Felt>,
+    public_key: &str,
+    chain_id_input: &str,
 ) -> Result<(bool, Felt), VerifyError> {
     let chain_id = Felt::from_hex_unchecked(chain_id_input);
     let stark_key = Felt::from_hex_unchecked(public_key);
@@ -52,14 +54,14 @@ fn verify_deploy_account_v1_signature(
 
     match verify(&stark_key, &msg_hash, &r_bytes, &s_bytes) {
         Ok(is_valid) => Ok((is_valid, msg_hash)),
-        Err(e) => Err(e), 
+        Err(e) => Err(e),
     }
 }
 
 fn verify_deploy_account_v3_signature(
-    txn: &DeployAccountTxnV3<Felt>, 
-    public_key: &str, 
-    chain_id_input: &str
+    txn: &DeployAccountTxnV3<Felt>,
+    public_key: &str,
+    chain_id_input: &str,
 ) -> Result<(bool, Felt), VerifyError> {
     let chain_id = Felt::from_hex_unchecked(chain_id_input);
     let stark_key = Felt::from_hex_unchecked(public_key);
@@ -71,7 +73,7 @@ fn verify_deploy_account_v3_signature(
 
     match verify(&stark_key, &msg_hash, &r_bytes, &s_bytes) {
         Ok(is_valid) => Ok((is_valid, msg_hash)),
-        Err(e) => Err(e), 
+        Err(e) => Err(e),
     }
 }
 
@@ -86,8 +88,8 @@ fn calculate_contract_address(
         salt,
         class_hash,
         constructor_calldata_hash,
-    ]).mod_floor(&ADDR_BOUND)
-
+    ])
+    .mod_floor(&ADDR_BOUND)
 }
 
 fn calculate_deploy_v3_transaction_hash(
@@ -111,9 +113,7 @@ fn calculate_deploy_v3_transaction_hash(
 }
 
 /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
-fn get_resource_bounds_array(
-    txn: &DeployAccountTxnV3<Felt>,
-) -> Result<Vec<Felt>, Box<dyn Error>> {
+fn get_resource_bounds_array(txn: &DeployAccountTxnV3<Felt>) -> Result<Vec<Felt>, Box<dyn Error>> {
     let mut array = Vec::<Felt>::new();
     array.push(txn.tip);
 
@@ -169,11 +169,14 @@ fn common_fields_for_hash(
     chain_id: Felt,
     txn: &DeployAccountTxnV3<Felt>,
 ) -> Result<Vec<Felt>, Box<dyn Error>> {
-
     let array: Vec<Felt> = vec![
-        tx_prefix,                                                      // TX_PREFIX
-        Felt::THREE,                                                    // version
-        calculate_contract_address(txn.contract_address_salt, txn.class_hash, compute_hash_on_elements(&txn.constructor_calldata.clone())),
+        tx_prefix,   // TX_PREFIX
+        Felt::THREE, // version
+        calculate_contract_address(
+            txn.contract_address_salt,
+            txn.class_hash,
+            compute_hash_on_elements(&txn.constructor_calldata.clone()),
+        ),
         poseidon_hash_many(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
         poseidon_hash_many(&txn.paymaster_data),                        // h(paymaster_data)
         chain_id,                                                       // chain_id

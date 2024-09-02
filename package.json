@@ -1,0 +1,15 @@
+{
+  "name": "starknet-rpc-tests",
+  "workspaces": [
+    "t8n",
+    "t9n",
+    "versions"
+  ],
+  "scripts": {
+    "prettier:check": "npx prettier --plugin=prettier-plugin-toml --check '**/*.{js,jsx,ts,tsx,json,css,scss,yaml,toml,md}'",
+    "prettier:write": "npx prettier --plugin=prettier-plugin-toml --write '**/*.{js,jsx,ts,tsx,json,css,scss,yaml,toml,md}'"
+  },
+  "devDependencies": {
+    "prettier-plugin-toml": "2.0.1"
+  }
+}

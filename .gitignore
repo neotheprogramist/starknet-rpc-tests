@@ -1,3 +1,6 @@
 /target
 .cargo
 t8n/src/starknet/output/state.json
+**/*.lock
+/node_modules
+package-lock.json

@@ -1,6 +1,5 @@
 use starknet_types_core::felt::{Felt, NonZeroFelt};
 
-
 /// Cairo string for "invoke"
 pub const PREFIX_INVOKE: Felt = Felt::from_raw([
     513398556346534256,

@@ -42,7 +42,7 @@ pub fn verify_declare_v2_signature(
 
     match verify(&stark_key, &msg_hash, &r_bytes, &s_bytes) {
         Ok(is_valid) => Ok((is_valid, msg_hash)),
-        Err(e) => Err(e), 
+        Err(e) => Err(e),
     }
 }
 
