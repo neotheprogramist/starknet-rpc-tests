@@ -8,6 +8,7 @@ use crate::v6::rpc::providers::provider::ProviderError;
 pub struct NotPreparedError;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum ComputeClassHashError {
     InvalidBuiltinName,
     BytecodeSegmentLengthMismatch(BytecodeSegmentLengthMismatchError),
@@ -17,6 +18,7 @@ pub enum ComputeClassHashError {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum CompressProgramError {
     Json(JsonError),
     Io(std::io::Error),
@@ -30,23 +32,26 @@ pub struct JsonError {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct BytecodeSegmentLengthMismatchError {
     pub segment_length: usize,
     pub bytecode_length: usize,
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct InvalidBytecodeSegmentError {
     pub visited_pc: u64,
     pub segment_start: u64,
 }
-
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct PcOutOfRangeError {
     pub pc: u64,
 }
 
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum CreationError {
     #[error("Class with hash {0:#x} is not declared, try using --class-hash with a hash of the declared class")]
     ClassHashNotFound(Felt),
@@ -70,6 +75,7 @@ impl From<String> for CreationError {
 }
 
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum TransactionError {
     #[error("Transaction has been rejected")]
     Rejected,
@@ -78,6 +84,7 @@ pub enum TransactionError {
 }
 
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum WaitForTransactionError {
     #[error(transparent)]
     TransactionError(TransactionError),

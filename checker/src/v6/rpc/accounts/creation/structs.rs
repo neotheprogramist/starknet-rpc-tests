@@ -9,6 +9,7 @@ use crate::v6::rpc::signers::key_pair::SigningKey;
 
 use super::create::AccountType;
 
+#[allow(dead_code)]
 fn serialize_as_decimal<S>(value: &Felt, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
@@ -18,6 +19,7 @@ where
 }
 
 #[derive(Serialize)]
+#[allow(dead_code)]
 pub struct AccountCreateResponse {
     pub private_key: Felt,
     pub address: Felt,

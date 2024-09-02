@@ -35,6 +35,7 @@ impl Rpc {
     }
 }
 
+#[allow(dead_code)]
 pub trait RpcEndpoints {
     fn add_declare_transaction_v2(
         &self,
@@ -401,7 +402,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
     restart_devnet(url.clone()).await?;
 
     match rpc
-        .estimate_message_fee(url.clone(), &sierra_path, &casm_path)
+        .estimate_message_fee(url.clone(), sierra_path, casm_path)
         .await
     {
         Ok(_) => {
@@ -499,7 +500,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     restart_devnet(url.clone()).await?;
     match rpc
-        .get_transaction_status_succeeded(url.clone(), &sierra_path, &casm_path)
+        .get_transaction_status_succeeded(url.clone(), sierra_path, casm_path)
         .await
     {
         Ok(_) => {
@@ -519,7 +520,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     restart_devnet(url.clone()).await?;
     match rpc
-        .get_transaction_by_hash_invoke(url.clone(), &sierra_path, &casm_path)
+        .get_transaction_by_hash_invoke(url.clone(), sierra_path, casm_path)
         .await
     {
         Ok(_) => {
@@ -591,7 +592,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     restart_devnet(url.clone()).await?;
     match rpc
-        .get_transaction_receipt(url.clone(), &sierra_path, &casm_path)
+        .get_transaction_receipt(url.clone(), sierra_path, casm_path)
         .await
     {
         Ok(_) => {
@@ -624,7 +625,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     restart_devnet(url.clone()).await?;
     match rpc
-        .get_class_hash_at(url.clone(), &sierra_path, &casm_path)
+        .get_class_hash_at(url.clone(), sierra_path, casm_path)
         .await
     {
         Ok(_) => {
@@ -635,17 +636,15 @@ pub async fn test_rpc_endpoints_v0_0_7(
             )
         }
         Err(e) => error!(
-            "{} {}",
+            "{} {} {}",
             "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
+            e,
             "✗".red()
         ),
     }
     restart_devnet(url.clone()).await?;
 
-    match rpc
-        .get_class_at(url.clone(), &sierra_path, &casm_path)
-        .await
-    {
+    match rpc.get_class_at(url.clone(), sierra_path, casm_path).await {
         Ok(_) => {
             info!(
                 "{} {}",

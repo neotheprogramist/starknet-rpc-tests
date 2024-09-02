@@ -17,6 +17,7 @@ use crate::v7::rpc::{
 use super::declare_contract::RunnerError;
 
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum DeployError {
     #[error("Error getting response text")]
     CreateAccountError(String),
@@ -31,6 +32,7 @@ pub enum DeployError {
     RunnerError(#[from] RunnerError),
 }
 
+#[allow(dead_code)]
 pub async fn deploy_contract<P: Provider + Send + Sync + Debug>(
     account: &SingleOwnerAccount<P, LocalWallet>,
     class_hash: Felt,

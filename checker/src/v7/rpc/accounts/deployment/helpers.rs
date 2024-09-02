@@ -40,6 +40,7 @@ pub fn get_contract_address(
     ]))
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn get_deployment_result(
     provider: &JsonRpcClient<HttpTransport>,
     account_type: AccountType,

@@ -13,7 +13,7 @@ pub struct SigningKey {
 pub struct VerifyingKey {
     scalar: Felt,
 }
-
+#[allow(dead_code)]
 #[cfg(not(target_arch = "wasm32"))]
 #[derive(Debug, thiserror::Error)]
 pub enum KeystoreError {

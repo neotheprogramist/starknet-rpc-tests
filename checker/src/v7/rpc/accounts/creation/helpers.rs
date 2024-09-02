@@ -21,6 +21,7 @@ pub const OZ_CLASS_HASH: &str =
 pub fn extract_or_generate_salt(salt: Option<Felt>) -> Felt {
     salt.unwrap_or(Felt::from(OsRng.next_u64()))
 }
+#[allow(dead_code)]
 
 pub async fn check_class_hash_exists(
     provider: &JsonRpcClient<HttpTransport>,

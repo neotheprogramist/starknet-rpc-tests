@@ -20,7 +20,7 @@ use std::{any::Any, error::Error, fmt::Display};
 
 use super::provider::{Provider, ProviderError, ProviderImplError};
 use starknet_types_core::felt::Felt as FeltPrimitive;
-pub use transports::{HttpTransport, HttpTransportError, JsonRpcTransport};
+pub use transports::{HttpTransport, JsonRpcTransport};
 
 #[derive(Debug, Clone)]
 pub struct JsonRpcClient<T> {
@@ -86,7 +86,7 @@ pub enum JsonRpcMethod {
     #[serde(rename = "starknet_traceBlockTransactions")]
     TraceBlockTransactions,
 }
-
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct JsonRpcRequest {
     pub id: u64,
@@ -94,6 +94,7 @@ pub struct JsonRpcRequest {
 }
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum JsonRpcRequestData {
     SpecVersion(SpecVersionParams),
     GetBlockWithTxHashes(GetBlockWithTxHashesParams),
@@ -145,6 +146,7 @@ pub struct JsonRpcError {
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
+#[allow(dead_code)]
 pub enum JsonRpcResponse<T> {
     Success { id: u64, result: T },
     Error { id: u64, error: JsonRpcError },

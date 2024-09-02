@@ -805,11 +805,11 @@ impl RawDeclarationV2 {
 }
 
 impl RawDeclarationV3 {
-    pub fn transaction_hash(&self, chain_id: Felt, address: Felt, query_only: bool) -> Felt {
+    pub fn transaction_hash(&self, chain_id: Felt, address: Felt, _query_only: bool) -> Felt {
         let mut hasher = PoseidonHasher::new();
 
         hasher.update(PREFIX_DECLARE);
-        hasher.update(if query_only { Felt::THREE } else { Felt::THREE });
+        hasher.update(Felt::THREE);
         hasher.update(address);
 
         hasher.update({

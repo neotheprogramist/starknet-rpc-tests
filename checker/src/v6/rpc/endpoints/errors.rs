@@ -10,6 +10,7 @@ use crate::v6::rpc::{
 use core::fmt::{Display, Formatter, Result};
 
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum RpcError {
     #[error("request error: {0}")]
     RequestError(#[from] reqwest::Error),
@@ -40,6 +41,7 @@ pub enum RpcError {
 }
 
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum CallError {
     #[error("Error getting response text")]
     CreateAccountError(String),

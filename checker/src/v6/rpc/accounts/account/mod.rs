@@ -101,7 +101,7 @@ pub trait Account: ExecutionEncoder + Sized {
     /// This affects how an account makes decision on whether to request a real signature for
     /// estimation/simulation purposes.
     fn is_signer_interactive(&self) -> bool;
-
+    #[allow(dead_code)]
     fn execute_v1(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
         ExecutionV1::new(calls, self)
     }
@@ -109,7 +109,7 @@ pub trait Account: ExecutionEncoder + Sized {
     // fn execute_v3(&self, calls: Vec<Call>) -> ExecutionV3<Self> {
     //     ExecutionV3::new(calls, self)
     // }
-
+    #[allow(dead_code)]
     #[deprecated = "use version specific variants (`execute_v1` & `execute_v3`) instead"]
     fn execute(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
         self.execute_v1(calls)
@@ -130,7 +130,7 @@ pub trait Account: ExecutionEncoder + Sized {
     // ) -> DeclarationV3<Self> {
     //     DeclarationV3::new(contract_class, compiled_class_hash, self)
     // }
-
+    #[allow(dead_code)]
     #[deprecated = "use version specific variants (`declare_v1` & `declare_v3`) instead"]
     fn declare(
         &self,
@@ -196,6 +196,7 @@ pub struct ExecutionV1<'a, A> {
 /// `gas_price`.
 #[must_use]
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct ExecutionV3<'a, A> {
     account: &'a A,
     calls: Vec<Call>,
@@ -230,6 +231,7 @@ pub struct DeclarationV2<'a, A> {
 /// `gas_price`.
 #[must_use]
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct DeclarationV3<'a, A> {
     account: &'a A,
     contract_class: Arc<ContractClass>,
@@ -244,6 +246,7 @@ pub struct DeclarationV3<'a, A> {
 /// An intermediate type allowing users to optionally specify `nonce` and/or `max_fee`.
 #[must_use]
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct LegacyDeclaration<'a, A> {
     account: &'a A,
     contract_class: Arc<DeprecatedContractClass>,
@@ -262,6 +265,7 @@ pub struct RawExecutionV1 {
 
 /// [ExecutionV3] but with `nonce`, `gas` and `gas_price` already determined.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct RawExecutionV3 {
     calls: Vec<Call>,
     nonce: Felt,
@@ -331,6 +335,7 @@ pub fn starknet_keccak(data: &[u8]) -> Felt {
 
 /// [DeclarationV3] but with `nonce`, `gas` and `gas_price` already determined.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct RawDeclarationV3 {
     contract_class: Arc<ContractClass>,
     compiled_class_hash: Felt,
@@ -341,6 +346,7 @@ pub struct RawDeclarationV3 {
 
 /// [LegacyDeclaration] but with `nonce` and `max_fee` already determined.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct RawLegacyDeclaration {
     contract_class: Arc<DeprecatedContractClass>,
     nonce: Felt,
@@ -356,6 +362,7 @@ pub struct PreparedExecutionV1<'a, A> {
 
 /// [RawExecutionV3] but with an account associated.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct PreparedExecutionV3<'a, A> {
     account: &'a A,
     inner: RawExecutionV3,
@@ -370,6 +377,7 @@ pub struct PreparedDeclarationV2<'a, A> {
 
 /// [RawDeclarationV3] but with an account associated.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct PreparedDeclarationV3<'a, A> {
     account: &'a A,
     inner: RawDeclarationV3,
@@ -377,12 +385,14 @@ pub struct PreparedDeclarationV3<'a, A> {
 
 /// [RawLegacyDeclaration] but with an account associated.
 #[derive(Debug)]
+#[allow(dead_code)]
 pub struct PreparedLegacyDeclaration<'a, A> {
     account: &'a A,
     inner: RawLegacyDeclaration,
 }
 
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum AccountError<S> {
     #[error(transparent)]
     Signing(S),

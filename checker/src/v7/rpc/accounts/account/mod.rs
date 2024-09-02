@@ -101,10 +101,12 @@ pub trait Account: ExecutionEncoder + Sized {
     /// This affects how an account makes decision on whether to request a real signature for
     /// estimation/simulation purposes.
     fn is_signer_interactive(&self) -> bool;
+    #[allow(dead_code)]
 
     fn execute_v1(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
         ExecutionV1::new(calls, self)
     }
+    #[allow(dead_code)]
 
     fn execute_v3(&self, calls: Vec<Call>) -> ExecutionV3<Self> {
         ExecutionV3::new(calls, self)
@@ -244,6 +246,8 @@ pub struct DeclarationV3<'a, A> {
 /// An intermediate type allowing users to optionally specify `nonce` and/or `max_fee`.
 #[must_use]
 #[derive(Debug)]
+#[allow(dead_code)]
+
 pub struct LegacyDeclaration<'a, A> {
     account: &'a A,
     contract_class: Arc<DeprecatedContractClass<Felt>>,
@@ -341,6 +345,8 @@ pub struct RawDeclarationV3 {
 
 /// [LegacyDeclaration] but with `nonce` and `max_fee` already determined.
 #[derive(Debug)]
+#[allow(dead_code)]
+
 pub struct RawLegacyDeclaration {
     contract_class: Arc<DeprecatedContractClass<Felt>>,
     nonce: Felt,
@@ -374,6 +380,7 @@ pub struct PreparedDeclarationV3<'a, A> {
     account: &'a A,
     inner: RawDeclarationV3,
 }
+#[allow(dead_code)]
 
 /// [RawLegacyDeclaration] but with an account associated.
 #[derive(Debug)]
@@ -381,7 +388,7 @@ pub struct PreparedLegacyDeclaration<'a, A> {
     account: &'a A,
     inner: RawLegacyDeclaration,
 }
-
+#[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
 pub enum AccountError<S> {
     #[error(transparent)]

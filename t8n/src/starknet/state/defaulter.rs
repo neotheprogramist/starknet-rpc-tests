@@ -159,7 +159,7 @@ fn convert_json_value_to_stark_felt(json_value: serde_json::Value) -> StateResul
 }
 
 fn convert_patricia_key_to_hex(key: PatriciaKey) -> StateResult<String> {
-    let felt = Felt::try_from(key).map_err(|e| StateError::StateReadError(e.to_string()))?;
+    let felt = Felt::from(key);
     Ok(felt.to_prefixed_hex_str())
 }
 

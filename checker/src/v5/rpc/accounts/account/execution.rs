@@ -30,7 +30,7 @@ const QUERY_VERSION_ONE: Felt = Felt::from_raw([
     17407,
     18446744073700081633,
 ]);
-
+#[allow(dead_code)]
 /// 2 ^ 128 + 3
 const QUERY_VERSION_THREE: Felt = Felt::from_raw([
     576460752142432688,

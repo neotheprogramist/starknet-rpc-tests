@@ -61,10 +61,10 @@ impl UserAccountGenerator for UserDeployedAccounts {
                 public_key: data.public_key,
                 account_address: data.account_address,
                 initial_balance: data.initial_balance,
-                class_hash: class_hash.clone(),
+                class_hash,
                 contract_class: contract_class.clone(),
-                eth_fee_token_address: self.eth_fee_token_address.clone(),
-                strk_fee_token_address: self.strk_fee_token_address.clone(),
+                eth_fee_token_address: self.eth_fee_token_address,
+                strk_fee_token_address: self.strk_fee_token_address,
             })
             .collect();
         Ok(&self.accounts)

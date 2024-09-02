@@ -101,7 +101,7 @@ pub trait Account: ExecutionEncoder + Sized {
     /// This affects how an account makes decision on whether to request a real signature for
     /// estimation/simulation purposes.
     fn is_signer_interactive(&self) -> bool;
-
+    #[allow(dead_code)]
     fn execute_v1(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
         ExecutionV1::new(calls, self)
     }
@@ -109,7 +109,7 @@ pub trait Account: ExecutionEncoder + Sized {
     // fn execute_v3(&self, calls: Vec<Call>) -> ExecutionV3<Self> {
     //     ExecutionV3::new(calls, self)
     // }
-
+    #[allow(dead_code)]
     #[deprecated = "use version specific variants (`execute_v1` & `execute_v3`) instead"]
     fn execute(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
         self.execute_v1(calls)
@@ -130,7 +130,7 @@ pub trait Account: ExecutionEncoder + Sized {
     // ) -> DeclarationV3<Self> {
     //     DeclarationV3::new(contract_class, compiled_class_hash, self)
     // }
-
+    #[allow(dead_code)]
     #[deprecated = "use version specific variants (`declare_v1` & `declare_v3`) instead"]
     fn declare(
         &self,
@@ -195,6 +195,7 @@ pub struct ExecutionV1<'a, A> {
 /// This is an intermediate type allowing users to optionally specify `nonce`, `gas`, and/or
 /// `gas_price`.
 #[must_use]
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct ExecutionV3<'a, A> {
     account: &'a A,
@@ -229,6 +230,7 @@ pub struct DeclarationV2<'a, A> {
 /// This is an intermediate type allowing users to optionally specify `nonce`, `gas`, and/or
 /// `gas_price`.
 #[must_use]
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct DeclarationV3<'a, A> {
     account: &'a A,
@@ -240,7 +242,7 @@ pub struct DeclarationV3<'a, A> {
     gas_estimate_multiplier: f64,
     gas_price_estimate_multiplier: f64,
 }
-
+#[allow(dead_code)]
 /// An intermediate type allowing users to optionally specify `nonce` and/or `max_fee`.
 #[must_use]
 #[derive(Debug)]
@@ -251,7 +253,7 @@ pub struct LegacyDeclaration<'a, A> {
     max_fee: Option<Felt>,
     fee_estimate_multiplier: f64,
 }
-
+#[allow(dead_code)]
 /// [ExecutionV1] but with `nonce` and `max_fee` already determined.
 #[derive(Debug)]
 pub struct RawExecutionV1 {
@@ -259,7 +261,7 @@ pub struct RawExecutionV1 {
     nonce: Felt,
     max_fee: Felt,
 }
-
+#[allow(dead_code)]
 /// [ExecutionV3] but with `nonce`, `gas` and `gas_price` already determined.
 #[derive(Debug)]
 pub struct RawExecutionV3 {
@@ -328,7 +330,7 @@ pub fn starknet_keccak(data: &[u8]) -> Felt {
     // Because we know hash is always 32 bytes
     Felt::from_bytes_be(unsafe { &*(hash[..].as_ptr() as *const [u8; 32]) })
 }
-
+#[allow(dead_code)]
 /// [DeclarationV3] but with `nonce`, `gas` and `gas_price` already determined.
 #[derive(Debug)]
 pub struct RawDeclarationV3 {
@@ -338,7 +340,7 @@ pub struct RawDeclarationV3 {
     gas: u64,
     gas_price: u128,
 }
-
+#[allow(dead_code)]
 /// [LegacyDeclaration] but with `nonce` and `max_fee` already determined.
 #[derive(Debug)]
 pub struct RawLegacyDeclaration {
@@ -353,7 +355,7 @@ pub struct PreparedExecutionV1<'a, A> {
     account: &'a A,
     inner: RawExecutionV1,
 }
-
+#[allow(dead_code)]
 /// [RawExecutionV3] but with an account associated.
 #[derive(Debug)]
 pub struct PreparedExecutionV3<'a, A> {
@@ -367,21 +369,21 @@ pub struct PreparedDeclarationV2<'a, A> {
     account: &'a A,
     inner: RawDeclarationV2,
 }
-
+#[allow(dead_code)]
 /// [RawDeclarationV3] but with an account associated.
 #[derive(Debug)]
 pub struct PreparedDeclarationV3<'a, A> {
     account: &'a A,
     inner: RawDeclarationV3,
 }
-
+#[allow(dead_code)]
 /// [RawLegacyDeclaration] but with an account associated.
 #[derive(Debug)]
 pub struct PreparedLegacyDeclaration<'a, A> {
     account: &'a A,
     inner: RawLegacyDeclaration,
 }
-
+#[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
 pub enum AccountError<S> {
     #[error(transparent)]

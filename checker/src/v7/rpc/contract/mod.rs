@@ -403,6 +403,7 @@ use starknet_types_rpc::v0_7_1::{EntryPointsByType, SierraEntryPoint};
 //         cairo_short_string_to_felt, normalize_address, starknet_keccak, CairoShortStringToFeltError,
 //     },
 // };
+#[allow(dead_code)]
 
 pub trait HashAndFlatten {
     fn class_hash(&self) -> Result<Felt, ComputeClassHashError>;
