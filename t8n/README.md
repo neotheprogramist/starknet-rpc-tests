@@ -30,4 +30,6 @@ Now simply run:
 cargo run -p t8n
 ```
 
+## Contact
 
+For any questions or feedback, please open an issue on the GitHub repository.

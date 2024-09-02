@@ -65,3 +65,7 @@ Now simply run:
 ```bash
 cargo run -p t9n
 ```
+
+## Contact
+
+For any questions or feedback, please open an issue on the GitHub repository.

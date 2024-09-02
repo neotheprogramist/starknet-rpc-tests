@@ -27,7 +27,7 @@ After building the crate, you can use it to check the compatibility between the 
 cargo run -p checker -- --url http://127.0.0.1:5050/ --sierra-path target/dev/cairo_contracts_HelloStarknet.contract_class.json --casm-path target/dev/cairo_contracts_HelloStarknet.compiled_contract_class.json --version v5
 ```
 
-[Checker readme](./checker/README.md)
+For more details, see [checker readme](./checker/README.md)
 
 # t8n Tool
 
@@ -42,7 +42,7 @@ The `t8n` tool is designed to process transactions and manage state changes in t
 cargo run -p t8n -- --txns-path t8n/src/starknet/input/txns.json --state-path t8n/src/starknet/output/state.json --acc-path t8n/src/starknet/input/acc.json
 ```
 
-[t8n readme](./t8n/README.md)
+For more details, see [t8n readme](./t8n/README.md)
 
 # t9n Tool
 
@@ -60,4 +60,8 @@ The `t9n` tool is a command-line utility designed to ensure the integrity and co
 ```bash
 cargo run -p t9n -- --file-path t9n/examples/invoke/invoke_txn_v1.json --public-key 0x39d9e6ce352ad4530a0ef5d5a18fd3303c3606a7fa6ac5b620020ad681cc33b --chain-id 0x534e5f5345504f4c4941
 ```
-For more examples, see [t9n](./t9n/README.md)
+For more examples, see [t9n readme](./t9n/README.md)
+
+## Contact
+
+For any questions or feedback, please open an issue on the GitHub repository.
