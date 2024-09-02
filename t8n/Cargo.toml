@@ -4,7 +4,7 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-blockifier = { path = "/home/filipg/dev/forks-latest/blockifier/crates/blockifier", features = [
+blockifier = { git = "https://github.com/neotheprogramist/blockifier.git", branch = "feat/1-serde", features = [
      "testing",
 ] }
 cairo-lang-casm = "=2.6.0"
@@ -33,7 +33,7 @@ serde_json.workspace = true
 serde_with.workspace = true
 serde.workspace = true
 starknet_api = { version = "0.10.0", features = ["testing"] }
-starknet-devnet-types = { path = "/home/filipg/dev/forks-latest/starknet-devnet-rs/crates/starknet-devnet-types" }
+starknet-devnet-types = { git = "https://github.com/neotheprogramist/starknet-devnet-rs.git", branch = "feat/1-modified-blockifier" }
 starknet-rs-core = { version = "0.10.0", package = "starknet-core" }
 starknet-rs-signers = { version = "0.8.0", package = "starknet-signers" }
 starknet-types-core.workspace = true
