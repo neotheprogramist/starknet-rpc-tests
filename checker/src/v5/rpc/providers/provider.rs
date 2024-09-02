@@ -242,11 +242,13 @@ pub trait Provider {
 ///
 /// This trait is used instead of a plain [std::error::Error] to allow downcasting, in case access
 /// to the specific error type is indeed desired. This is achieved with the `as_any()` method.
+#[allow(dead_code)]
 pub trait ProviderImplError: Error + Debug + Send + Sync {
     fn as_any(&self) -> &dyn Any;
 }
 
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum ProviderError {
     #[error(transparent)]
     StarknetError(StarknetError),

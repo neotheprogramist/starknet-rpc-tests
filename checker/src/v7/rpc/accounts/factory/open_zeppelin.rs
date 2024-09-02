@@ -92,7 +92,7 @@ where
     async fn sign_deployment_v3(
         &self,
         deployment: &RawAccountDeploymentV3,
-        query_only: bool,
+        _query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
         let tx_hash =
             PreparedAccountDeploymentV3::from_raw(deployment.clone(), self).transaction_hash(false);

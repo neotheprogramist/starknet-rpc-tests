@@ -911,7 +911,7 @@ pub async fn estimate_message_fee(
     //     _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     // }
 
-    let estimate = provider.estimate_message_fee(
+    let _estimate = provider.estimate_message_fee(
         MsgFromL1 {
             from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
             to_address: receipt.contract_address,
@@ -1592,6 +1592,7 @@ pub async fn get_transaction_receipt(
     Ok(receipt)
 }
 
+#[allow(dead_code)]
 pub async fn get_transaction_receipt_revert(
     url: Url,
     sierra_path: &str,
@@ -1735,7 +1736,7 @@ pub async fn get_transaction_receipt_revert(
         .await
         .unwrap();
 
-    let receipt = match receipt {
+    match receipt {
         TxnReceipt::Deploy(receipt) => receipt,
         _ => {
             info!("Unexpected response type TxnReceipt");

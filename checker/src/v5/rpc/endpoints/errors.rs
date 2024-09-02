@@ -10,6 +10,7 @@ use crate::v5::rpc::{
 use core::fmt::{Display, Formatter, Result};
 
 #[derive(Error, Debug)]
+#[allow(dead_code)]
 pub enum RpcError {
     #[error("request error: {0}")]
     RequestError(#[from] reqwest::Error),
@@ -38,7 +39,7 @@ pub enum RpcError {
     #[error("TxnExecutionStatus reverted {0}")]
     TxnExecutionStatus(String),
 }
-
+#[allow(dead_code)]
 #[derive(Error, Debug)]
 pub enum CallError {
     #[error("Error getting response text")]

@@ -26,7 +26,7 @@ where
     block_id: BlockId<Felt>,
     encoding: ExecutionEncoding,
 }
-
+#[allow(dead_code)]
 #[derive(Debug, thiserror::Error)]
 pub enum SignError<S> {
     #[error("Signer error ")]
@@ -34,6 +34,7 @@ pub enum SignError<S> {
     #[error("Compute class hash error")]
     ClassHash(ComputeClassHashError),
 }
+#[allow(dead_code)]
 
 /// How calldata for the `__execute__` entrypoint is encoded.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -115,7 +116,7 @@ where
     async fn sign_execution_v3(
         &self,
         execution: &RawExecutionV3,
-        query_only: bool,
+        _query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
         let tx_hash = execution.transaction_hash(self.chain_id, self.address, false, self);
         let signature = self

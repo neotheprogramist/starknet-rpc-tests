@@ -1164,7 +1164,7 @@ pub async fn get_transaction_receipt(
         _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     }
 }
-
+#[allow(dead_code)]
 pub async fn get_transaction_receipt_revert(
     url: Url,
     sierra_path: &str,

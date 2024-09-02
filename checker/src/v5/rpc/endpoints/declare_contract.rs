@@ -18,7 +18,7 @@ use thiserror::Error;
 use tokio::io::AsyncReadExt;
 use tracing::info;
 use url::ParseError;
-
+#[allow(dead_code)]
 pub async fn declare_contract<P: Provider + Send + Sync>(
     account: &SingleOwnerAccount<P, LocalWallet>,
     sierra_path: &str,
@@ -74,7 +74,7 @@ pub fn parse_class_hash_from_error(error_msg: &str) -> Felt {
 
     panic!("Failed to extract class hash from error message");
 }
-
+#[allow(dead_code)]
 pub async fn get_compiled_contract(
     sierra_path: &str,
     casm_path: &str,

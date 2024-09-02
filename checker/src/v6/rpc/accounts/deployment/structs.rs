@@ -6,13 +6,14 @@ use starknet_types_core::felt::Felt;
 pub const WAIT_TIMEOUT: u16 = 300;
 #[allow(dead_code)]
 pub const WAIT_RETRY_INTERVAL: u8 = 5;
-
+#[allow(dead_code)]
 pub struct Deploy {
     pub name: Option<String>,
     pub max_fee: Option<Felt>,
 }
 
 #[derive(Clone, Copy)]
+#[allow(dead_code)]
 pub struct WaitForTx {
     pub wait: bool,
     pub wait_params: ValidatedWaitParams,

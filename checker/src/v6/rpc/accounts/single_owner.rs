@@ -25,6 +25,7 @@ where
 }
 
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum SignError<S> {
     #[error("Signer error ")]
     Signer(S),
@@ -34,6 +35,7 @@ pub enum SignError<S> {
 
 /// How calldata for the `__execute__` entrypoint is encoded.
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[allow(dead_code)]
 pub enum ExecutionEncoding {
     /// Encode `__execute__` calldata in Cairo 0 style, where calldata from all calls are concated
     /// and appended at the end.

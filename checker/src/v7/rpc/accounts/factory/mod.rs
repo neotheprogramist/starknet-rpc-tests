@@ -75,6 +75,7 @@ const ADDR_BOUND: NonZeroFelt = NonZeroFelt::from_raw([
 ]);
 
 /// This trait enables deploying account contracts using the `DeployAccount` transaction type.
+#[allow(dead_code)]
 pub trait AccountFactory: Sized {
     type Provider: Provider + Sync;
     type SignError: Error + Send + Sync;
@@ -837,13 +838,13 @@ where
         )
     }
 
-    pub fn transaction_hash(&self, query_only: bool) -> Felt {
+    pub fn transaction_hash(&self, _query_only: bool) -> Felt {
         let mut calldata_to_hash = vec![self.factory.class_hash(), self.inner.salt];
         calldata_to_hash.append(&mut self.factory.calldata());
 
         compute_hash_on_elements(&[
             PREFIX_DEPLOY_ACCOUNT,
-            if query_only { Felt::ONE } else { Felt::ONE }, // version
+            Felt::ONE,
             self.address(),
             Felt::ZERO, // entry_point_selector
             compute_hash_on_elements(&calldata_to_hash),
@@ -908,11 +909,11 @@ where
         )
     }
 
-    pub fn transaction_hash(&self, query_only: bool) -> Felt {
+    pub fn transaction_hash(&self, _query_only: bool) -> Felt {
         let mut hasher = PoseidonHasher::new();
 
         hasher.update(PREFIX_DEPLOY_ACCOUNT);
-        hasher.update(if query_only { Felt::THREE } else { Felt::THREE });
+        hasher.update(Felt::THREE);
         hasher.update(self.address());
 
         hasher.update({
@@ -981,7 +982,7 @@ where
 
     async fn get_deploy_request(
         &self,
-        query_only: bool,
+        _query_only: bool,
         skip_signature: bool,
     ) -> Result<DeployAccountTxnV3<Felt>, F::SignError> {
         Ok(DeployAccountTxnV3 {

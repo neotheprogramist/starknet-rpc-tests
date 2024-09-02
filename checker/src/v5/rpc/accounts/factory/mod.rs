@@ -114,7 +114,7 @@ pub trait AccountFactory: Sized {
     // fn deploy_v3(&self, salt: Felt) -> AccountDeploymentV3<Self> {
     //     AccountDeploymentV3::new(salt, self)
     // }
-
+    #[allow(dead_code)]
     #[deprecated = "use version specific variants (`deploy_v1` & `deploy_v3`) instead"]
     fn deploy(&self, salt: Felt) -> AccountDeploymentV1<Self> {
         self.deploy_v1(salt)
@@ -819,13 +819,13 @@ where
         )
     }
 
-    pub fn transaction_hash(&self, query_only: bool) -> Felt {
+    pub fn transaction_hash(&self, _query_only: bool) -> Felt {
         let mut calldata_to_hash = vec![self.factory.class_hash(), self.inner.salt];
         calldata_to_hash.append(&mut self.factory.calldata());
 
         compute_hash_on_elements(&[
             PREFIX_DEPLOY_ACCOUNT,
-            if query_only { Felt::ONE } else { Felt::ONE }, // version
+            Felt::ONE, // version
             self.address(),
             Felt::ZERO, // entry_point_selector
             compute_hash_on_elements(&calldata_to_hash),

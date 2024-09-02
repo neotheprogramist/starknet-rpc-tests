@@ -11,7 +11,7 @@ use std::sync::Arc;
 use super::{
     Account, AccountError, ConnectedAccount, DeclarationV2, PreparedDeclarationV2, RawDeclarationV2,
 };
-
+#[allow(dead_code)]
 pub struct ResourceLimitsMapping {
     /// The max amount and max price per unit of L1 gas used in this tx
     pub l1_gas: ResourceLimits,
@@ -26,7 +26,7 @@ const PREFIX_DECLARE: Felt = Felt::from_raw([
     18446744073709551615,
     17542456862011667323,
 ]);
-
+#[allow(dead_code)]
 /// 2 ^ 128 + 1
 const QUERY_VERSION_ONE: Felt = Felt::from_raw([
     576460752142433776,
@@ -42,7 +42,7 @@ const QUERY_VERSION_TWO: Felt = Felt::from_raw([
     17407,
     18446744073700081601,
 ]);
-
+#[allow(dead_code)]
 /// 2 ^ 128 + 3
 const QUERY_VERSION_THREE: Felt = Felt::from_raw([
     576460752142432688,
