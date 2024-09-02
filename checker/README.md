@@ -46,7 +46,7 @@ starknet-devnet
 After building the crate, you can use it to check the compatibility between the supported versions of Starknet Devnet.
 
 ```bash
-cargo run -p checker -- --url http://127.0.0.1:5050/ --sierra-path target/dev/cairo_contracts_HelloStarknet.contract_class.json --casm-path target/dev/cairo_contracts_HelloStarknet.compiled_contract_class.json --version v5
+cargo run -p checker -- --url http://127.0.0.1:5050/ --sierra-path target/dev/contracts_HelloStarknet.contract_class.json --casm-path target/dev/contracts_HelloStarknet.compiled_contract_class.json --version v5
 ```
 
 ## Notify
@@ -58,8 +58,8 @@ Environment variables are also working
 ```toml
 [env]
 URL = "http://127.0.0.1:5050/"
-SIERRA_PATH = "target/dev/cairo_contracts_HelloStarknet.contract_class.json"
-CASM_PATH = "target/dev/cairo_contracts_HelloStarknet.compiled_contract_class.json"
+SIERRA_PATH = "target/dev/contracts_HelloStarknet.contract_class.json"
+CASM_PATH = "target/dev/contracts_HelloStarknet.compiled_contract_class.json"
 ```
 
 Now simply run:

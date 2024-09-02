@@ -145,6 +145,7 @@ pub struct JsonRpcError {
 
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
+#[allow(dead_code)]
 pub enum JsonRpcResponse<T> {
     Success { id: u64, result: T },
     Error { id: u64, error: JsonRpcError },
