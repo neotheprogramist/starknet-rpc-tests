@@ -12,8 +12,7 @@ cleanup() {
   exit 1
 }
 
-kind create cluster
-if [ $? -ne 0 ]; then
+if ! kind create cluster; then
   echo "Error - Cluster not created."
   exit 1
 fi
@@ -22,8 +21,7 @@ wait_for_service_account() {
   local retries=30
   local count=0
   while [ $count -lt $retries ]; do
-    kubectl get serviceaccount default &> /dev/null
-    if [ $? -eq 0 ]; then
+    if kubectl get serviceaccount default &> /dev/null; then
       echo "Default service account created."
       return 0
     fi
@@ -34,22 +32,19 @@ wait_for_service_account() {
   return 1
 }
 
-wait_for_service_account
-if [ $? -ne 0 ]; then
+if ! wait_for_service_account; then
   echo "Error - Default service account not found."
   cleanup
 fi
 
 echo "Applying pods from $PODS_FILE..."
-kubectl apply -f $PODS_FILE
-if [ $? -ne 0 ]; then
+if ! kubectl apply -f "$PODS_FILE"; then
   echo "Error - Pods not applied."
   cleanup
 fi
 
 echo "Applying services from $SERVICES_FILE..."
-kubectl apply -f $SERVICES_FILE
-if [ $? -ne 0 ]; then
+if ! kubectl apply -f "$SERVICES_FILE"; then
   echo "Error - Services not applied."
   cleanup
 fi
