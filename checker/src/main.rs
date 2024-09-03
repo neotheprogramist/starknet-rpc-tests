@@ -35,6 +35,10 @@ async fn main() -> Result<(), String> {
             }
         }
         Version::V6 => {
+            if let Err(e) = V6::devnet::test_devnet_endpoints(args.url.clone()).await {
+                error!("Failure: {}", e.to_string().red());
+            }
+
             if let Err(e) = V6::rpc::endpoints::test_rpc_endpoints_v0_0_6(
                 args.url.clone(),
                 &args.sierra_path,
@@ -46,6 +50,10 @@ async fn main() -> Result<(), String> {
             }
         }
         Version::V7 => {
+            if let Err(e) = V7::devnet::test_devnet_endpoints(args.url.clone()).await {
+                error!("Failure: {}", e.to_string().red());
+            }
+
             if let Err(e) = V7::rpc::endpoints::test_rpc_endpoints_v0_0_7(
                 args.url.clone(),
                 &args.sierra_path,
