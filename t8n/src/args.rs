@@ -9,6 +9,6 @@ pub struct Args {
     #[arg(long, short, env)]
     pub txns_path: String,
 
-    #[arg(long, short, env)]
+    #[arg(long, short, env, default_value = "./target/t8n/output.json")]
     pub state_path: String,
 }

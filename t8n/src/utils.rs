@@ -2,9 +2,9 @@ use serde::Serialize;
 
 use starknet_devnet_types::rpc::transactions::BroadcastedTransaction;
 use std::error::Error;
-use std::io::Write;
+use std::fs;
 use std::{fs::File, io::BufReader};
-use tracing::info;
+use tracing::{error, info};
 
 use crate::starknet::state::add_declare_transaction::add_declare_transaction;
 use crate::starknet::state::add_deploy_account_transaction::add_deploy_account_transaction;
@@ -78,9 +78,15 @@ pub fn write_result_state_file<T: Serialize>(
     file_path: &str,
     data: &T,
 ) -> Result<(), Box<dyn Error>> {
-    let mut file = File::create(file_path)?;
-    let json = serde_json::to_string_pretty(data)?;
-    file.write_all(json.as_bytes())?;
+    if let Some(parent) = std::path::Path::new(file_path).parent() {
+        fs::create_dir_all(parent)?;
+    }
+    let file = File::create(file_path)?;
+    serde_json::to_writer_pretty(&file, data).map_err(|e| {
+        error!("Failed to write JSON to file: {}", e);
+        e
+    })?;
+
     info!("State written into {}", file_path);
     Ok(())
 }
