@@ -82,9 +82,10 @@ pub fn write_result_state_file<T: Serialize>(
         fs::create_dir_all(parent)?;
     }
     let file = File::create(file_path)?;
-    if let Err(e) = serde_json::to_writer_pretty(&file, data) {
+    serde_json::to_writer_pretty(&file, data).map_err(|e| {
         error!("Failed to write JSON to file: {}", e);
-    }
+        e
+    })?;
 
     info!("State written into {}", file_path);
     Ok(())
