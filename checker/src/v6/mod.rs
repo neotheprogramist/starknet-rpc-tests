@@ -1,2 +1,2 @@
-pub mod rpc;
 pub mod devnet;
+pub mod rpc;
