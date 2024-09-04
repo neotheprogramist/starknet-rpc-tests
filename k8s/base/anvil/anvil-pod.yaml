@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: anvil-1
+  labels:
+    name: anvil-1
+spec:
+  containers:
+    - name: anvil-1
+      image: ghcr.io/foundry-rs/foundry:nightly-143abd6a768eeb52a5785240b763d72a56987b4a
+      ports:
+        - containerPort: 8545
+      args: ["anvil", "-p", "8545", "--host", "0.0.0.0"]
