@@ -3,14 +3,19 @@ kind: Pod
 metadata:
   name: anvil-1
   labels:
-    name: anvil-1
+    app.kubernetes.io/name: anvil
 spec:
   containers:
     - name: anvil-1
       image: ghcr.io/foundry-rs/foundry:nightly-143abd6a768eeb52a5785240b763d72a56987b4a
       ports:
         - containerPort: 8545
-      args: ["anvil", "-p", "8545", "--host", "0.0.0.0"]
+      command: ["anvil"]
+      args: ["--port", "8545", "--host", "0.0.0.0", "--fork-url", "$(FORK_URL)"]
+      envFrom:
+        - secretRef:
+            name: secret
+
 ---
 apiVersion: v1
 kind: Service
@@ -18,7 +23,7 @@ metadata:
   name: anvil-service
 spec:
   selector:
-    name: anvil-1
+    app.kubernetes.io/name: anvil
   ports:
     - protocol: TCP
       port: 8545

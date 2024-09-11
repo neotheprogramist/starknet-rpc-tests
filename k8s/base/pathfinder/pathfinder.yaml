@@ -12,6 +12,15 @@ spec:
         - containerPort: 80
         - containerPort: 9090
         - containerPort: 9545
+      env:
+        - name: PATHFINDER_MONITOR_ADDRESS
+          value: "0.0.0.0:9090"
+        - name: PATHFINDER_HTTP_RPC_ADDRESS
+          value: "0.0.0.0:9545"
+        - name: PATHFINDER_ETHEREUM_API_URL
+          value: "http://anvil-service:8545"
+        - name: PATHFINDER_NETWORK
+          value: "sepolia-testnet"
 ---
 apiVersion: v1
 kind: Pod
@@ -27,6 +36,15 @@ spec:
         - containerPort: 80
         - containerPort: 9090
         - containerPort: 9545
+      env:
+        - name: PATHFINDER_MONITOR_ADDRESS
+          value: "0.0.0.0:9090"
+        - name: PATHFINDER_HTTP_RPC_ADDRESS
+          value: "0.0.0.0:9545"
+        - name: PATHFINDER_ETHEREUM_API_URL
+          value: "http://anvil-service:8545"
+        - name: PATHFINDER_NETWORK
+          value: "sepolia-testnet"
 ---
 apiVersion: v1
 kind: Service

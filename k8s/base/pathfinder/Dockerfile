@@ -21,9 +21,4 @@ RUN git fetch && git checkout $(git describe --tags `git rev-list --tags --max-c
 
 RUN cargo build --release --bin pathfinder
 
-ENV PATHFINDER_MONITOR_ADDRESS=0.0.0.0:9090
-ENV PATHFINDER_HTTP_RPC_ADDRESS=0.0.0.0:9545
-ENV PATHFINDER_ETHEREUM_API_URL=https://eth-sepolia.g.alchemy.com/v2/bkM2DYyg8UBW7zANvO_F9NcagmiqAHRG
-ENV PATHFINDER_NETWORK=sepolia-testnet
-
 ENTRYPOINT ["./target/release/pathfinder"]

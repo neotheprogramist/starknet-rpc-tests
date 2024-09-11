@@ -4,3 +4,11 @@ kind: Kustomization
 resources:
   - pathfinder
   - anvil
+
+secretGenerator:
+  - name: secret
+    envs:
+      - .env
+
+generatorOptions:
+  disableNameSuffixHash: true
