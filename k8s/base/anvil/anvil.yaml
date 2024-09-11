@@ -13,7 +13,10 @@ spec:
       ports:
         - containerPort: 8545
       command: ["anvil"]
-      args: ["--port", "8545", "--host", "0.0.0.0", "--fork-url", "$(FORK_URL)"]
+      args: ["--port", "8545", "--fork-url", "$(FORK_URL)"]
+      env:
+        - name: ANVIL_IP_ADDR
+          value: "0.0.0.0"
       envFrom:
         - secretRef:
             name: secret
