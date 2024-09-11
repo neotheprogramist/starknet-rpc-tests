@@ -7,7 +7,9 @@ metadata:
 spec:
   containers:
     - name: anvil-1
-      image: ghcr.io/foundry-rs/foundry:nightly-143abd6a768eeb52a5785240b763d72a56987b4a
+      image: ghcr.io/foundry-rs/foundry:master
+      securityContext:
+        allowPrivilegeEscalation: false
       ports:
         - containerPort: 8545
       command: ["anvil"]
