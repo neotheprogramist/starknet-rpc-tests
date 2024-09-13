@@ -65,9 +65,13 @@ impl HashIdentified for StarknetTransactions {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct StarknetTransaction {
     pub inner: TransactionWithHash,
+    #[serde(skip_serializing)]
     pub(crate) finality_status: TransactionFinalityStatus,
+    #[serde(skip_serializing)]
     pub(crate) execution_result: ExecutionResult,
+    #[serde(skip_serializing)]
     pub(crate) block_hash: Option<BlockHash>,
+    #[serde(skip_serializing)]
     pub(crate) block_number: Option<BlockNumber>,
     #[serde(skip)]
     pub(crate) execution_info: TransactionExecutionInfo,

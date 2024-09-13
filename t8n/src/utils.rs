@@ -1,5 +1,6 @@
 use serde::Serialize;
 
+use starknet_devnet_types::rpc::transaction_receipt::TransactionReceipt;
 use starknet_devnet_types::rpc::transactions::BroadcastedTransaction;
 use std::error::Error;
 use std::fs;
@@ -18,6 +19,15 @@ pub fn read_transactions_file(
     let reader = BufReader::new(file);
     let transactions: Vec<BroadcastedTransaction> = serde_json::from_reader(reader)?;
     Ok(transactions)
+}
+
+pub fn add_transaction_receipts(starknet: &mut Starknet) {
+    let mut receipts: Vec<TransactionReceipt> = vec![];
+    for starknet_transaction in starknet.transactions.iter() {
+        let (_, transaction) = starknet_transaction;
+        receipts.push(transaction.get_receipt().unwrap());
+    }
+    starknet.transaction_receipts = receipts;
 }
 
 pub fn handle_transactions(starknet: &mut Starknet, transactions: Vec<BroadcastedTransaction>) {
