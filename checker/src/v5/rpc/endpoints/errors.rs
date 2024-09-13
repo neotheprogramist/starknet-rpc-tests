@@ -12,7 +12,7 @@ use core::fmt::{Display, Formatter, Result};
 #[derive(Error, Debug)]
 #[allow(dead_code)]
 pub enum RpcError {
-    #[error("request error: {0}")]
+    #[error(transparent)]
     RequestError(#[from] reqwest::Error),
     #[error("URL parse error: {0}")]
     UrlParseError(#[from] url::ParseError),
@@ -43,7 +43,7 @@ pub enum RpcError {
 #[derive(Error, Debug)]
 pub enum CallError {
     #[error("Error getting response text")]
-    CreateAccountError(String),
+    CreateAccountError,
 
     #[error("Error getting response text")]
     ProviderError(#[from] ProviderError),
