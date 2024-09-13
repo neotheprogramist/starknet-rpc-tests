@@ -5,7 +5,7 @@ pub mod utils;
 use args::Args;
 use clap::Parser;
 use starknet::state::{starknet_config::StarknetConfig, Starknet};
-use utils::{handle_transactions, read_transactions_file, write_result_state_file};
+use utils::{handle_transactions, read_transactions_file, write_result_state_file, add_transaction_receipts};
 
 fn main() {
     tracing_subscriber::fmt()
@@ -17,5 +17,6 @@ fn main() {
 
     let transactions = read_transactions_file(&args.txns_path).unwrap();
     handle_transactions(&mut starknet, transactions);
+    add_transaction_receipts(&mut starknet);
     write_result_state_file(&args.state_path, &starknet).unwrap();
 }

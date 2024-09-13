@@ -118,7 +118,7 @@ pub struct Starknet {
     // To avoid repeating some logic related to blocks,
     // having `blocks` public allows to re-use functions like `get_blocks()`.
     pub blocks: StarknetBlocks,
-    #[serde(skip_serializing)]
+    // #[serde(skip_serializing)]
     pub transactions: StarknetTransactions,
     #[serde(skip_serializing)]
     pub config: StarknetConfig,
@@ -130,6 +130,7 @@ pub struct Starknet {
     pub messaging: MessagingBroker,
     #[serde(skip_serializing)]
     pub dump_events: Vec<DumpEvent>,
+    pub transaction_receipts: Vec<TransactionReceipt>,
 }
 
 impl Default for Starknet {
@@ -152,6 +153,7 @@ impl Default for Starknet {
             next_block_timestamp: None,
             messaging: Default::default(),
             dump_events: Default::default(),
+            transaction_receipts: Default::default(),
         }
     }
 }
@@ -247,6 +249,7 @@ impl Starknet {
             next_block_timestamp: None,
             messaging: Default::default(),
             dump_events: Default::default(),
+            transaction_receipts: Default::default(),
         };
 
         this.restart_pending_block()?;
