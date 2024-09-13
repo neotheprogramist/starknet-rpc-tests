@@ -1,25 +1,21 @@
 use pathfinder_types::types::block_hash::{
-    calculate_event_commitment, calculate_receipt_commitment,
-    calculate_transaction_commitment, compute_final_hash,
+    calculate_event_commitment, calculate_receipt_commitment, calculate_transaction_commitment,
+    compute_final_hash,
 };
 
-use pathfinder_types::types::event::{Event, get_events_count, extract_emmited_events};
-use pathfinder_types::types::reply::state_update::StateDiff as GatewayStateDiff;
 use pathfinder_types::starknet::state_diff::BlockStateDiff;
 use pathfinder_types::types::block::{Block, BlockHeader, BlockHeaderData};
+use pathfinder_types::types::event::{extract_emmited_events, get_events_count, Event};
 use pathfinder_types::types::receipt::convert_receipts;
+use pathfinder_types::types::reply::state_update::StateDiff as GatewayStateDiff;
 use pathfinder_types::types::reply::StateUpdate as GatewayStateUpdate;
 use pathfinder_types::types::state_update::{state_diff_commitment::compute, StateUpdate};
 use starknet_devnet_types::rpc::transaction_receipt::TransactionReceipt;
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_7_1::starknet_api_openrpc::{
-    BlockStatus, TxnWithHash,
-};
+use starknet_types_rpc::v0_7_1::starknet_api_openrpc::{BlockStatus, TxnWithHash};
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
-
-
 
 pub fn build_block_tx_hashes(
     block_header_path: PathBuf,
@@ -132,7 +128,9 @@ pub fn build_block_tx_hashes(
                 .trim_start_matches("0x"),
             16,
         )?,
-        receipt_commitment: calculate_receipt_commitment(&convert_receipts(transaction_receipts.clone()))?,
+        receipt_commitment: calculate_receipt_commitment(&convert_receipts(
+            transaction_receipts.clone(),
+        ))?,
         l1_da_mode: block_header.l1_da_mode,
     };
 
@@ -144,4 +142,3 @@ pub fn build_block_tx_hashes(
     };
     Ok(block)
 }
-

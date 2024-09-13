@@ -28,7 +28,6 @@ pub fn add_transaction_receipts(starknet: &mut Starknet) {
         receipts.push(transaction.get_receipt().unwrap());
     }
     starknet.transaction_receipts = receipts;
-
 }
 
 pub fn handle_transactions(starknet: &mut Starknet, transactions: Vec<BroadcastedTransaction>) {

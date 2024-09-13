@@ -15,6 +15,4 @@ pub struct Args {
 
     #[arg(short, long, env)]
     pub state_diff_path: PathBuf,
-
-
 }
