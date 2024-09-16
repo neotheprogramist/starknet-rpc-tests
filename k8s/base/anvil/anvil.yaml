@@ -20,7 +20,6 @@ spec:
       envFrom:
         - secretRef:
             name: secret
-
 ---
 apiVersion: v1
 kind: Service

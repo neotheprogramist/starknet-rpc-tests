@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pathfinder-pv-1
+spec:
+  capacity:
+    storage: 12Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  hostPath:
+    path: "/mnt/data/pathfinder"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pathfinder-pvc-1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 12Gi
+---
+# apiVersion: v1
+# kind: PersistentVolume
+# metadata:
+#   name: pathfinder-pv-2
+# spec:
+#   capacity:
+#     storage: 12Gi
+#   accessModes:
+#     - ReadWriteOnce
+#   persistentVolumeReclaimPolicy: Retain
+#   volumeMode: Filesystem
+#   hostPath:
+#     path: "/mnt/data/pathfinder2"
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: pathfinder-pvc-2
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 12Gi
+# ---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pathfinder-snapshot-fetcher
+spec:
+  template:
+    spec:
+      containers:
+        - name: pathfinder-snapshot-fetcher
+          image: uacias/pathfinder-snapshot:latest
+          volumeMounts:
+            - name: pathfinder-data-1
+              mountPath: /mnt/data/pathfinder
+            # - name: pathfinder-data-2
+            #   mountPath: /mnt/data/pathfinder2
+      restartPolicy: OnFailure
+      volumes:
+        - name: pathfinder-data-1
+          persistentVolumeClaim:
+            claimName: pathfinder-pvc-1
+        # - name: pathfinder-data-2
+        #   persistentVolumeClaim:
+        #     claimName: pathfinder-pvc-2
