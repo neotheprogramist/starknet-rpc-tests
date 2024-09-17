@@ -466,8 +466,6 @@ impl Starknet {
     ) -> DevnetResult<()> {
         let state_diff = self.state.diff_trace()?;
 
-        println!("state_diff to TRACE: {:?}", state_diff);
-
         let trace = create_trace(
             &mut self.state.state,
             transaction.get_type(),
