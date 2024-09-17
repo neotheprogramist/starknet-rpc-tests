@@ -3,4 +3,6 @@ kind: Kustomization
 
 resources:
   - pathfinder-pv.yaml
+  - pathfinder-pvc.yaml
+  - pathfinder-db-snapshot.yaml
   - pathfinder.yaml
