@@ -4,7 +4,6 @@ use args::Args;
 use block_build::block::build_block_tx_hashes;
 use clap::Parser;
 use serde_json;
-use starknet_types_rpc::v0_7_1::starknet_api_openrpc::BlockStatus;
 
 fn main() {
     //target/b11r
@@ -15,7 +14,6 @@ fn main() {
         args.transactions_path,
         args.receipt_path,
         args.state_diff_path,
-        BlockStatus::AcceptedOnL2,
     )
     .unwrap();
 

@@ -13,6 +13,7 @@ use blockifier::state::{
 use serde::Serialize;
 use starknet_api::{core::CompiledClassHash, hash::StarkFelt};
 use starknet_devnet_types::contract_address::ContractAddress;
+use starknet_devnet_types::contract_class::deprecated::rpc_contract_class;
 use starknet_devnet_types::contract_class::ContractClass;
 use starknet_devnet_types::felt::Felt;
 
@@ -66,6 +67,7 @@ impl CommittedClassStorage {
         self.commit();
     }
 }
+
 #[derive(Debug, Serialize)]
 pub struct StarknetState {
     pub state: CachedState<DictState>,
@@ -110,6 +112,25 @@ impl StarknetState {
             new_historic.clone(),
             GlobalContractCache::new(GLOBAL_CONTRACT_CACHE_SIZE_FOR_TEST),
         );
+        Ok(diff)
+    }
+
+    pub fn diff_trace(&mut self) -> DevnetResult<StateDiff> {
+        let mut transactional_rpc_contract_classes = self.clone_rpc_contract_classes();
+        let mut transactional_state = CachedState::new(
+            CachedState::create_transactional(&mut self.state),GlobalContractCache::new(GLOBAL_CONTRACT_CACHE_SIZE_FOR_TEST),
+        );
+        let diff = StateDiff::generate(&mut transactional_state, &mut transactional_rpc_contract_classes)?;
+        Ok(diff)
+    }
+
+    pub fn to_state_diff(&mut self) -> DevnetResult<StateDiff> {
+        let diff = StateDiff::generate(&mut self.state, &mut self.rpc_contract_classes)?;
+        // let new_historic = self.expand_historic(diff.clone())?;
+        // self.state = CachedState::new(
+        //     new_historic.clone(),
+        //     GlobalContractCache::new(GLOBAL_CONTRACT_CACHE_SIZE_FOR_TEST),
+        // );
         Ok(diff)
     }
 

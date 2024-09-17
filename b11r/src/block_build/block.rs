@@ -12,7 +12,7 @@ use pathfinder_types::types::reply::StateUpdate as GatewayStateUpdate;
 use pathfinder_types::types::state_update::{state_diff_commitment::compute, StateUpdate};
 use starknet_devnet_types::rpc::transaction_receipt::TransactionReceipt;
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_7_1::starknet_api_openrpc::{BlockStatus, TxnWithHash};
+use starknet_types_rpc::v0_7_1::starknet_api_openrpc::TxnWithHash;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -22,7 +22,6 @@ pub fn build_block_tx_hashes(
     transactions_path: PathBuf,
     receipt_path: PathBuf,
     state_diff_path: PathBuf,
-    status: BlockStatus,
 ) -> Result<Block, Box<dyn std::error::Error>> {
     let mut header_file = File::open(block_header_path).expect("Unable to open file");
 

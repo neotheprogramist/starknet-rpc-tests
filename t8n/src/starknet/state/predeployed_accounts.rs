@@ -17,7 +17,7 @@ use super::{
     utils::random_number_generator::generate_u128_random_numbers,
 };
 
-#[derive(Default, Debug, Serialize)]
+#[derive(Default, Debug, Serialize, Clone)]
 pub struct UserDeployedAccounts {
     pub eth_fee_token_address: ContractAddress,
     pub strk_fee_token_address: ContractAddress,

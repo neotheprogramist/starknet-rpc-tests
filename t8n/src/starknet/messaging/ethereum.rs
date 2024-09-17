@@ -71,7 +71,7 @@ impl From<WalletError> for Error {
         Error::MessagingError(MessagingError::EthersError(format!("WalletError: {}", e)))
     }
 }
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// Ethereum related configuration and types.
 pub struct EthereumMessaging {
     provider: Arc<Provider<Http>>,

@@ -19,6 +19,7 @@ fn main() {
 
     let transactions = read_transactions_file(&args.txns_path).unwrap();
     handle_transactions(&mut starknet, transactions);
+    // starknet.to_st
     add_transaction_receipts(&mut starknet);
     write_result_state_file(&args.state_path, &starknet).unwrap();
 }
