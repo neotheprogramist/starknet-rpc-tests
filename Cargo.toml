@@ -13,7 +13,7 @@ clap_derive = "4.5.13"
 colored = "2.1.0"
 crypto-bigint = "0.5.5"
 lambdaworks-math = { version = "0.7.0", default-features = false }
-pathfinder-types = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "pathfinder" }
+pathfinder-types = { path = "/home/piotrstec/dev/typesrs_forked/types-rs/crates/pathfinder-types" }
 rand = "0.8.5"
 regex = "1.10.6"
 reqwest = { version = "0.12.7", features = ["json", "blocking"] }
@@ -27,8 +27,8 @@ serde_json_pythonic = "0.1.2"
 serde_with = "3.9.0"
 sha3 = "0.10.8"
 starknet-devnet-types = { git = "https://github.com/neotheprogramist/starknet-devnet-rs.git", branch = "feat/1-modified-blockifier" }
-starknet-types-core = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "pathfinder" }
-starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "pathfinder" }
+starknet-types-core = { path = "/home/piotrstec/dev/typesrs_forked/types-rs/crates/starknet-types-core" }
+starknet-types-rpc = { path = "/home/piotrstec/dev/typesrs_forked/types-rs/crates/starknet-types-rpc" }
 thiserror = "1.0.63"
 tokio = { version = "1.39.3", features = ["full"] }
 tracing = "0.1.40"

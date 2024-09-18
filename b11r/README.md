@@ -9,9 +9,5 @@ The `b11r` tool is designed to create and validate Starknet blocks from the outp
 
 ## Usage
 ```bash
-cargo run -p b11r -- \
-    --block-header-path b11r/testdata/header.json \
-    --transactions-path b11r/testdata/txs.json \
-    --receipt-path b11r/testdata/transaction_receipts.json \
-    --state-diff-path b11r/testdata/state_diff.json \
+cargo run -p b11r -- --input-path b11r/testdata/state.json --output-path target/b11r/block.json
 ```

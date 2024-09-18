@@ -4,6 +4,7 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
+anyhow = "1.0"
 clap.workspace = true
 hex = "0.4.3"
 pathfinder-types.workspace = true
@@ -14,3 +15,4 @@ starknet-devnet-types.workspace = true
 starknet-types-core.workspace = true
 starknet-types-rpc.workspace = true
 thiserror.workspace = true
+tracing.workspace = true
