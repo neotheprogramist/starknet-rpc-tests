@@ -133,6 +133,7 @@ pub trait AccountFactory: Sized {
 ///
 /// An intermediate type allowing users to optionally specify `nonce` and/or `max_fee`.
 #[must_use]
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct AccountDeploymentV1<'f, F> {
     factory: &'f F,
@@ -204,7 +205,7 @@ pub enum AccountFactoryError<S> {
     #[error("fee calculation overflow")]
     FeeOutOfRange,
 }
-
+#[allow(dead_code)]
 impl<'f, F> AccountDeploymentV1<'f, F> {
     pub fn new(salt: Felt, factory: &'f F) -> Self {
         Self {
@@ -254,7 +255,7 @@ impl<'f, F> AccountDeploymentV1<'f, F> {
         })
     }
 }
-
+#[allow(dead_code)]
 impl<'f, F> AccountDeploymentV3<'f, F> {
     pub fn new(salt: Felt, factory: &'f F) -> Self {
         Self {
@@ -322,7 +323,7 @@ impl<'f, F> AccountDeploymentV3<'f, F> {
         })
     }
 }
-
+#[allow(dead_code)]
 impl<'f, F> AccountDeploymentV1<'f, F>
 where
     F: AccountFactory + Sync,
@@ -515,7 +516,7 @@ where
             .map_err(AccountFactoryError::Provider)
     }
 }
-
+#[allow(dead_code)]
 impl<'f, F> AccountDeploymentV3<'f, F>
 where
     F: AccountFactory + Sync,
@@ -774,7 +775,7 @@ where
             .map_err(AccountFactoryError::Provider)
     }
 }
-
+#[allow(dead_code)]
 impl RawAccountDeploymentV1 {
     pub fn salt(&self) -> Felt {
         self.salt
@@ -788,7 +789,7 @@ impl RawAccountDeploymentV1 {
         self.max_fee
     }
 }
-
+#[allow(dead_code)]
 impl RawAccountDeploymentV3 {
     pub fn salt(&self) -> Felt {
         self.salt
@@ -864,7 +865,9 @@ where
 
         self.factory
             .provider()
-            .add_deploy_account_transaction(BroadcastedDeployAccountTxn::V1(tx_request))
+            .add_deploy_account_transaction(BroadcastedTxn::DeployAccount(
+                BroadcastedDeployAccountTxn::V1(tx_request),
+            ))
             .await
             .map_err(AccountFactoryError::Provider)
     }
@@ -889,7 +892,6 @@ where
             contract_address_salt: self.inner.salt,
             constructor_calldata: self.factory.calldata(),
             class_hash: self.factory.class_hash(),
-            type_: Some("DEPLOY_ACCOUNT".to_string()),
         };
 
         Ok(txn)
@@ -975,7 +977,9 @@ where
             .map_err(AccountFactoryError::Signing)?;
         self.factory
             .provider()
-            .add_deploy_account_transaction(BroadcastedDeployAccountTxn::V3(tx_request))
+            .add_deploy_account_transaction(BroadcastedTxn::DeployAccount(
+                BroadcastedDeployAccountTxn::V3(tx_request),
+            ))
             .await
             .map_err(AccountFactoryError::Provider)
     }
@@ -1018,7 +1022,6 @@ where
             nonce_data_availability_mode: DaMode::L1,
             fee_data_availability_mode: DaMode::L1,
             // is_query: query_only,
-            type_: Some("DEPLOY_ACCOUNT".to_string()),
         })
     }
 }

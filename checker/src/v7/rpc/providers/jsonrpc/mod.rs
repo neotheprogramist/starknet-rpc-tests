@@ -484,7 +484,7 @@ where
     /// Submit a new transaction to be added to the chain
     async fn add_invoke_transaction(
         &self,
-        invoke_transaction: BroadcastedInvokeTxn<FeltPrimitive>,
+        invoke_transaction: BroadcastedTxn<FeltPrimitive>,
     ) -> Result<AddInvokeTransactionResult<FeltPrimitive>, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddInvokeTransaction,
@@ -496,7 +496,7 @@ where
     /// Submit a new transaction to be added to the chain
     async fn add_declare_transaction(
         &self,
-        declare_transaction: BroadcastedDeclareTxn<FeltPrimitive>,
+        declare_transaction: BroadcastedTxn<FeltPrimitive>,
     ) -> Result<ClassAndTxnHash<FeltPrimitive>, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddDeclareTransaction,
@@ -510,7 +510,7 @@ where
     /// Submit a new deploy account transaction
     async fn add_deploy_account_transaction(
         &self,
-        deploy_account_transaction: BroadcastedDeployAccountTxn<FeltPrimitive>,
+        deploy_account_transaction: BroadcastedTxn<FeltPrimitive>,
     ) -> Result<ContractAndTxnHash<FeltPrimitive>, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddDeployAccountTransaction,
@@ -994,7 +994,7 @@ impl core::fmt::Display for StarknetError {
         }
     }
 }
-
+#[allow(dead_code)]
 impl StarknetError {
     pub fn message(&self) -> &'static str {
         match self {

@@ -348,12 +348,6 @@ pub async fn add_invoke_transaction_v1(
     };
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
-    // let sender_address = Felt::from_hex_unchecked(
-    //     "0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1",
-    // );
-    // let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(
-    //     Felt::from_hex_unchecked("0xe1406455b7d66b1690803be066cbe5e"),
-    // )); //signing_key
 
     let mut account = SingleOwnerAccount::new(
         JsonRpcClient::new(HttpTransport::new(url.clone())),
