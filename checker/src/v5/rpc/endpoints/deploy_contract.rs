@@ -22,13 +22,13 @@ pub enum DeployError {
     #[error("Error getting response text")]
     CreateAccountError(String),
 
-    #[error("Error getting response text")]
+    #[error(transparent)]
     ProviderError(#[from] ProviderError),
 
-    #[error("Error parsing hex string")]
+    #[error(transparent)]
     FromStrError(#[from] FromStrError),
 
-    #[error("Runner error")]
+    #[error(transparent)]
     RunnerError(#[from] RunnerError),
 }
 #[allow(dead_code)]

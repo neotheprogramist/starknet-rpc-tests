@@ -19,16 +19,16 @@ use super::declare_contract::RunnerError;
 #[derive(Error, Debug)]
 #[allow(dead_code)]
 pub enum DeployError {
-    #[error("Error getting response text")]
+    #[error("Error creating an account")]
     CreateAccountError(String),
 
-    #[error("Error getting response text")]
+    #[error(transparent)]
     ProviderError(#[from] ProviderError),
 
-    #[error("Error parsing hex string")]
+    #[error(transparent)]
     FromStrError(#[from] FromStrError),
 
-    #[error("Runner error")]
+    #[error(transparent)]
     RunnerError(#[from] RunnerError),
 }
 

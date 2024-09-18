@@ -229,12 +229,7 @@ pub async fn add_declare_transaction_v3(
             return Err(e.into());
         }
     };
-    // let sender_address = Felt::from_hex_unchecked(
-    //     "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-    // );
-    // let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(
-    //     Felt::from_hex_unchecked("0x71d7bb07b9a64f6f78ac4c816aff4da9"),
-    // )); //signing_key
+
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
@@ -494,13 +489,6 @@ pub async fn add_invoke_transaction_v3(
     };
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
-
-    // let sender_address = Felt::from_hex_unchecked(
-    //     "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-    // );
-    // let signer: LocalWallet = LocalWallet::from(SigningKey::from_secret_scalar(
-    //     Felt::from_hex_unchecked("0x71d7bb07b9a64f6f78ac4c816aff4da9"),
-    // )); //signing_key
 
     let mut account = SingleOwnerAccount::new(
         JsonRpcClient::new(HttpTransport::new(url.clone())),
