@@ -12,4 +12,9 @@ pub enum Error {
     ParseIntError(#[from] ParseIntError),
     #[error(transparent)]
     CommitmentError(#[from] anyhow::Error),
+    #[error("No Header found")]
+    NoHeader,
+    #[error("No StateDiff found")]
+    NoStateDiff,
+
 }
