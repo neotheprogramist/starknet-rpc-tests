@@ -23,7 +23,10 @@ use starknet_types_rpc::v0_7_1::starknet_api_openrpc::TxnWithHash;
 use super::errors::Error;
 
 pub fn build_block_tx_hashes(b11r_input: B11rInput) -> Result<Block, Error> {
-    let block_header: BlockHeader = b11r_input.blocks.get_last_block_header().ok_or(Error::NoHeader)?;
+    let block_header: BlockHeader = b11r_input
+        .blocks
+        .get_last_block_header()
+        .ok_or(Error::NoHeader)?;
 
     let transactions: Vec<TxnWithHash<Felt>> = b11r_input.transactions.to_txn_with_hash_vec();
 
@@ -37,8 +40,10 @@ pub fn build_block_tx_hashes(b11r_input: B11rInput) -> Result<Block, Error> {
         .map(|emitted_event| (emitted_event.transaction_hash, emitted_event.events))
         .collect();
 
-    let (block_hash, block_state_diff): (BlockHash, StateDiff) =
-        b11r_input.blocks.get_last_state_diff_with_hash().ok_or(Error::NoStateDiff)?;
+    let (block_hash, block_state_diff): (BlockHash, StateDiff) = b11r_input
+        .blocks
+        .get_last_state_diff_with_hash()
+        .ok_or(Error::NoStateDiff)?;
 
     let state_diff_gateway: GatewayStateDiff = block_state_diff.into();
 

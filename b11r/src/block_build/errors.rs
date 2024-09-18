@@ -16,5 +16,4 @@ pub enum Error {
     NoHeader,
     #[error("No StateDiff found")]
     NoStateDiff,
-
 }
