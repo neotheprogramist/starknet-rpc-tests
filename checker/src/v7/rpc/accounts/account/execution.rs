@@ -758,7 +758,6 @@ where
             nonce: self.inner.nonce,
             sender_address: self.account.address(),
             calldata: self.account.encode_calls(&self.inner.calls),
-            // type_: Some("INVOKE".to_string()),
         })
     }
 }
@@ -777,7 +776,6 @@ where
         self.account
             .provider()
             .add_invoke_transaction(BroadcastedTxn::Invoke(BroadcastedInvokeTxn::V3(tx_request)))
-            // .add_invoke_transaction(BroadcastedInvokeTxn::V3(tx_request))
             .await
             .map_err(AccountError::Provider)
     }
@@ -826,8 +824,6 @@ where
             // Hard-coded L1 DA mode for nonce and fee
             nonce_data_availability_mode: DaMode::L1,
             fee_data_availability_mode: DaMode::L1,
-            // is_query: query_only,
-            // type_: Some("INVOKE".to_string()),
         })
     }
 }

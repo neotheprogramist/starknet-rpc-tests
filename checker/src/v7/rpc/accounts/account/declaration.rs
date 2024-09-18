@@ -1035,9 +1035,6 @@ where
             // Hard-coded L1 DA mode for nonce and fee
             nonce_data_availability_mode: DaMode::L1,
             fee_data_availability_mode: DaMode::L1,
-            // is_query: query_only,
-            // type_: Some("DECLARE".to_string()),
-            // version: Felt::THREE,
         })
     }
 }
