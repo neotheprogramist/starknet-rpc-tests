@@ -2,8 +2,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum DevnetError {
-    #[error("request error: {0}")]
+    #[error(transparent)]
     RequestError(#[from] reqwest::Error),
-    #[error("URL parse error: {0}")]
+    #[error(transparent)]
     UrlParseError(#[from] url::ParseError),
 }

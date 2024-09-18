@@ -12,27 +12,27 @@ use core::fmt::{Display, Formatter, Result};
 #[derive(Error, Debug)]
 #[allow(dead_code)]
 pub enum RpcError {
-    #[error("request error: {0}")]
+    #[error(transparent)]
     RequestError(#[from] reqwest::Error),
-    #[error("URL parse error: {0}")]
+    #[error(transparent)]
     UrlParseError(#[from] url::ParseError),
-    #[error("Runner error {0}")]
+    #[error(transparent)]
     RunnerError(#[from] RunnerError),
-    #[error("Creation error {0}")]
+    #[error(transparent)]
     CreationError(#[from] CreationError),
-    #[error("Minting error {0}")]
+    #[error(transparent)]
     MintError(#[from] MintError),
-    #[error("Sign error {0}")]
+    #[error(transparent)]
     SignError(#[from] SignError),
-    #[error("Account error {0}")]
+    #[error(transparent)]
     AccountError(#[from] AccountError<SignError>),
-    #[error("Provider error {0}")]
+    #[error(transparent)]
     ProviderError(#[from] ProviderError),
-    #[error("Call error {0}")]
+    #[error(transparent)]
     CallError(#[from] CallError),
-    #[error("Non Ascii Name error {0}")]
+    #[error(transparent)]
     NonAsciiNameError(#[from] NonAsciiNameError),
-    #[error("From Str error {0}")]
+    #[error(transparent)]
     FromStrError(#[from] FromStrError),
     #[error("Unexpected block type {0}")]
     UnexpectedBlockResponseType(String),
@@ -46,13 +46,13 @@ pub enum CallError {
     #[error("Error getting response text")]
     CreateAccountError(String),
 
-    #[error("Error getting response text")]
+    #[error(transparent)]
     ProviderError(#[from] ProviderError),
 
-    #[error("Error parsing hex string")]
+    #[error(transparent)]
     FromStrError(#[from] FromStrError),
 
-    #[error("Runner error")]
+    #[error(transparent)]
     RunnerError(#[from] RunnerError),
 
     #[error("Unexpected receipt response type")]

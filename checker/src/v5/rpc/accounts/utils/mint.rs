@@ -7,7 +7,7 @@ use crate::v5::rpc::accounts::creation::structs::{MintRequest, MintResponse};
 
 #[derive(Error, Debug)]
 pub enum MintError {
-    #[error("Reqwest Error")]
+    #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
 
     #[error("Response Status Error")]
@@ -21,7 +21,7 @@ pub enum MintError {
     #[error("Error parsing response")]
     ResponseParseError,
 
-    #[error("Url Join Error")]
+    #[error(transparent)]
     JoinUrlError(#[from] url::ParseError),
 }
 

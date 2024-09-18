@@ -123,10 +123,10 @@ pub async fn get_compiled_contract(
 #[derive(Debug, Error)]
 #[allow(dead_code)]
 pub enum RunnerError {
-    #[error("failed to parse url")]
+    #[error(transparent)]
     ParsingError(#[from] ParseError),
 
-    #[error("SerdeJsonError error: {0}")]
+    #[error(transparent)]
     SerdeJsonError(#[from] serde_json::Error),
 
     #[error("ReadFileError error: {0}")]
@@ -138,12 +138,12 @@ pub enum RunnerError {
     #[error("Deployment error: {0}")]
     DeploymentFailure(String),
 
-    #[error("Box error: {0}")]
+    #[error(transparent)]
     BoxError(#[from] Box<dyn std::error::Error>),
 
     #[error("Starknet-devnet not launched : {0}")]
     DevnetNotLaunched(String),
 
-    #[error("Request failed: {0}")]
+    #[error(transparent)]
     ReqwestError(#[from] reqwest::Error),
 }
