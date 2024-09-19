@@ -14,7 +14,7 @@ pub struct OpenZeppelinAccountFactory<S, P> {
     provider: P,
     block_id: BlockId,
 }
-
+#[allow(dead_code)]
 impl<S, P> OpenZeppelinAccountFactory<S, P>
 where
     S: Signer,

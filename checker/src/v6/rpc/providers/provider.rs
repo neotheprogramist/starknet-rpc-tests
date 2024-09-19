@@ -2,8 +2,7 @@ use auto_impl::auto_impl;
 use serde::{Deserialize, Serialize};
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_6_0::{
-    AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BroadcastedDeclareTxn,
-    BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn, ClassAndTxnHash,
+    AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BroadcastedTxn, ClassAndTxnHash,
     ContractAndTxnHash, ContractClass, EventFilterWithPageRequest, EventsChunk, FeeEstimate,
     FunctionCall, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
     MsgFromL1, SimulateTransactionsResult, SimulationFlag, SyncingStatus,
