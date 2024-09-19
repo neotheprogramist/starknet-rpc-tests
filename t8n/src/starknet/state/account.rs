@@ -98,12 +98,11 @@ impl Account {
         // insanely big - should practically never run out of funds
         let initial_balance = Balance::from(u128::MAX);
         Ok(Self {
-            public_key: Key::from_prefixed_hex_str(CHARGEABLE_ACCOUNT_PUBLIC_KEY).unwrap(),
-            private_key: Key::from_prefixed_hex_str(CHARGEABLE_ACCOUNT_PRIVATE_KEY).unwrap(),
-            account_address: ContractAddress::new(
-                Felt::from_prefixed_hex_str(CHARGEABLE_ACCOUNT_ADDRESS).unwrap(),
-            )
-            .unwrap(),
+            public_key: Key::from_prefixed_hex_str(CHARGEABLE_ACCOUNT_PUBLIC_KEY)?,
+            private_key: Key::from_prefixed_hex_str(CHARGEABLE_ACCOUNT_PRIVATE_KEY)?,
+            account_address: ContractAddress::new(Felt::from_prefixed_hex_str(
+                CHARGEABLE_ACCOUNT_ADDRESS,
+            )?)?,
             initial_balance,
             class_hash,
             contract_class: account_contract_class.into(),

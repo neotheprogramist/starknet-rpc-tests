@@ -1,4 +1,5 @@
-use anyhow;
+use serde_json;
+use starknet_types_core::curve::VerifyError;
 use std::num::ParseIntError;
 use thiserror::Error;
 
@@ -10,10 +11,8 @@ pub enum Error {
     SerdeError(#[from] serde_json::Error),
     #[error(transparent)]
     ParseIntError(#[from] ParseIntError),
+    #[error("Resource name is not a string")]
+    ResourceNameError,
     #[error(transparent)]
-    CommitmentError(#[from] anyhow::Error),
-    #[error("No Header found")]
-    NoHeader,
-    #[error("No StateDiff found")]
-    NoStateDiff,
+    VerifyError(#[from] VerifyError),
 }

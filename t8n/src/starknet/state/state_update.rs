@@ -9,6 +9,7 @@ use starknet_devnet_types::felt::Felt;
 
 use super::state_diff::StateDiff;
 
+#[derive(Debug)]
 pub struct StateUpdate {
     pub block_hash: Felt,
     pub new_root: Felt,

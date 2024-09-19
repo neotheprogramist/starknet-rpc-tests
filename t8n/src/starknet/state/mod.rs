@@ -464,7 +464,7 @@ impl Starknet {
         transaction: &TransactionWithHash,
         tx_info: TransactionExecutionInfo,
     ) -> DevnetResult<()> {
-        let state_diff = self.state.commit_with_diff()?;
+        let state_diff = self.state.diff_trace()?;
 
         let trace = create_trace(
             &mut self.state.state,
@@ -479,9 +479,6 @@ impl Starknet {
 
         self.transactions
             .insert(transaction_hash, transaction_to_add);
-
-        // create new block from pending one
-        self.generate_new_block(state_diff)?;
 
         Ok(())
     }
@@ -553,7 +550,7 @@ impl Starknet {
         );
     }
 
-    fn pending_block(&self) -> &StarknetBlock {
+    pub fn pending_block(&self) -> &StarknetBlock {
         &self.blocks.pending_block
     }
 

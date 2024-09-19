@@ -1,25 +1,19 @@
-mod args;
+pub mod args;
 pub mod block_build;
+pub mod utils;
 use args::Args;
-use block_build::block::build_block_tx_hashes;
+use block_build::{block::build_block_tx_hashes, errors::Error};
 use clap::Parser;
-use serde_json;
-use starknet_types_rpc::v0_7_1::starknet_api_openrpc::BlockStatus;
+use utils::{read_input_file, write_block_file};
 
-fn main() {
-    //target/b11r
+fn main() -> Result<(), Error> {
     let args = Args::parse();
 
-    let block = build_block_tx_hashes(
-        args.block_header_path,
-        args.transactions_path,
-        args.receipt_path,
-        args.state_diff_path,
-        BlockStatus::AcceptedOnL2,
-    )
-    .unwrap();
+    let b11r_input = read_input_file(args.input_path)?;
 
-    let pretty_json = serde_json::to_string_pretty(&block).unwrap();
+    let block = build_block_tx_hashes(b11r_input)?;
 
-    println!("{}", pretty_json);
+    write_block_file(args.output_path, &block)?;
+
+    Ok(())
 }

@@ -12,6 +12,8 @@ pub enum Error {
     #[error(transparent)]
     StateError(#[from] StateError),
     #[error(transparent)]
+    SerdeError(#[from] serde_json::Error),
+    #[error(transparent)]
     BlockifierStateError(#[from] blockifier::state::errors::StateError),
     #[error(transparent)]
     BlockifierTransactionError(#[from] blockifier::transaction::errors::TransactionExecutionError),
