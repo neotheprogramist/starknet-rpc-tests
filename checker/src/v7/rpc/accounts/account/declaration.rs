@@ -34,7 +34,7 @@ const QUERY_VERSION_TWO: Felt = Felt::from_raw([
     17407,
     18446744073700081601,
 ]);
-
+#[allow(dead_code)]
 impl<'a, A> DeclarationV2<'a, A> {
     pub fn new(
         contract_class: Arc<ContractClass<Felt>>,
@@ -89,7 +89,7 @@ impl<'a, A> DeclarationV2<'a, A> {
         })
     }
 }
-
+#[allow(dead_code)]
 impl<'a, A> DeclarationV2<'a, A>
 where
     A: ConnectedAccount + Sync,
@@ -251,7 +251,7 @@ where
             .map_err(AccountError::Provider)
     }
 }
-
+#[allow(dead_code)]
 impl<'a, A> DeclarationV3<'a, A> {
     pub fn new(
         contract_class: ContractClass<Felt>,
@@ -324,7 +324,7 @@ impl<'a, A> DeclarationV3<'a, A> {
         })
     }
 }
-
+#[allow(dead_code)]
 impl<'a, A> DeclarationV3<'a, A>
 where
     A: ConnectedAccount + Sync,
@@ -767,7 +767,7 @@ where
 //             .map_err(AccountError::Provider)
 //     }
 // }
-
+#[allow(dead_code)]
 impl RawDeclarationV2 {
     pub fn transaction_hash(&self, chain_id: Felt, address: Felt, query_only: bool) -> Felt {
         compute_hash_on_elements(&[
@@ -803,7 +803,7 @@ impl RawDeclarationV2 {
         self.max_fee
     }
 }
-
+#[allow(dead_code)]
 impl RawDeclarationV3 {
     pub fn transaction_hash(&self, chain_id: Felt, address: Felt, _query_only: bool) -> Felt {
         let mut hasher = PoseidonHasher::new();
@@ -915,6 +915,7 @@ impl<'a, A> PreparedDeclarationV2<'a, A>
 where
     A: Account,
 {
+    #[allow(dead_code)]
     /// Locally calculates the hash of the transaction to be sent from this declaration given the
     /// parameters.
     pub fn transaction_hash(&self, query_only: bool) -> Felt {
@@ -932,7 +933,9 @@ where
 
         self.account
             .provider()
-            .add_declare_transaction(BroadcastedDeclareTxn::V2(tx_request))
+            .add_declare_transaction(BroadcastedTxn::Declare(BroadcastedDeclareTxn::V2(
+                tx_request,
+            )))
             .await
             .map_err(AccountError::Provider)
     }
@@ -958,7 +961,6 @@ where
             contract_class: Arc::clone(&self.inner.contract_class).as_ref().clone(),
             compiled_class_hash: self.inner.compiled_class_hash,
             sender_address: self.account.address(),
-            type_: Some("DECLARE".to_string()),
         })
     }
 }
@@ -967,6 +969,7 @@ impl<'a, A> PreparedDeclarationV3<'a, A>
 where
     A: Account,
 {
+    #[allow(dead_code)]
     /// Locally calculates the hash of the transaction to be sent from this declaration given the
     /// parameters.
     pub fn transaction_hash(&self, query_only: bool) -> Felt {
@@ -983,7 +986,9 @@ where
         let tx_request = self.get_declare_request(false, false).await?;
         self.account
             .provider()
-            .add_declare_transaction(BroadcastedDeclareTxn::V3(tx_request))
+            .add_declare_transaction(BroadcastedTxn::Declare(BroadcastedDeclareTxn::V3(
+                tx_request,
+            )))
             .await
             .map_err(AccountError::Provider)
     }
@@ -1030,9 +1035,6 @@ where
             // Hard-coded L1 DA mode for nonce and fee
             nonce_data_availability_mode: DaMode::L1,
             fee_data_availability_mode: DaMode::L1,
-            // is_query: query_only,
-            type_: Some("DECLARE".to_string()),
-            // version: Felt::THREE,
         })
     }
 }

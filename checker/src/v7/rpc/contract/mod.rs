@@ -397,12 +397,6 @@ pub use errors::CompressProgramError;
 
 use starknet_types_rpc::v0_7_1::{EntryPointsByType, SierraEntryPoint};
 
-// use super::{
-//     codegen::{EntryPointsByType, SierraEntryPoint},
-//     starknet_utils::{
-//         cairo_short_string_to_felt, normalize_address, starknet_keccak, CairoShortStringToFeltError,
-//     },
-// };
 #[allow(dead_code)]
 
 pub trait HashAndFlatten {

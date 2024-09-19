@@ -23,7 +23,7 @@ pub enum KeystoreError {
     #[error("invalid decrypted secret scalar")]
     InvalidScalar,
 }
-
+#[allow(dead_code)]
 impl SigningKey {
     /// Generates a new key pair from a cryptographically secure RNG.
     pub fn from_random() -> Self {

@@ -14,7 +14,14 @@ Ensure that you have the following installed on your system:
 
 ## Usage
 
-1. **Run the setup script**:
+1. **Create .env file in k8s/base**
+
+   ```sh
+   FORK_URL=FORK_URL
+   ```
+
+
+   2. **Run the setup script**:
 
    ```sh
    ./k8s/scripts/cluster-run.sh

@@ -44,7 +44,6 @@ pub async fn deploy_contract<P: Provider + Send + Sync + Debug>(
 
     factory
         .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
-        // .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
         .send()
         .await
         .unwrap()

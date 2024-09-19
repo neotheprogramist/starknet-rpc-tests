@@ -40,7 +40,7 @@ const QUERY_VERSION_THREE: Felt = Felt::from_raw([
     17407,
     18446744073700081569,
 ]);
-
+#[allow(dead_code)]
 impl<'a, A> ExecutionV1<'a, A> {
     pub fn new(calls: Vec<Call>, account: &'a A) -> Self {
         Self {
@@ -89,7 +89,7 @@ impl<'a, A> ExecutionV1<'a, A> {
         })
     }
 }
-
+#[allow(dead_code)]
 impl<'a, A> ExecutionV3<'a, A> {
     pub fn new(calls: Vec<Call>, account: &'a A) -> Self {
         Self {
@@ -558,7 +558,7 @@ where
             .map_err(AccountError::Provider)
     }
 }
-
+#[allow(dead_code)]
 impl RawExecutionV1 {
     pub fn transaction_hash<E>(
         &self,
@@ -598,7 +598,7 @@ impl RawExecutionV1 {
         self.max_fee
     }
 }
-
+#[allow(dead_code)]
 impl RawExecutionV3 {
     pub fn transaction_hash<E>(
         &self,
@@ -686,7 +686,7 @@ impl RawExecutionV3 {
         self.gas_price
     }
 }
-
+#[allow(dead_code)]
 impl<'a, A> PreparedExecutionV1<'a, A>
 where
     A: Account,
@@ -702,7 +702,7 @@ where
         )
     }
 }
-
+#[allow(dead_code)]
 impl<'a, A> PreparedExecutionV3<'a, A>
 where
     A: Account,
@@ -733,7 +733,7 @@ where
 
         self.account
             .provider()
-            .add_invoke_transaction(BroadcastedInvokeTxn::V1(tx_request))
+            .add_invoke_transaction(BroadcastedTxn::Invoke(BroadcastedInvokeTxn::V1(tx_request)))
             .await
             .map_err(AccountError::Provider)
     }
@@ -758,7 +758,6 @@ where
             nonce: self.inner.nonce,
             sender_address: self.account.address(),
             calldata: self.account.encode_calls(&self.inner.calls),
-            type_: Some("INVOKE".to_string()),
         })
     }
 }
@@ -776,7 +775,7 @@ where
             .map_err(AccountError::Signing)?;
         self.account
             .provider()
-            .add_invoke_transaction(BroadcastedInvokeTxn::V3(tx_request))
+            .add_invoke_transaction(BroadcastedTxn::Invoke(BroadcastedInvokeTxn::V3(tx_request)))
             .await
             .map_err(AccountError::Provider)
     }
@@ -825,8 +824,6 @@ where
             // Hard-coded L1 DA mode for nonce and fee
             nonce_data_availability_mode: DaMode::L1,
             fee_data_availability_mode: DaMode::L1,
-            // is_query: query_only,
-            type_: Some("INVOKE".to_string()),
         })
     }
 }
