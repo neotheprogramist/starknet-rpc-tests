@@ -26,12 +26,17 @@ use super::{
 };
 #[derive(Debug, Serialize)]
 pub struct StarknetBlocks {
+    #[serde(skip_serializing)]
     pub num_to_hash: IndexMap<BlockNumber, BlockHash>,
     pub hash_to_block: HashMap<BlockHash, StarknetBlock>,
+    #[serde(skip_serializing)]
     pub pending_block: StarknetBlock,
+    #[serde(skip_serializing)]
     pub last_block_hash: Option<BlockHash>,
     pub hash_to_state_diff: HashMap<BlockHash, StateDiff>,
+    #[serde(skip_serializing)]
     pub hash_to_state: HashMap<BlockHash, StarknetState>,
+    #[serde(skip_serializing)]
     pub aborted_blocks: Vec<Felt>,
 }
 
