@@ -18,10 +18,10 @@ serde_json.workspace = true
 serde_with.workspace = true
 serde.workspace = true
 sha3.workspace = true
-# starknet-types-core = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "fix/types-v7" }
-# starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "fix/types-v7" }
-starknet-types-core = { path = "/home/filipg/dev/starknet-proposal/types-rs/crates/starknet-types-core" }
-starknet-types-rpc = { path = "/home/filipg/dev/starknet-proposal/types-rs/crates/starknet-types-rpc" }
+starknet-types-core = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "fix/types-v7" }
+starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "fix/types-v7" }
+# starknet-types-core = { path = "/home/filipg/dev/starknet-proposal/types-rs/crates/starknet-types-core" }
+# starknet-types-rpc = { path = "/home/filipg/dev/starknet-proposal/types-rs/crates/starknet-types-rpc" }
 thiserror.workspace = true
 tokio.workspace = true
 tracing-subscriber.workspace = true

@@ -931,6 +931,7 @@ impl core::fmt::Display for StarknetError {
     }
 }
 
+#[allow(dead_code)]
 impl StarknetError {
     pub fn message(&self) -> &'static str {
         match self {
