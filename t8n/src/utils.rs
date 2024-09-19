@@ -3,33 +3,37 @@ use serde::Serialize;
 use crate::starknet::state::add_declare_transaction::add_declare_transaction;
 use crate::starknet::state::add_deploy_account_transaction::add_deploy_account_transaction;
 use crate::starknet::state::add_invoke_transaction::add_invoke_transaction;
+use crate::starknet::state::errors::Error;
 use crate::starknet::state::Starknet;
 use starknet_devnet_types::rpc::transaction_receipt::TransactionReceipt;
 use starknet_devnet_types::rpc::transactions::BroadcastedTransaction;
-use std::error::Error;
-use std::fs;
-use std::{fs::File, io::BufReader};
+use std::{
+    fs::{self, File},
+    io::BufReader,
+};
 use tracing::{error, info};
 
-pub fn read_transactions_file(
-    file_path: &str,
-) -> Result<Vec<BroadcastedTransaction>, Box<dyn Error>> {
+pub fn read_transactions_file(file_path: &str) -> Result<Vec<BroadcastedTransaction>, Error> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
     let transactions: Vec<BroadcastedTransaction> = serde_json::from_reader(reader)?;
     Ok(transactions)
 }
 
-pub fn add_transaction_receipts(starknet: &mut Starknet) {
+pub fn add_transaction_receipts(starknet: &mut Starknet) -> Result<(), Error> {
     let mut receipts: Vec<TransactionReceipt> = vec![];
     for starknet_transaction in starknet.transactions.iter() {
         let (_, transaction) = starknet_transaction;
-        receipts.push(transaction.get_receipt().unwrap());
+        receipts.push(transaction.get_receipt()?);
     }
     starknet.transaction_receipts = receipts;
+    Ok(())
 }
 
-pub fn handle_transactions(starknet: &mut Starknet, transactions: Vec<BroadcastedTransaction>) {
+pub fn handle_transactions(
+    starknet: &mut Starknet,
+    transactions: Vec<BroadcastedTransaction>,
+) -> Result<(), Error> {
     for (index, transaction) in transactions.into_iter().enumerate() {
         match transaction {
             BroadcastedTransaction::Invoke(tx) => match add_invoke_transaction(starknet, tx) {
@@ -81,14 +85,12 @@ pub fn handle_transactions(starknet: &mut Starknet, transactions: Vec<Broadcaste
             }
         }
     }
-    let state_diff = starknet.state.commit_with_diff().unwrap();
-    let _ = starknet.generate_new_block(state_diff.clone());
+    let state_diff = starknet.state.commit_with_diff()?;
+    starknet.generate_new_block(state_diff.clone())?;
+    Ok(())
 }
 
-pub fn write_result_state_file<T: Serialize>(
-    file_path: &str,
-    data: &T,
-) -> Result<(), Box<dyn Error>> {
+pub fn write_result_state_file<T: Serialize>(file_path: &str, data: &T) -> Result<(), Error> {
     if let Some(parent) = std::path::Path::new(file_path).parent() {
         fs::create_dir_all(parent)?;
     }
