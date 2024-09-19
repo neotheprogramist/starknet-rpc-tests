@@ -4,7 +4,7 @@ use auto_impl::auto_impl;
 use serde::{de::DeserializeOwned, Serialize};
 use std::error::Error;
 
-pub use http::{HttpTransport, HttpTransportError};
+pub use http::HttpTransport;
 
 use crate::v5::rpc::providers::jsonrpc::{JsonRpcMethod, JsonRpcResponse};
 

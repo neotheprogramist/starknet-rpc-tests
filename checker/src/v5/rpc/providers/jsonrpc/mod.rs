@@ -3,18 +3,18 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use starknet_types_rpc::v0_5_0::{
     AddDeclareTransactionParams, AddDeployAccountTransactionParams, AddInvokeTransactionParams,
     AddInvokeTransactionResult, BlockHashAndNumber, BlockHashAndNumberParams, BlockId,
-    BlockNumberParams, BroadcastedDeclareTxn, BroadcastedDeployAccountTxn, BroadcastedInvokeTxn,
-    BroadcastedTxn, CallParams, ChainIdParams, ClassAndTxnHash, ContractAndTxnHash, ContractClass,
-    EstimateFeeParams, EstimateMessageFeeParams, EventFilterWithPageRequest, EventsChunk,
-    FeeEstimate, FunctionCall, GetBlockTransactionCountParams, GetBlockWithTxHashesParams,
-    GetBlockWithTxsParams, GetClassAtParams, GetClassHashAtParams, GetClassParams, GetEventsParams,
-    GetNonceParams, GetStateUpdateParams, GetStorageAtParams,
-    GetTransactionByBlockIdAndIndexParams, GetTransactionByHashParams, GetTransactionReceiptParams,
-    GetTransactionStatusParams, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
-    MaybePendingStateUpdate, MsgFromL1, SimulateTransactionsParams, SimulateTransactionsResult,
-    SimulationFlag, SpecVersionParams, SyncingParams, SyncingStatus, TraceBlockTransactionsParams,
-    TraceBlockTransactionsResult, TraceTransactionParams, TransactionTrace, Txn,
-    TxnFinalityAndExecutionStatus, TxnHash, TxnReceipt,
+    BlockNumberParams, BroadcastedTxn, CallParams, ChainIdParams, ClassAndTxnHash,
+    ContractAndTxnHash, ContractClass, EstimateFeeParams, EstimateMessageFeeParams,
+    EventFilterWithPageRequest, EventsChunk, FeeEstimate, FunctionCall,
+    GetBlockTransactionCountParams, GetBlockWithTxHashesParams, GetBlockWithTxsParams,
+    GetClassAtParams, GetClassHashAtParams, GetClassParams, GetEventsParams, GetNonceParams,
+    GetStateUpdateParams, GetStorageAtParams, GetTransactionByBlockIdAndIndexParams,
+    GetTransactionByHashParams, GetTransactionReceiptParams, GetTransactionStatusParams,
+    MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate, MsgFromL1,
+    SimulateTransactionsParams, SimulateTransactionsResult, SimulationFlag, SpecVersionParams,
+    SyncingParams, SyncingStatus, TraceBlockTransactionsParams, TraceBlockTransactionsResult,
+    TraceTransactionParams, TransactionTrace, Txn, TxnFinalityAndExecutionStatus, TxnHash,
+    TxnReceipt,
 };
 use std::{any::Any, error::Error, fmt::Display};
 
@@ -477,7 +477,7 @@ where
     /// Submit a new transaction to be added to the chain
     async fn add_invoke_transaction(
         &self,
-        invoke_transaction: BroadcastedInvokeTxn,
+        invoke_transaction: BroadcastedTxn,
     ) -> Result<AddInvokeTransactionResult, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddInvokeTransaction,
@@ -489,7 +489,7 @@ where
     /// Submit a new transaction to be added to the chain
     async fn add_declare_transaction(
         &self,
-        declare_transaction: BroadcastedDeclareTxn,
+        declare_transaction: BroadcastedTxn,
     ) -> Result<ClassAndTxnHash, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddDeclareTransaction,
@@ -503,7 +503,7 @@ where
     /// Submit a new deploy account transaction
     async fn add_deploy_account_transaction(
         &self,
-        deploy_account_transaction: BroadcastedDeployAccountTxn,
+        deploy_account_transaction: BroadcastedTxn,
     ) -> Result<ContractAndTxnHash, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddDeployAccountTransaction,
@@ -929,7 +929,7 @@ impl core::fmt::Display for StarknetError {
         }
     }
 }
-
+#[allow(dead_code)]
 impl StarknetError {
     pub fn message(&self) -> &'static str {
         match self {
