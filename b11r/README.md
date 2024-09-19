@@ -2,19 +2,19 @@
 
 ## Overview
 
-The `b11r` tool is designed to create and validate Starknet blocks from the output of the `t8n` tool. 
-It processes transaction receipts, events, and state changes according to the guidelines specified in 
+The `b11r` tool is designed to create and validate Starknet blocks from the output of the `t8n` tool.
+It processes transaction receipts, events, and state changes according to the guidelines specified in
 the Starknet documentation, ensuring blocks are consistent with the Starknet protocol.
 
-By default, the `b11r` tool can receive output directly from the `t8n` tool. **Before running `b11r`, 
-you first need to run the `t8n` tool to generate the required input.** You can also specify a custom input 
+By default, the `b11r` tool can receive output directly from the `t8n` tool. **Before running `b11r`,
+you first need to run the `t8n` tool to generate the required input.** You can also specify a custom input
 file in JSON format, as described below.
 
 ## Usage
 
 ### Default Input from `t8n`
 
-By default, the `b11r` tool expects input from the output of the `t8n` tool. Make sure you run `t8n` 
+By default, the `b11r` tool expects input from the output of the `t8n` tool. Make sure you run `t8n`
 first to generate the state and transaction data. You can follow the instructions on how to run the `t8n` tool here:
 
 [t8n README - How to Run](../t8n/README.md)
@@ -22,12 +22,12 @@ first to generate the state and transaction data. You can follow the instruction
 Once the `t8n` tool has been run, you can execute `b11r` like this:
 
 ```bash
-cargo run -p b11r 
+cargo run -p b11r
 ```
 
 ### Custom Input
 
-In addition to using the output from `t8n` as the default, you can also specify a custom input file. 
+In addition to using the output from `t8n` as the default, you can also specify a custom input file.
 The input file must be in JSON format and follow the structure expected by `b11r`.
 
 Here’s an example of how to use a custom input file:
