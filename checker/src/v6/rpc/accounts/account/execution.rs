@@ -718,7 +718,7 @@ where
 
         self.account
             .provider()
-            .add_invoke_transaction(BroadcastedInvokeTxn::V1(tx_request))
+            .add_invoke_transaction(BroadcastedTxn::Invoke(BroadcastedInvokeTxn::V1(tx_request)))
             .await
             .map_err(AccountError::Provider)
     }

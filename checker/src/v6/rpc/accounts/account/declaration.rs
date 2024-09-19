@@ -936,7 +936,9 @@ where
 
         self.account
             .provider()
-            .add_declare_transaction(BroadcastedDeclareTxn::V2(tx_request))
+            .add_declare_transaction(BroadcastedTxn::Declare(BroadcastedDeclareTxn::V2(
+                tx_request,
+            )))
             .await
             .map_err(AccountError::Provider)
     }

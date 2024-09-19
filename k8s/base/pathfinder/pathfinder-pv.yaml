@@ -4,7 +4,7 @@ metadata:
   name: pathfinder-pv
 spec:
   capacity:
-    storage: 10Gi
+    storage: 16Gi
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain
@@ -18,7 +18,7 @@ metadata:
   name: pathfinder-pv-2
 spec:
   capacity:
-    storage: 10Gi
+    storage: 16Gi
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Retain

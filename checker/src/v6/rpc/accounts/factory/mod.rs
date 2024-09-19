@@ -843,7 +843,9 @@ where
 
         self.factory
             .provider()
-            .add_deploy_account_transaction(BroadcastedDeployAccountTxn::V1(tx_request))
+            .add_deploy_account_transaction(BroadcastedTxn::DeployAccount(
+                BroadcastedDeployAccountTxn::V1(tx_request),
+            ))
             .await
             .map_err(AccountFactoryError::Provider)
     }

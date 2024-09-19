@@ -478,7 +478,7 @@ where
     /// Submit a new transaction to be added to the chain
     async fn add_invoke_transaction(
         &self,
-        invoke_transaction: BroadcastedInvokeTxn,
+        invoke_transaction: BroadcastedTxn,
     ) -> Result<AddInvokeTransactionResult, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddInvokeTransaction,
@@ -490,7 +490,7 @@ where
     /// Submit a new transaction to be added to the chain
     async fn add_declare_transaction(
         &self,
-        declare_transaction: BroadcastedDeclareTxn,
+        declare_transaction: BroadcastedTxn,
     ) -> Result<ClassAndTxnHash, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddDeclareTransaction,
@@ -504,7 +504,7 @@ where
     /// Submit a new deploy account transaction
     async fn add_deploy_account_transaction(
         &self,
-        deploy_account_transaction: BroadcastedDeployAccountTxn,
+        deploy_account_transaction: BroadcastedTxn,
     ) -> Result<ContractAndTxnHash, ProviderError> {
         self.send_request(
             JsonRpcMethod::AddDeployAccountTransaction,

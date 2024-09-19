@@ -174,19 +174,19 @@ pub trait Provider {
     /// Submit a new transaction to be added to the chain
     fn add_invoke_transaction(
         &self,
-        invoke_transaction: BroadcastedInvokeTxn,
+        invoke_transaction: BroadcastedTxn,
     ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult, ProviderError>>;
 
     /// Submit a new transaction to be added to the chain
     fn add_declare_transaction(
         &self,
-        declare_transaction: BroadcastedDeclareTxn,
+        declare_transaction: BroadcastedTxn,
     ) -> impl std::future::Future<Output = Result<ClassAndTxnHash, ProviderError>>;
 
     /// Submit a new deploy account transaction
     fn add_deploy_account_transaction(
         &self,
-        deploy_account_transaction: BroadcastedDeployAccountTxn,
+        deploy_account_transaction: BroadcastedTxn,
     ) -> impl std::future::Future<Output = Result<ContractAndTxnHash, ProviderError>>;
 
     /// For a given executed transaction, return the trace of its execution, including internal

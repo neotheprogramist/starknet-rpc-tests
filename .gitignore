@@ -1,8 +1,26 @@
+# Ignore build output directories
 /target
+
+# Ignore Cargo configuration files
 .cargo
+
+# Ignore specific JSON output file
 t8n/src/starknet/output/state.json
+
+# Ignore all lock files
 **/*.lock
+
+# Ignore Node.js dependencies
 /node_modules
+
+# Ignore npm lock file
 package-lock.json
+
+# Ignore environment variable files
 *.env
+
+# Ignore rclone configuration file
 rclone.conf
+
+# Ignore SQLite database files (e.g. pathfinder db snapshot)
+*.sqlite
