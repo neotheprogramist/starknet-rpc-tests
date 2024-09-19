@@ -17,5 +17,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "22"
+      - name: Install dependencies
+        run: npm install
       - name: Run Prettier
-        run: npx -p prettier-plugin-toml prettier --plugin prettier-plugin-toml --check '**/*.{js,jsx,ts,tsx,json,css,scss,yaml,toml,md}'
+        run: npx prettier --plugin prettier-plugin-toml --check '**/*.{js,jsx,ts,tsx,json,css,scss,yaml,toml,md}'

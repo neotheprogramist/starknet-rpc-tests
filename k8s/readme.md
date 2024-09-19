@@ -20,7 +20,6 @@ Ensure that you have the following installed on your system:
    FORK_URL=FORK_URL
    ```
 
-
    2. **Run the setup script**:
 
    ```sh

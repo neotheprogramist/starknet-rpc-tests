@@ -2,8 +2,7 @@ use auto_impl::auto_impl;
 use serde::{Deserialize, Serialize};
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_6_0::{
-    AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BroadcastedDeclareTxn,
-    BroadcastedDeployAccountTxn, BroadcastedInvokeTxn, BroadcastedTxn, ClassAndTxnHash,
+    AddInvokeTransactionResult, BlockHashAndNumber, BlockId, BroadcastedTxn, ClassAndTxnHash,
     ContractAndTxnHash, ContractClass, EventFilterWithPageRequest, EventsChunk, FeeEstimate,
     FunctionCall, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
     MsgFromL1, SimulateTransactionsResult, SimulationFlag, SyncingStatus,
@@ -174,19 +173,19 @@ pub trait Provider {
     /// Submit a new transaction to be added to the chain
     fn add_invoke_transaction(
         &self,
-        invoke_transaction: BroadcastedInvokeTxn,
+        invoke_transaction: BroadcastedTxn,
     ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult, ProviderError>>;
 
     /// Submit a new transaction to be added to the chain
     fn add_declare_transaction(
         &self,
-        declare_transaction: BroadcastedDeclareTxn,
+        declare_transaction: BroadcastedTxn,
     ) -> impl std::future::Future<Output = Result<ClassAndTxnHash, ProviderError>>;
 
     /// Submit a new deploy account transaction
     fn add_deploy_account_transaction(
         &self,
-        deploy_account_transaction: BroadcastedDeployAccountTxn,
+        deploy_account_transaction: BroadcastedTxn,
     ) -> impl std::future::Future<Output = Result<ContractAndTxnHash, ProviderError>>;
 
     /// For a given executed transaction, return the trace of its execution, including internal

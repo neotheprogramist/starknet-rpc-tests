@@ -45,7 +45,7 @@ const QUERY_VERSION_THREE: Felt = Felt::from_raw([
     17407,
     18446744073700081569,
 ]);
-
+#[allow(dead_code)]
 impl<'a, A> DeclarationV2<'a, A> {
     pub fn new(
         contract_class: Arc<ContractClass>,
@@ -100,7 +100,7 @@ impl<'a, A> DeclarationV2<'a, A> {
         })
     }
 }
-
+#[allow(dead_code)]
 impl<'a, A> DeclarationV2<'a, A>
 where
     A: ConnectedAccount + Sync,
@@ -767,7 +767,7 @@ where
 //             .map_err(AccountError::Provider)
 //     }
 // }
-
+#[allow(dead_code)]
 impl RawDeclarationV2 {
     pub fn transaction_hash(&self, chain_id: Felt, address: Felt, query_only: bool) -> Felt {
         compute_hash_on_elements(&[
@@ -914,7 +914,7 @@ impl RawDeclarationV2 {
 //         self.max_fee
 //     }
 // }
-
+#[allow(dead_code)]
 impl<'a, A> PreparedDeclarationV2<'a, A>
 where
     A: Account,
@@ -936,7 +936,9 @@ where
 
         self.account
             .provider()
-            .add_declare_transaction(BroadcastedDeclareTxn::V2(tx_request))
+            .add_declare_transaction(BroadcastedTxn::Declare(BroadcastedDeclareTxn::V2(
+                tx_request,
+            )))
             .await
             .map_err(AccountError::Provider)
     }

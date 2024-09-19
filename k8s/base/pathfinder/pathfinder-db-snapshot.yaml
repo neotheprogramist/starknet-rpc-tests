@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
     - name: pathfinder-fetcher
-      image: uacias/pathfinder-db-snapshot:latest
+      image: uacias/pathfinder-db-snap2:latest
       volumeMounts:
         - mountPath: /mnt/data/pathfinder
           name: pathfinder-volume

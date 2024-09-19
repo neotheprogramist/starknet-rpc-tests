@@ -29,7 +29,7 @@ pub struct ValidatedWaitParams {
     )]
     retry_interval: u8,
 }
-
+#[allow(dead_code)]
 impl ValidatedWaitParams {
     #[must_use]
     pub fn new(retry_interval: u8, timeout: u16) -> Self {

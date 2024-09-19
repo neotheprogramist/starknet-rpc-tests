@@ -198,7 +198,7 @@ pub enum AccountFactoryError<S> {
     #[error("fee calculation overflow")]
     FeeOutOfRange,
 }
-
+#[allow(dead_code)]
 impl<'f, F> AccountDeploymentV1<'f, F> {
     pub fn new(salt: Felt, factory: &'f F) -> Self {
         Self {
@@ -316,7 +316,7 @@ impl<'f, F> AccountDeploymentV1<'f, F> {
 //         })
 //     }
 // }
-
+#[allow(dead_code)]
 impl<'f, F> AccountDeploymentV1<'f, F>
 where
     F: AccountFactory + Sync,
@@ -755,7 +755,7 @@ where
 //             .map_err(AccountFactoryError::Provider)
 //     }
 // }
-
+#[allow(dead_code)]
 impl RawAccountDeploymentV1 {
     pub fn salt(&self) -> Felt {
         self.salt
@@ -843,7 +843,9 @@ where
 
         self.factory
             .provider()
-            .add_deploy_account_transaction(BroadcastedDeployAccountTxn::V1(tx_request))
+            .add_deploy_account_transaction(BroadcastedTxn::DeployAccount(
+                BroadcastedDeployAccountTxn::V1(tx_request),
+            ))
             .await
             .map_err(AccountFactoryError::Provider)
     }

@@ -5,8 +5,8 @@ version.workspace = true
 
 [dependencies]
 auto_impl.workspace = true
-clap.workspace = true
 clap_derive.workspace = true
+clap.workspace = true
 colored.workspace = true
 crypto-bigint.workspace = true
 lambdaworks-math.workspace = true
