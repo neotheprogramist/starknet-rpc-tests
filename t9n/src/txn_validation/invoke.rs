@@ -1,6 +1,5 @@
-use std::error::Error;
-
 use super::constants::{DATA_AVAILABILITY_MODE_BITS, PREFIX_INVOKE};
+use super::errors::Error;
 use starknet_types_core::curve::*;
 use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::poseidon_hash_many;
@@ -10,7 +9,7 @@ pub fn verify_invoke_v1_signature(
     txn: &InvokeTxnV1<Felt>,
     public_key: &str,
     chain_id_input: &str,
-) -> Result<(bool, Felt), VerifyError> {
+) -> Result<(bool, Felt), Error> {
     let chain_id = Felt::from_hex_unchecked(chain_id_input);
 
     let stark_key = Felt::from_hex_unchecked(public_key);
@@ -30,7 +29,7 @@ pub fn verify_invoke_v1_signature(
 
     match verify(&stark_key, &msg_hash, &r_bytes, &s_bytes) {
         Ok(is_valid) => Ok((is_valid, msg_hash)),
-        Err(e) => Err(e),
+        Err(e) => Err(Error::VerifyError(e)),
     }
 }
 
@@ -38,26 +37,26 @@ pub fn verify_invoke_v3_signature(
     txn: &InvokeTxnV3<Felt>,
     public_key: &str,
     chain_id_input: &str,
-) -> Result<(bool, Felt), VerifyError> {
+) -> Result<(bool, Felt), Error> {
     let chain_id = Felt::from_hex_unchecked(chain_id_input);
 
     let stark_key = Felt::from_hex_unchecked(public_key);
 
-    let msg_hash = calculate_invoke_v3_transaction_hash(&chain_id, &txn).unwrap();
+    let msg_hash = calculate_invoke_v3_transaction_hash(&chain_id, &txn)?;
 
     let r_bytes = txn.signature[0];
     let s_bytes = txn.signature[1];
 
     match verify(&stark_key, &msg_hash, &r_bytes, &s_bytes) {
         Ok(is_valid) => Ok((is_valid, msg_hash)),
-        Err(e) => Err(e),
+        Err(e) => Err(Error::VerifyError(e)),
     }
 }
 
 fn calculate_invoke_v3_transaction_hash(
     chain_id: &Felt,
     txn: &InvokeTxnV3<Felt>,
-) -> Result<Felt, Box<dyn Error>> {
+) -> Result<Felt, Error> {
     let common_fields = common_fields_for_hash(PREFIX_INVOKE, *chain_id, txn)?;
     let account_deployment_data_hash = poseidon_hash_many(&txn.account_deployment_data);
 
@@ -75,7 +74,7 @@ fn calculate_invoke_v3_transaction_hash(
 }
 
 /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
-fn get_resource_bounds_array(txn: &InvokeTxnV3<Felt>) -> Result<Vec<Felt>, Box<dyn Error>> {
+fn get_resource_bounds_array(txn: &InvokeTxnV3<Felt>) -> Result<Vec<Felt>, Error> {
     let mut array = Vec::<Felt>::new();
     array.push(txn.tip);
 
@@ -94,13 +93,12 @@ fn get_resource_bounds_array(txn: &InvokeTxnV3<Felt>) -> Result<Vec<Felt>, Box<d
 fn field_element_from_resource_bounds(
     resource: Resource,
     resource_bounds: &ResourceBounds,
-) -> Result<Felt, Box<dyn Error>> {
+) -> Result<Felt, Error> {
     let resource_name_as_json_string = serde_json::to_value(resource)?;
 
-    // Ensure it's a string and get bytes
     let resource_name_bytes = resource_name_as_json_string
         .as_str()
-        .ok_or("Resource name is not a string")?
+        .ok_or(Error::ResourceNameError)?
         .as_bytes();
 
     let max_amount_hex_str = resource_bounds.max_amount.as_str().trim_start_matches("0x");
@@ -130,7 +128,7 @@ fn common_fields_for_hash(
     tx_prefix: Felt,
     chain_id: Felt,
     txn: &InvokeTxnV3<Felt>,
-) -> Result<Vec<Felt>, Box<dyn Error>> {
+) -> Result<Vec<Felt>, Error> {
     let array: Vec<Felt> = vec![
         tx_prefix,                                                      // TX_PREFIX
         Felt::THREE,                                                    // version
@@ -139,8 +137,7 @@ fn common_fields_for_hash(
         poseidon_hash_many(&txn.paymaster_data),                        // h(paymaster_data)
         chain_id,                                                       // chain_id
         txn.nonce,                                                      // nonce
-        get_data_availability_modes_field_element(txn), /* nonce_data_availability ||
-                                                         * fee_data_availability_mode */
+        get_data_availability_modes_field_element(txn), /* nonce_data_availability ||  fee_data_availability_mode */
     ];
 
     Ok(array)
