@@ -18,8 +18,8 @@ serde_json.workspace = true
 serde_with.workspace = true
 serde.workspace = true
 sha3.workspace = true
-starknet-types-core = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "fix/types-v7" }
-starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", branch = "fix/types-v7" }
+starknet-types-core = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "6fd7f8905bebb8a671950a9b5d50a0543c0cb1a5" }
+starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "6fd7f8905bebb8a671950a9b5d50a0543c0cb1a5" }
 thiserror.workspace = true
 tokio.workspace = true
 tracing-subscriber.workspace = true

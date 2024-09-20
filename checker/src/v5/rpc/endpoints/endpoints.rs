@@ -7,7 +7,7 @@ use starknet_types_rpc::v0_5_0::{
     AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, ContractClass,
     DeployAccountTxn, DeployAccountTxnV1, DeployTxnReceipt, FeeEstimate, FunctionCall, InvokeTxn,
     InvokeTxnV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-    StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
+    MsgFromL1, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
 };
 
 use tracing::{info, warn};
@@ -562,23 +562,19 @@ pub async fn estimate_message_fee(
         _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
     }
 
-    // let estimate = provider
-    //     .estimate_message_fee(
-    //         MsgFromL1 {
-    //             from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-    //             to_address: receipt.contract_address,
-    //             entry_point_selector: get_selector_from_name("get_balance").unwrap(),
-    //             payload: vec![],
-    //         },
-    //         BlockId::Tag(BlockTag::Latest),
-    //     )
-    //     .await?;
-    // TODO:
-    Ok(FeeEstimate {
-        gas_consumed: 0,
-        gas_price: 0,
-        overall_fee: 0,
-    })
+    let estimate = provider
+        .estimate_message_fee(
+            MsgFromL1 {
+                from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+                to_address: receipt.contract_address,
+                entry_point_selector: get_selector_from_name("deposit").unwrap(),
+                payload: vec![(1_u32).into(), (10_u32).into()],
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await?;
+
+    Ok(estimate)
 }
 
 pub async fn get_block_transaction_count(url: Url) -> Result<u64, RpcError> {

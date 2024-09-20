@@ -715,11 +715,6 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
         }
     };
 
-    // match receipt.common_receipt_properties.execution_status {
-    //     TxnExecutionStatus::Succeeded => {}
-    //     _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
-    // }
-
     let eth_balance = provider
         .call(
             FunctionCall {
@@ -888,29 +883,19 @@ pub async fn estimate_message_fee(
         }
     };
 
-    // match receipt.common_receipt_properties.execution_status {
-    //     TxnExecutionStatus::Succeeded => {}
-    //     _ => Err(RpcError::CallError(CallError::UnexpectedExecutionResult))?,
-    // }
+    let estimate = provider
+        .estimate_message_fee(
+            MsgFromL1 {
+                from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+                to_address: receipt.contract_address,
+                entry_point_selector: get_selector_from_name("deposit").unwrap(),
+                payload: vec![(1_u32).into(), (10_u32).into()],
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await?;
 
-    let _estimate = provider.estimate_message_fee(
-        MsgFromL1 {
-            from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-            to_address: receipt.contract_address,
-            entry_point_selector: get_selector_from_name("get_balance").unwrap(),
-            payload: vec![],
-        },
-        BlockId::Tag(BlockTag::Latest),
-    );
-    // TODO:
-    Ok(FeeEstimate::<Felt> {
-        gas_consumed: Felt::ZERO,
-        gas_price: Felt::ZERO,
-        overall_fee: Felt::ZERO,
-        unit: PriceUnit::Wei,
-        data_gas_consumed: Felt::ZERO,
-        data_gas_price: Felt::ZERO,
-    })
+    Ok(estimate)
 }
 
 pub async fn get_block_transaction_count(url: Url) -> Result<u64, RpcError> {
