@@ -715,7 +715,6 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
         }
     };
 
-
     let eth_balance = provider
         .call(
             FunctionCall {
@@ -884,18 +883,19 @@ pub async fn estimate_message_fee(
         }
     };
 
-    let estimate = provider.estimate_message_fee(
-        MsgFromL1 {
-            from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
-            to_address: receipt.contract_address,
-            entry_point_selector: get_selector_from_name("deposit").unwrap(),
-            payload: vec![(1_u32).into(), (10_u32).into()],
-        },
-        BlockId::Tag(BlockTag::Latest),
-    ).await?;
+    let estimate = provider
+        .estimate_message_fee(
+            MsgFromL1 {
+                from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
+                to_address: receipt.contract_address,
+                entry_point_selector: get_selector_from_name("deposit").unwrap(),
+                payload: vec![(1_u32).into(), (10_u32).into()],
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await?;
 
     Ok(estimate)
-
 }
 
 pub async fn get_block_transaction_count(url: Url) -> Result<u64, RpcError> {
