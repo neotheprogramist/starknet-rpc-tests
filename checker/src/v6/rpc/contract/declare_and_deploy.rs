@@ -74,7 +74,7 @@ pub async fn decalare_and_deploy(
         chain_id,
         ExecutionEncoding::New,
     );
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let class_hash = declare_contract(&account, sierra_path, casm_path)
         .await

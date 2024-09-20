@@ -117,7 +117,7 @@ pub async fn add_declare_transaction_v2(
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
     let mut account = SingleOwnerAccount::new(
-        JsonRpcClient::new(HttpTransport::new(url.clone())),
+        provider,
         signer,
         sender_address,
         chain_id,
@@ -241,7 +241,7 @@ pub async fn add_declare_transaction_v3(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
@@ -357,7 +357,7 @@ pub async fn add_invoke_transaction_v1(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
@@ -492,7 +492,7 @@ pub async fn add_invoke_transaction_v3(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let hash = match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
@@ -640,7 +640,7 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -810,7 +810,7 @@ pub async fn estimate_message_fee(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -1058,7 +1058,7 @@ pub async fn get_transaction_status_succeeded(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -1231,7 +1231,7 @@ pub async fn get_transaction_by_hash_invoke(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -1492,7 +1492,7 @@ pub async fn get_transaction_receipt(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -1651,7 +1651,7 @@ pub async fn get_transaction_receipt_revert(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -1810,7 +1810,7 @@ pub async fn get_class(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -1956,7 +1956,7 @@ pub async fn get_class_hash_at(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -2121,7 +2121,7 @@ pub async fn get_class_at(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();

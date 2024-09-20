@@ -15,8 +15,7 @@ use starknet_types_rpc::v0_7_1::{BlockId, BlockTag, FeeEstimate};
 
 use super::{create::AccountType, structs::GenerateAccountResponse};
 
-pub const OZ_CLASS_HASH: &str =
-    "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f";
+pub const OZ_CLASS_HASH: &str = "0x61dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f";
 
 pub fn extract_or_generate_salt(salt: Option<Felt>) -> Felt {
     salt.unwrap_or(Felt::from(OsRng.next_u64()))
