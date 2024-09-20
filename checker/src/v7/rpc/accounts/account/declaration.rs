@@ -324,6 +324,7 @@ impl<'a, A> DeclarationV3<'a, A> {
         })
     }
 }
+
 #[allow(dead_code)]
 impl<'a, A> DeclarationV3<'a, A>
 where
