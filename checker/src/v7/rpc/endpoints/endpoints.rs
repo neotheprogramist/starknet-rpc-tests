@@ -124,7 +124,7 @@ pub async fn add_declare_transaction_v2(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Pending));
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
 
     match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
