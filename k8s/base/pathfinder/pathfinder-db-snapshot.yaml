@@ -3,9 +3,23 @@ kind: Pod
 metadata:
   name: pathfinder-db-snapshot
 spec:
+  initContainers:
+    - name: init-copy
+      image: uacias/patfinder-dbs:latest
+      command:
+        [
+          "sh",
+          "-c",
+          "cp /mnt/data/original/testnet-sepolia.sqlite /mnt/data/pathfinder/testnet-sepolia.sqlite && cp /mnt/data/original/testnet-sepolia.sqlite /mnt/data/pathfinder-2/testnet-sepolia.sqlite",
+        ]
+      volumeMounts:
+        - mountPath: /mnt/data/pathfinder
+          name: pathfinder-volume
+        - mountPath: /mnt/data/pathfinder-2
+          name: pathfinder-volume-2
   containers:
     - name: pathfinder-fetcher
-      image: uacias/pathfinder-db-snap2:latest
+      image: uacias/patfinder-dbs:latest
       volumeMounts:
         - mountPath: /mnt/data/pathfinder
           name: pathfinder-volume
