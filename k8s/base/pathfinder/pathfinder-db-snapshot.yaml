@@ -10,12 +10,13 @@ spec:
         [
           "sh",
           "-c",
-          "cp /mnt/data/original/testnet-sepolia.sqlite /mnt/data/pathfinder/testnet-sepolia.sqlite",
-          "cp /mnt/data/original/testnet-sepolia.sqlite /mnt/data/pathfinder-2/testnet-sepolia.sqlite",
+          "cp /mnt/data/original/testnet-sepolia.sqlite /mnt/data/pathfinder/testnet-sepolia.sqlite && cp /mnt/data/original/testnet-sepolia.sqlite /mnt/data/pathfinder-2/testnet-sepolia.sqlite",
         ]
       volumeMounts:
         - mountPath: /mnt/data/pathfinder
           name: pathfinder-volume
+        - mountPath: /mnt/data/pathfinder-2
+          name: pathfinder-volume-2
   containers:
     - name: pathfinder-fetcher
       image: uacias/patfinder-dbs:latest
