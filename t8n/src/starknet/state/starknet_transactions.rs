@@ -1,6 +1,6 @@
 use blockifier::{execution::call_info::CallInfo, transaction::objects::TransactionExecutionInfo};
 use indexmap::IndexMap;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, Serializer};
 use starknet_api::block::BlockNumber;
 use starknet_devnet_types::{
     contract_address::ContractAddress,
@@ -28,8 +28,22 @@ use super::{
     traits::{HashIdentified, HashIdentifiedMut},
 };
 
-#[derive(Debug, Default, Serialize, Deserialize)]
+#[derive(Debug, Default, Deserialize)]
 pub struct StarknetTransactions(IndexMap<TransactionHash, StarknetTransaction>);
+
+impl Serialize for StarknetTransactions {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let inner_vec: Vec<&TransactionWithHash> = self
+            .0
+            .values()
+            .map(|transaction| &transaction.inner)
+            .collect();
+        inner_vec.serialize(serializer)
+    }
+}
 
 impl StarknetTransactions {
     pub fn insert(&mut self, transaction_hash: &TransactionHash, transaction: StarknetTransaction) {
