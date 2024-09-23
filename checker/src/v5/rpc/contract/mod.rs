@@ -12,8 +12,8 @@ use super::{
     },
     contract::unsigned_felt::UfeHex,
 };
+use crypto_utils::hash::poseidon_hash::{poseidon_hash_many, PoseidonHasher};
 use starknet_types_core::felt::Felt;
-use starknet_types_core::hash::{poseidon_hash_many, PoseidonHasher};
 use starknet_types_rpc::v0_5_0::{ContractClass, DeprecatedContractClass};
 
 use std::boxed;

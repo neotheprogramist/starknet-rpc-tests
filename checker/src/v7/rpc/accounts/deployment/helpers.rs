@@ -1,4 +1,4 @@
-use starknet_types_core::curve::compute_hash_on_elements;
+use crypto_utils::curve::signer::compute_hash_on_elements;
 use starknet_types_core::felt::Felt;
 
 use crate::v7::rpc::{

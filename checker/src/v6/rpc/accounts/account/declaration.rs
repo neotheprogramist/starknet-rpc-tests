@@ -1,6 +1,6 @@
 use crate::v6::rpc::accounts::account::ContractClassHasher;
 use crate::v6::rpc::{accounts::errors::NotPreparedError, providers::provider::Provider};
-use starknet_types_core::curve::compute_hash_on_elements;
+use crypto_utils::curve::signer::compute_hash_on_elements;
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_6_0::{
     BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedTxn, ClassAndTxnHash, ContractClass,
@@ -964,7 +964,6 @@ where
             contract_class: Arc::clone(&self.inner.contract_class).as_ref().clone(),
             compiled_class_hash: self.inner.compiled_class_hash,
             sender_address: self.account.address(),
-            type_: Some("DECLARE".to_string()),
         })
     }
 }

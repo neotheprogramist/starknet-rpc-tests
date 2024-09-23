@@ -2,15 +2,17 @@ use crate::v7::rpc::accounts::account::ContractClassHasher;
 
 use crate::v7::rpc::{accounts::errors::NotPreparedError, providers::provider::Provider};
 
-use starknet_types_core::curve::compute_hash_on_elements;
+// use starknet_types_core::curve::compute_hash_on_elements;
+use crypto_utils::curve::signer::compute_hash_on_elements;
 use starknet_types_core::felt::Felt;
-use starknet_types_core::hash::PoseidonHasher;
+// use starknet_types_core::hash::PoseidonHasher;
+use crypto_utils::hash::poseidon_hash::PoseidonHasher;
 use starknet_types_rpc::v0_7_1::{
     BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedDeclareTxnV3, BroadcastedTxn,
     ClassAndTxnHash, ContractClass, FeeEstimate, SimulateTransactionsResult, SimulationFlag,
 };
 use starknet_types_rpc::{
-    DaMode, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping,
+    DaMode, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping, Version,
 };
 use std::sync::Arc;
 

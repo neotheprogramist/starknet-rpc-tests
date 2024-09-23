@@ -1,4 +1,5 @@
-use starknet_types_core::{felt::Felt, hash::PoseidonHasher};
+use crypto_utils::hash::poseidon_hash::PoseidonHasher;
+use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{
     v0_7_1::{
         AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, FeeEstimate, InvokeTxnV1,
@@ -11,12 +12,12 @@ use crate::v7::rpc::{
     accounts::{call::Call, errors::NotPreparedError},
     providers::provider::Provider,
 };
-use starknet_types_core::curve::compute_hash_on_elements;
-
+// use starknet_types_core::curve::compute_hash_on_elements;
 use super::{
     Account, AccountError, ConnectedAccount, ExecutionEncoder, ExecutionV1, ExecutionV3,
     PreparedExecutionV1, PreparedExecutionV3, RawExecutionV1, RawExecutionV3,
 };
+use crypto_utils::curve::signer::compute_hash_on_elements;
 
 const PREFIX_INVOKE: Felt = Felt::from_raw([
     513398556346534256,
