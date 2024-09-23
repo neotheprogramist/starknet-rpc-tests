@@ -4,8 +4,8 @@ use super::constants::{
     ADDR_BOUND, DATA_AVAILABILITY_MODE_BITS, PREFIX_CONTRACT_ADDRESS, PREFIX_DEPLOY_ACCOUNT,
 };
 use crypto_utils::curve::signer::{compute_hash_on_elements, verify};
-use starknet_types_core::hash::poseidon_hash::poseidon_hash_many;
 use starknet_types_core::felt::Felt;
+use starknet_types_core::hash::poseidon_hash::poseidon_hash_many;
 use starknet_types_rpc::{v0_7_1::starknet_api_openrpc::*, DeployAccountTxn};
 
 pub fn verify_deploy_account_signature(

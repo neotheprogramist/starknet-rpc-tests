@@ -5,8 +5,8 @@ version.workspace = true
 
 [dependencies]
 crypto-bigint = { version = "0.5.5", default-features = false, features = [
-    "generic-array",
-    "zeroize",
+  "generic-array",
+  "zeroize",
 ] }
 hmac = { version = "0.12.1", default-features = false }
 lambdaworks-math = { version = "0.7.0", default-features = false }
@@ -19,11 +19,10 @@ zeroize = "1.8.1"
 starknet-types-core.workspace = true
 starknet-types-rpc.workspace = true
 
-
 # Optional
 arbitrary = { version = "1.3.2", optional = true }
 serde = { version = "1.0.197", optional = true, default-features = false, features = [
-    "alloc",
+  "alloc",
 ] }
 lambdaworks-crypto = { version = "0.7.0", default-features = false, optional = true }
 parity-scale-codec = { version = "3.6.9", default-features = false, optional = true }
@@ -32,12 +31,12 @@ lazy_static = { version = "1.4.0", default-features = false, optional = true }
 [features]
 default = ["std", "serde", "curve", "num-traits", "hash"]
 std = [
-    "lambdaworks-math/std",
-    "num-traits/std",
-    "num-bigint/std",
-    "num-integer/std",
-    "serde?/std",
-    "lambdaworks-crypto?/std",
+  "lambdaworks-math/std",
+  "num-traits/std",
+  "num-bigint/std",
+  "num-integer/std",
+  "serde?/std",
+  "lambdaworks-crypto?/std",
 ]
 alloc = []
 curve = []
