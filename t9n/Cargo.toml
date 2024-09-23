@@ -12,3 +12,4 @@ sha3.workspace = true
 starknet-types-core.workspace = true
 starknet-types-rpc.workspace = true
 thiserror.workspace = true
+crypto-utils.workspace = true

@@ -8,7 +8,7 @@ use crate::v5::rpc::{
     accounts::{call::Call, errors::NotPreparedError},
     providers::provider::Provider,
 };
-use starknet_types_core::curve::compute_hash_on_elements;
+use crypto_utils::curve::signer::compute_hash_on_elements;
 
 use super::{
     Account, AccountError, ConnectedAccount, ExecutionEncoder, ExecutionV1, PreparedExecutionV1,
@@ -742,7 +742,6 @@ where
             nonce: self.inner.nonce,
             sender_address: self.account.address(),
             calldata: self.account.encode_calls(&self.inner.calls),
-            type_: Some("INVOKE".to_string()),
         })
     }
 }

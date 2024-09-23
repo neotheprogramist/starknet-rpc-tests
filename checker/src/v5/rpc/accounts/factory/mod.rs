@@ -2,8 +2,8 @@ use super::errors::NotPreparedError;
 
 use serde::{Deserialize, Serialize};
 
-use starknet_types_core::felt::Felt;
-use starknet_types_core::{curve::compute_hash_on_elements, felt::NonZeroFelt};
+use crypto_utils::curve::signer::compute_hash_on_elements;
+use starknet_types_core::felt::{Felt, NonZeroFelt};
 use starknet_types_rpc::v0_5_0::{
     BlockId, BlockTag, BroadcastedDeployAccountTxn, BroadcastedTxn, ContractAndTxnHash,
     DeployAccountTxnV1, FeeEstimate, SimulateTransactionsResult, SimulationFlag,
@@ -870,7 +870,6 @@ where
             contract_address_salt: self.inner.salt,
             constructor_calldata: self.factory.calldata(),
             class_hash: self.factory.class_hash(),
-            type_: Some("DEPLOY_ACCOUNT".to_string()),
         };
 
         Ok(txn)

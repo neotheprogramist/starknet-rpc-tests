@@ -1,5 +1,6 @@
 use auto_impl::auto_impl;
-use starknet_types_core::curve::Signature;
+// use starknet_types_core::curve::Signature;
+use crypto_utils::curve::signer::Signature;
 use starknet_types_core::felt::Felt;
 
 use std::error::Error;

@@ -4,10 +4,8 @@ use auto_impl::auto_impl;
 
 use sha3::{Digest, Keccak256};
 
-use starknet_types_core::{
-    felt::{Felt, NonZeroFelt},
-    hash::{poseidon_hash_many, PoseidonHasher},
-};
+use starknet_types_core::felt::{Felt, NonZeroFelt};
+use starknet_types_core::hash::poseidon_hash::{poseidon_hash_many, PoseidonHasher};
 use starknet_types_rpc::v0_5_0::{
     BlockId, BlockTag, ContractClass, DeprecatedContractClass, SierraEntryPoint,
 };

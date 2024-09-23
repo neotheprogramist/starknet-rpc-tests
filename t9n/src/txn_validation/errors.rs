@@ -1,5 +1,5 @@
+use crypto_utils::curve::signer::VerifyError;
 use serde_json;
-use starknet_types_core::curve::VerifyError;
 use std::num::ParseIntError;
 use thiserror::Error;
 
