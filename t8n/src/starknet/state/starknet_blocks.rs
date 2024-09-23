@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use indexmap::IndexMap;
-use serde::Serialize;
+use serde::{ser::SerializeStruct, Serialize, Serializer};
 use starknet_api::hash::StarkFelt;
 use starknet_api::{
     block::{BlockHeader, BlockNumber, BlockStatus, BlockTimestamp},
@@ -24,20 +24,46 @@ use super::{
     state_diff::StateDiff,
     traits::HashIdentified,
 };
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct StarknetBlocks {
-    #[serde(skip_serializing)]
     pub num_to_hash: IndexMap<BlockNumber, BlockHash>,
     pub hash_to_block: HashMap<BlockHash, StarknetBlock>,
-    #[serde(skip_serializing)]
     pub pending_block: StarknetBlock,
-    #[serde(skip_serializing)]
     pub last_block_hash: Option<BlockHash>,
     pub hash_to_state_diff: HashMap<BlockHash, StateDiff>,
-    #[serde(skip_serializing)]
     pub hash_to_state: HashMap<BlockHash, StarknetState>,
-    #[serde(skip_serializing)]
     pub aborted_blocks: Vec<Felt>,
+}
+
+impl Serialize for StarknetBlocks {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Find the block with the highest block_number
+        if let Some((highest_block_hash, highest_block)) = self
+            .hash_to_block
+            .iter()
+            .max_by_key(|(_, block)| block.header.block_number)
+        {
+            let highest_state_diff = self.hash_to_state_diff.get(highest_block_hash);
+
+            let mut state = serializer.serialize_struct("StarknetBlocks", 2)?;
+
+            state.serialize_field("header", &highest_block.header)?;
+
+            if let Some(state_diff) = highest_state_diff {
+                state.serialize_field("state_diff", state_diff)?;
+            } else {
+                state.serialize_field("state_diff", &None::<StateDiff>)?;
+            }
+
+            state.end()
+        } else {
+            // If no block is found, serialize nothing
+            serializer.serialize_none()
+        }
+    }
 }
 
 impl HashIdentified for StarknetBlocks {
