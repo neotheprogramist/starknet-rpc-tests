@@ -1,5 +1,5 @@
-use crypto_utils::hash::poseidon_hash::PoseidonHasher;
 use starknet_types_core::felt::Felt;
+use starknet_types_core::hash::poseidon_hash::PoseidonHasher;
 use starknet_types_rpc::{
     v0_7_1::{
         AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, FeeEstimate, InvokeTxnV1,

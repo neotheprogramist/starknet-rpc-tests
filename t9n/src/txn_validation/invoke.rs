@@ -1,7 +1,7 @@
 use super::constants::{DATA_AVAILABILITY_MODE_BITS, PREFIX_INVOKE};
 use super::errors::Error;
 use crypto_utils::curve::signer::{compute_hash_on_elements, verify};
-use crypto_utils::hash::poseidon_hash::poseidon_hash_many;
+use starknet_types_core::hash::poseidon_hash::poseidon_hash_many;
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_7_1::starknet_api_openrpc::*;
 

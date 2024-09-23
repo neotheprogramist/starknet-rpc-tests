@@ -66,6 +66,35 @@ cargo run -p t9n -- --file-path t9n/examples/invoke/invoke_txn_v1.json --public-
 
 For more examples, see [t9n readme](./t9n/README.md)
 
+# b11r Tool
+
+## Overview
+
+The `b11r` tool is designed to create and validate Starknet blocks from the output of the `t8n` tool.
+It processes transaction receipts, events, and state changes according to the guidelines specified in
+the Starknet documentation, ensuring blocks are consistent with the Starknet protocol.
+
+By default, the `b11r` tool can receive output directly from the `t8n` tool. **Before running `b11r`,
+you first need to run the `t8n` tool to generate the required input.** You can also specify a custom input
+file in JSON format, as described below.
+
+## Usage
+
+### Default Input from `t8n`
+
+By default, the `b11r` tool expects input from the output of the `t8n` tool. Make sure you run `t8n`
+first to generate the state and transaction data. You can follow the instructions on how to run the `t8n` tool here:
+
+[t8n README - How to Run](../t8n/README.md)
+
+Once the `t8n` tool has been run, you can execute `b11r` like this:
+
+```bash
+cargo run -p b11r
+```
+
+For more details, visit [b11r readme](./b11r/README.md)
+
 ## Contact
 
 For any questions or feedback, please open an issue on the GitHub repository.

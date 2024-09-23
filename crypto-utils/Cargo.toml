@@ -16,8 +16,8 @@ num-integer = { version = "0.1.45", default-features = false }
 rfc6979 = "0.4.0"
 sha2 = "0.10.8"
 zeroize = "1.8.1"
-starknet-types-core = { path = "/home/filipg/dev/starknet-proposal/types-rs/crates/starknet-types-core" }
-starknet-types-rpc = { path = "/home/filipg/dev/starknet-proposal/types-rs/crates/starknet-types-rpc" }
+starknet-types-core.workspace = true
+starknet-types-rpc.workspace = true
 
 
 # Optional

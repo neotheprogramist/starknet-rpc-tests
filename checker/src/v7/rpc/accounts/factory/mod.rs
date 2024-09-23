@@ -3,7 +3,7 @@ use super::errors::NotPreparedError;
 use serde::{Deserialize, Serialize};
 
 use crypto_utils::curve::signer::compute_hash_on_elements;
-use crypto_utils::hash::poseidon_hash::PoseidonHasher;
+use starknet_types_core::hash::poseidon_hash::PoseidonHasher;
 use starknet_types_core::felt::Felt;
 use starknet_types_core::felt::NonZeroFelt;
 use starknet_types_rpc::v0_7_1::{
