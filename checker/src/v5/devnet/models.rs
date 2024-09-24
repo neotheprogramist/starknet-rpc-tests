@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_5_0::{BlockHash, FeeUnit};
+use starknet_types_rpc::v0_5_0::{BlockHash, FeeUnit, TxnHash};
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AccountBalanceParams {
@@ -32,4 +32,50 @@ pub struct SetTimeParams {
 pub struct SetTimeResponse {
     pub block_timestamp: u64,
     pub block_hash: Option<BlockHash>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct IncreaseTimeParams {
+    pub time: u64,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct IncreaseTimeResponse {
+    pub timestamp_increased_by: u64,
+    pub block_hash: BlockHash,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct MintTokensParams {
+    pub address: Felt,
+    pub amount: u128,
+    pub unit: Option<FeeUnit>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct MintTokensResponse {
+    pub new_balance: String,
+    pub unit: FeeUnit,
+    pub tx_hash: TxnHash,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct ForkStatusResponse {
+    pub url: Option<String>,
+    pub block: Option<u64>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct CreateBlockResponse {
+    pub block_hash: BlockHash,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct AbortBlocksParams {
+    pub starting_block_hash: BlockHash,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct AbortBlocksResponse {
+    pub aborted: Vec<BlockHash>,
 }
