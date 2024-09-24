@@ -20,16 +20,16 @@ use super::declare_contract::RunnerError;
 #[allow(dead_code)]
 pub enum DeployError {
     #[error("Error creating an account")]
-    CreateAccountError(String),
+    CreateAccount(String),
 
     #[error(transparent)]
-    ProviderError(#[from] ProviderError),
+    Provider(#[from] ProviderError),
 
     #[error(transparent)]
-    FromStrError(#[from] FromStrError),
+    FromStr(#[from] FromStrError),
 
     #[error(transparent)]
-    RunnerError(#[from] RunnerError),
+    Runner(#[from] RunnerError),
 }
 
 #[allow(dead_code)]

@@ -129,11 +129,11 @@ pub enum JsonRpcRequestData {
 #[derive(Debug, thiserror::Error)]
 pub enum JsonRpcClientError<T> {
     #[error(transparent)]
-    JsonError(serde_json::Error),
+    Json(serde_json::Error),
     #[error(transparent)]
-    TransportError(T),
+    Transport(T),
     #[error(transparent)]
-    JsonRpcError(JsonRpcError),
+    JsonRpc(JsonRpcError),
 }
 
 #[derive(Debug, Deserialize)]
@@ -188,13 +188,13 @@ where
             .transport
             .send_request(method, params)
             .await
-            .map_err(JsonRpcClientError::TransportError)?
+            .map_err(JsonRpcClientError::Transport)?
         {
             JsonRpcResponse::Success { result, .. } => Ok(result),
             JsonRpcResponse::Error { error, .. } => {
                 Err(match TryInto::<StarknetError>::try_into(&error) {
                     Ok(error) => ProviderError::StarknetError(error),
-                    Err(_) => JsonRpcClientError::<T::Error>::JsonRpcError(error).into(),
+                    Err(_) => JsonRpcClientError::<T::Error>::JsonRpc(error).into(),
                 })
             }
         }
@@ -728,7 +728,7 @@ where
 
 impl<T> From<serde_json::Error> for JsonRpcClientError<T> {
     fn from(value: serde_json::Error) -> Self {
-        Self::JsonError(value)
+        Self::Json(value)
     }
 }
 
@@ -893,9 +893,6 @@ pub enum StarknetError {
     /// No trace available for transaction
     NoTraceAvailable(NoTraceAvailableErrorData),
 }
-
-#[cfg(feature = "std")]
-impl std::error::Error for StarknetError {}
 
 impl core::fmt::Display for StarknetError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {

@@ -7,7 +7,7 @@ use starknet_types_rpc::v0_6_0::{
     AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, ContractClass,
     DeployAccountTxn, DeployAccountTxnV1, DeployTxnReceipt, FeeEstimate, FunctionCall, InvokeTxn,
     InvokeTxnV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
-    MsgFromL1, PriceUnit, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
+    MsgFromL1, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
 };
 
 use tracing::{info, warn};
