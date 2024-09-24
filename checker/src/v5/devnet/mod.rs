@@ -2,12 +2,12 @@ pub mod endpoints;
 pub mod errors;
 pub mod models;
 
+use crate::v5::devnet::models::{SetTimeParams, SetTimeResponse};
 use colored::*;
 use errors::DevnetError;
 use models::{AccountBalanceParams, AccountBalanceResponse, SerializableAccount};
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_5_0::FeeUnit;
-
 use std::future::Future;
 use tracing::{error, info};
 use url::Url;
@@ -30,6 +30,11 @@ pub trait DevnetEndpoints {
     fn account_balance(
         &self,
     ) -> impl Future<Output = Result<AccountBalanceResponse, DevnetError>> + Send;
+    fn restart(&self) -> impl Future<Output = Result<(), DevnetError>> + Send;
+    fn set_time(
+        &self,
+        params: SetTimeParams,
+    ) -> impl Future<Output = Result<SetTimeResponse, DevnetError>> + Send;
 }
 
 impl DevnetEndpoints for Devnet {
@@ -53,6 +58,12 @@ impl DevnetEndpoints for Devnet {
     async fn predeployed_accounts(&self) -> Result<Vec<SerializableAccount>, DevnetError> {
         endpoints::get_predeployed_accounts(self.url.clone()).await
     }
+    async fn restart(&self) -> Result<(), DevnetError> {
+        endpoints::restart(self.url.clone()).await
+    }
+    async fn set_time(&self, params: SetTimeParams) -> Result<SetTimeResponse, DevnetError> {
+        endpoints::set_time(self.url.clone(), params).await
+    }
 }
 
 pub async fn test_devnet_endpoints(url: Url) -> Result<(), DevnetError> {
@@ -72,6 +83,35 @@ pub async fn test_devnet_endpoints(url: Url) -> Result<(), DevnetError> {
         ),
     }
 
+    match devnet
+        .set_time(SetTimeParams {
+            time: 123123123,
+            generate_block: Some(true),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet set_time COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet set_time INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet.restart().await {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet restart COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet restart INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
     match devnet.predeployed_accounts().await {
         Ok(_) => {
             info!(
