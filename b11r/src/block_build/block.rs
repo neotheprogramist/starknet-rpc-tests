@@ -37,10 +37,8 @@ pub fn build_block_tx_hashes_thin(b11r_input: B11rInput) -> Result<Block, Error>
         .map(|emitted_event| (emitted_event.transaction_hash, emitted_event.events))
         .collect();
 
-    let (block_hash, block_state_diff): (BlockHash, StateDiff) = (
-        block_header.block_hash.clone(),
-        b11r_input.blocks.state_diff,
-    );
+    let (block_hash, block_state_diff): (BlockHash, StateDiff) =
+        (block_header.block_hash, b11r_input.blocks.state_diff);
 
     let state_diff_gateway: GatewayStateDiff = block_state_diff.into();
 
@@ -69,7 +67,7 @@ pub fn build_block_tx_hashes_thin(b11r_input: B11rInput) -> Result<Block, Error>
         state_diff_length: state_update_common.state_diff_length(),
         starknet_version: block_header.starknet_version,
         eth_l1_gas_price: u128::from_str_radix(
-            &block_header
+            block_header
                 .l1_gas_price
                 .price_in_wei
                 .as_str()
@@ -77,7 +75,7 @@ pub fn build_block_tx_hashes_thin(b11r_input: B11rInput) -> Result<Block, Error>
             16,
         )?,
         strk_l1_gas_price: u128::from_str_radix(
-            &&block_header
+            block_header
                 .l1_gas_price
                 .price_in_fri
                 .as_str()
@@ -85,7 +83,7 @@ pub fn build_block_tx_hashes_thin(b11r_input: B11rInput) -> Result<Block, Error>
             16,
         )?,
         eth_l1_data_gas_price: u128::from_str_radix(
-            &block_header
+            block_header
                 .l1_data_gas_price
                 .price_in_wei
                 .as_str()
@@ -93,7 +91,7 @@ pub fn build_block_tx_hashes_thin(b11r_input: B11rInput) -> Result<Block, Error>
             16,
         )?,
         strk_l1_data_gas_price: u128::from_str_radix(
-            &&block_header
+            block_header
                 .l1_data_gas_price
                 .price_in_fri
                 .as_str()

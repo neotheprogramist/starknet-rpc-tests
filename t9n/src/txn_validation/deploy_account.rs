@@ -67,7 +67,7 @@ fn verify_deploy_account_v3_signature(
     let chain_id = Felt::from_hex_unchecked(chain_id_input);
     let stark_key = Felt::from_hex_unchecked(public_key);
 
-    let msg_hash = calculate_deploy_v3_transaction_hash(&chain_id, &txn)?;
+    let msg_hash = calculate_deploy_v3_transaction_hash(&chain_id, txn)?;
 
     let r_bytes = txn.signature[0];
     let s_bytes = txn.signature[1];
@@ -115,19 +115,11 @@ fn calculate_deploy_v3_transaction_hash(
 
 /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
 fn get_resource_bounds_array(txn: &DeployAccountTxnV3<Felt>) -> Result<Vec<Felt>, Error> {
-    let mut array = Vec::<Felt>::new();
-    array.push(txn.tip);
-
-    array.push(field_element_from_resource_bounds(
-        Resource::L1Gas,
-        &txn.resource_bounds.l1_gas,
-    )?);
-    array.push(field_element_from_resource_bounds(
-        Resource::L2Gas,
-        &txn.resource_bounds.l2_gas,
-    )?);
-
-    Ok(array)
+    Ok(vec![
+        txn.tip,
+        field_element_from_resource_bounds(Resource::L1Gas, &txn.resource_bounds.l1_gas)?,
+        field_element_from_resource_bounds(Resource::L2Gas, &txn.resource_bounds.l2_gas)?,
+    ])
 }
 
 fn field_element_from_resource_bounds(

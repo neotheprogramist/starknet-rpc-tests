@@ -342,7 +342,6 @@ mod errors {
         }
     }
 
-    #[cfg(feature = "std")]
     impl std::error::Error for JsonError {}
 
     impl Display for JsonError {
@@ -351,7 +350,6 @@ mod errors {
         }
     }
 
-    #[cfg(feature = "std")]
     impl std::error::Error for BytecodeSegmentLengthMismatchError {}
 
     impl Display for BytecodeSegmentLengthMismatchError {
@@ -364,7 +362,6 @@ mod errors {
         }
     }
 
-    #[cfg(feature = "std")]
     impl std::error::Error for InvalidBytecodeSegmentError {}
 
     impl Display for InvalidBytecodeSegmentError {
@@ -378,7 +375,6 @@ mod errors {
         }
     }
 
-    #[cfg(feature = "std")]
     impl std::error::Error for PcOutOfRangeError {}
 
     impl Display for PcOutOfRangeError {
@@ -392,17 +388,8 @@ pub use errors::{
     JsonError, PcOutOfRangeError,
 };
 
-#[cfg(feature = "std")]
-pub use errors::CompressProgramError;
-
 use starknet_types_rpc::v0_5_0::{EntryPointsByType, SierraEntryPoint};
 
-// use super::{
-//     codegen::{EntryPointsByType, SierraEntryPoint},
-//     starknet_utils::{
-//         cairo_short_string_to_felt, normalize_address, starknet_keccak, CairoShortStringToFeltError,
-//     },
-// };
 #[allow(dead_code)]
 pub trait HashAndFlatten {
     fn class_hash(&self) -> Result<Felt, ComputeClassHashError>;

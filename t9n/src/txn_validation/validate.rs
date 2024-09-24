@@ -71,25 +71,23 @@ pub fn validate_txn_json(
                 match verify_invoke_v1_signature(&txn, public_key, chain_id) {
                     Ok((is_valid, hash)) => {
                         if is_valid {
-                            return Ok(json!({ "hash": hash}));
+                            Ok(json!({ "hash": hash}))
                         } else {
-                            return Err(serde_json::Error::custom(
+                            Err(serde_json::Error::custom(
                                 json!({
                                     "error": "Signature is invalid",
                                     "hash": hash,
                                 })
                                 .to_string(),
-                            ));
+                            ))
                         }
                     }
-                    Err(e) => {
-                        return Err(serde_json::Error::custom(
-                            json!({
-                                "error": format!("Signature verification failed: {:?}", e),
-                            })
-                            .to_string(),
-                        ));
-                    }
+                    Err(e) => Err(serde_json::Error::custom(
+                        json!({
+                            "error": format!("Signature verification failed: {:?}", e),
+                        })
+                        .to_string(),
+                    )),
                 }
             }
             "0x3" => {
@@ -97,28 +95,26 @@ pub fn validate_txn_json(
                 match verify_invoke_v3_signature(&txn, public_key, chain_id) {
                     Ok((is_valid, hash)) => {
                         if is_valid {
-                            return Ok(json!({ "hash": hash }));
+                            Ok(json!({ "hash": hash }))
                         } else {
-                            return Err(serde_json::Error::custom(
+                            Err(serde_json::Error::custom(
                                 json!({
                                     "error": "Signature is invalid",
                                     "hash": hash,
                                 })
                                 .to_string(),
-                            ));
+                            ))
                         }
                     }
-                    Err(e) => {
-                        return Err(serde_json::Error::custom(
-                            json!({
-                                "error": format!("Signature verification failed: {:?}", e),
-                            })
-                            .to_string(),
-                        ));
-                    }
+                    Err(e) => Err(serde_json::Error::custom(
+                        json!({
+                            "error": format!("Signature verification failed: {:?}", e),
+                        })
+                        .to_string(),
+                    )),
                 }
             }
-            _ => return Err(serde_json::Error::custom("Unsupported version")),
+            _ => Err(serde_json::Error::custom("Unsupported version")),
         },
         "DECLARE" => match version {
             "0x2" => {
@@ -126,25 +122,23 @@ pub fn validate_txn_json(
                 match verify_declare_v2_signature(&txn, public_key, chain_id) {
                     Ok((is_valid, hash)) => {
                         if is_valid {
-                            return Ok(json!({ "hash": hash }));
+                            Ok(json!({ "hash": hash }))
                         } else {
-                            return Err(serde_json::Error::custom(
+                            Err(serde_json::Error::custom(
                                 json!({
                                     "error": "Signature is invalid",
                                     "hash": hash,
                                 })
                                 .to_string(),
-                            ));
+                            ))
                         }
                     }
-                    Err(e) => {
-                        return Err(serde_json::Error::custom(
-                            json!({
-                                "error": format!("Signature verification failed: {:?}", e),
-                            })
-                            .to_string(),
-                        ));
-                    }
+                    Err(e) => Err(serde_json::Error::custom(
+                        json!({
+                            "error": format!("Signature verification failed: {:?}", e),
+                        })
+                        .to_string(),
+                    )),
                 }
             }
             "0x3" => {
@@ -152,28 +146,26 @@ pub fn validate_txn_json(
                 match verify_declare_v3_signature(&txn, public_key, chain_id) {
                     Ok((is_valid, hash)) => {
                         if is_valid {
-                            return Ok(json!({ "hash": hash }));
+                            Ok(json!({ "hash": hash }))
                         } else {
-                            return Err(serde_json::Error::custom(
+                            Err(serde_json::Error::custom(
                                 json!({
                                     "error": "Signature is invalid",
                                     "hash": hash,
                                 })
                                 .to_string(),
-                            ));
+                            ))
                         }
                     }
-                    Err(e) => {
-                        return Err(serde_json::Error::custom(
-                            json!({
-                                "error": format!("Signature verification failed: {:?}", e),
-                            })
-                            .to_string(),
-                        ));
-                    }
+                    Err(e) => Err(serde_json::Error::custom(
+                        json!({
+                            "error": format!("Signature verification failed: {:?}", e),
+                        })
+                        .to_string(),
+                    )),
                 }
             }
-            _ => return Err(serde_json::Error::custom("Unsupported version")),
+            _ => Err(serde_json::Error::custom("Unsupported version")),
         },
         "DEPLOY_ACCOUNT" => match version {
             "0x1" => {
@@ -185,25 +177,23 @@ pub fn validate_txn_json(
                 ) {
                     Ok((is_valid, hash)) => {
                         if is_valid {
-                            return Ok(json!({ "hash": hash }));
+                            Ok(json!({ "hash": hash }))
                         } else {
-                            return Err(serde_json::Error::custom(
+                            Err(serde_json::Error::custom(
                                 json!({
                                     "error": "Signature is invalid",
                                     "hash": hash,
                                 })
                                 .to_string(),
-                            ));
+                            ))
                         }
                     }
-                    Err(e) => {
-                        return Err(serde_json::Error::custom(
-                            json!({
-                                "error": format!("Signature verification failed: {:?}", e),
-                            })
-                            .to_string(),
-                        ));
-                    }
+                    Err(e) => Err(serde_json::Error::custom(
+                        json!({
+                            "error": format!("Signature verification failed: {:?}", e),
+                        })
+                        .to_string(),
+                    )),
                 }
             }
             "0x3" => {
@@ -215,29 +205,27 @@ pub fn validate_txn_json(
                 ) {
                     Ok((is_valid, hash)) => {
                         if is_valid {
-                            return Ok(json!({ "hash": hash }));
+                            Ok(json!({ "hash": hash }))
                         } else {
-                            return Err(serde_json::Error::custom(
+                            Err(serde_json::Error::custom(
                                 json!({
                                     "error": "Signature is invalid",
                                     "hash": hash,
                                 })
                                 .to_string(),
-                            ));
+                            ))
                         }
                     }
-                    Err(e) => {
-                        return Err(serde_json::Error::custom(
-                            json!({
-                                "error": format!("Signature verification failed: {:?}", e),
-                            })
-                            .to_string(),
-                        ));
-                    }
+                    Err(e) => Err(serde_json::Error::custom(
+                        json!({
+                            "error": format!("Signature verification failed: {:?}", e),
+                        })
+                        .to_string(),
+                    )),
                 }
             }
-            _ => return Err(serde_json::Error::custom("Unsupported version")),
+            _ => Err(serde_json::Error::custom("Unsupported version")),
         },
-        _ => return Err(Error::custom("Invalid or missing transaction type")),
+        _ => Err(Error::custom("Invalid or missing transaction type")),
     }
 }

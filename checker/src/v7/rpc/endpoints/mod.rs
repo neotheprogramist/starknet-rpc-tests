@@ -1,11 +1,11 @@
 pub mod declare_contract;
 pub mod deploy_contract;
-pub mod endpoints;
+pub mod endpoints_functions;
 pub mod errors;
 pub mod utils;
 
 use colored::*;
-use endpoints::{
+use endpoints_functions::{
     add_declare_transaction_v2, add_declare_transaction_v3, add_invoke_transaction_v1,
     add_invoke_transaction_v3, block_number, call, chain_id, estimate_message_fee,
     get_block_transaction_count, get_block_with_tx_hashes, get_block_with_txs, get_class,

@@ -131,19 +131,11 @@ fn calculate_transaction_v3_hash(
 
 /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
 fn get_resource_bounds_array(txn: &BroadcastedDeclareTxnV3<Felt>) -> Result<Vec<Felt>, Error> {
-    let mut array = Vec::<Felt>::new();
-    array.push(txn.tip);
-
-    array.push(field_element_from_resource_bounds(
-        Resource::L1Gas,
-        &txn.resource_bounds.l1_gas,
-    )?);
-    array.push(field_element_from_resource_bounds(
-        Resource::L2Gas,
-        &txn.resource_bounds.l2_gas,
-    )?);
-
-    Ok(array)
+    Ok(vec![
+        txn.tip,
+        field_element_from_resource_bounds(Resource::L1Gas, &txn.resource_bounds.l1_gas)?,
+        field_element_from_resource_bounds(Resource::L2Gas, &txn.resource_bounds.l2_gas)?,
+    ])
 }
 
 fn field_element_from_resource_bounds(
