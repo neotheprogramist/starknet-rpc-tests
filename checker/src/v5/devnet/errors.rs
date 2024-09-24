@@ -3,9 +3,9 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum DevnetError {
     #[error(transparent)]
-    RequestError(#[from] reqwest::Error),
+    Request(#[from] reqwest::Error),
     #[error(transparent)]
-    UrlParseError(#[from] url::ParseError),
+    UrlParse(#[from] url::ParseError),
     #[error("The restart operation failed: {msg}")]
-    RestartError { msg: String },
+    Restart { msg: String },
 }

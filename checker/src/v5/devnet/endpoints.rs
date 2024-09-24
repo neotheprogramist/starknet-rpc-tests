@@ -27,7 +27,7 @@ pub async fn restart(url: Url) -> Result<(), DevnetError> {
     if response.status().is_success() {
         Ok(())
     } else {
-        Err(DevnetError::RestartError {
+        Err(DevnetError::Restart {
             msg: response.text().await?,
         })
     }
