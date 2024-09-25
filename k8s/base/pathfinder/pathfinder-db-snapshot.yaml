@@ -5,7 +5,7 @@ metadata:
 spec:
   initContainers:
     - name: init-copy
-      image: uacias/patfinder-dbs:latest
+      image: docker.io/uacias/patfinder-dbs:latest
       command:
         [
           "sh",
@@ -19,7 +19,7 @@ spec:
           name: pathfinder-volume-2
   containers:
     - name: pathfinder-fetcher
-      image: uacias/patfinder-dbs:latest
+      image: docker.io/uacias/patfinder-dbs:latest
       volumeMounts:
         - mountPath: /mnt/data/pathfinder
           name: pathfinder-volume
