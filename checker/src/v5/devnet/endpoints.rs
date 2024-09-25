@@ -6,7 +6,9 @@ use super::{
     models::{
         AbortBlocksParams, AbortBlocksResponse, AccountBalanceParams, AccountBalanceResponse,
         CreateBlockResponse, ForkStatusResponse, IncreaseTimeParams, IncreaseTimeResponse,
-        MintTokensParams, MintTokensResponse, SerializableAccount, SetTimeParams, SetTimeResponse,
+        MintTokensParams, MintTokensResponse, PostmanFlushParameters, PostmanFlushResponse,
+        PostmanLoadL1MessagingContractParams, PostmanLoadL1MessagingContractResponse,
+        SerializableAccount, SetTimeParams, SetTimeResponse,
     },
 };
 
@@ -130,6 +132,36 @@ pub async fn abort_blocks(
         .send()
         .await?
         .json::<AbortBlocksResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn postman_load(
+    url: Url,
+    params: PostmanLoadL1MessagingContractParams,
+) -> Result<PostmanLoadL1MessagingContractResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("/postman/load_l1_messaging_contract")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<PostmanLoadL1MessagingContractResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn postman_flush(
+    url: Url,
+    params: PostmanFlushParameters,
+) -> Result<PostmanFlushResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("/postman/flush")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<PostmanFlushResponse>()
         .await?;
 
     Ok(response)

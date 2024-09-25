@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_5_0::{BlockHash, FeeUnit, TxnHash};
+use starknet_types_rpc::v0_5_0::{BlockHash, FeeUnit, MsgToL1, TxnHash};
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AccountBalanceParams {
@@ -78,4 +78,28 @@ pub struct AbortBlocksParams {
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AbortBlocksResponse {
     pub aborted: Vec<BlockHash>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PostmanLoadL1MessagingContractParams {
+    pub network_url: String,
+    pub address: Option<String>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PostmanLoadL1MessagingContractResponse {
+    pub messaging_contract_address: String,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PostmanFlushParameters {
+    pub dry_run: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PostmanFlushResponse {
+    pub messages_to_l1: Vec<MsgToL1>,
+    pub messages_to_l2: Vec<MsgToL1>,
+    pub generated_l2_transactions: Vec<TxnHash>,
+    pub l1_provider: String,
 }

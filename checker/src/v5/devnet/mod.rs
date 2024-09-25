@@ -10,7 +10,8 @@ use errors::DevnetError;
 use models::{
     AbortBlocksParams, AbortBlocksResponse, AccountBalanceParams, AccountBalanceResponse,
     CreateBlockResponse, ForkStatusResponse, MintTokensParams, MintTokensResponse,
-    SerializableAccount,
+    PostmanFlushParameters, PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
+    PostmanLoadL1MessagingContractResponse, SerializableAccount,
 };
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_5_0::FeeUnit;
@@ -19,11 +20,15 @@ use tracing::{error, info};
 use url::Url;
 pub struct Devnet {
     pub url: Url,
+    pub l1_network_url: Url,
 }
 
 impl Devnet {
-    pub fn new(url: Url) -> Result<Self, DevnetError> {
-        Ok(Self { url })
+    pub fn new(url: Url, l1_network_url: Url) -> Result<Self, DevnetError> {
+        Ok(Self {
+            url,
+            l1_network_url,
+        })
     }
 }
 
@@ -55,6 +60,14 @@ pub trait DevnetEndpoints {
         &self,
         params: AbortBlocksParams,
     ) -> impl Future<Output = Result<AbortBlocksResponse, DevnetError>> + Send;
+    fn postman_load(
+        &self,
+        params: PostmanLoadL1MessagingContractParams,
+    ) -> impl Future<Output = Result<PostmanLoadL1MessagingContractResponse, DevnetError>> + Send;
+    fn postman_flush(
+        &self,
+        params: PostmanFlushParameters,
+    ) -> impl Future<Output = Result<PostmanFlushResponse, DevnetError>> + Send;
 }
 
 impl DevnetEndpoints for Devnet {
@@ -105,12 +118,24 @@ impl DevnetEndpoints for Devnet {
     ) -> Result<AbortBlocksResponse, DevnetError> {
         endpoints::abort_blocks(self.url.clone(), params).await
     }
+    async fn postman_load(
+        &self,
+        params: PostmanLoadL1MessagingContractParams,
+    ) -> Result<PostmanLoadL1MessagingContractResponse, DevnetError> {
+        endpoints::postman_load(self.url.clone(), params).await
+    }
+    async fn postman_flush(
+        &self,
+        params: PostmanFlushParameters,
+    ) -> Result<PostmanFlushResponse, DevnetError> {
+        endpoints::postman_flush(self.url.clone(), params).await
+    }
 }
 
-pub async fn test_devnet_endpoints(url: Url) -> Result<(), DevnetError> {
+pub async fn test_devnet_endpoints(url: Url, l1_network_url: Url) -> Result<(), DevnetError> {
     info!("{}", "⌛ Testing Devnet V5 endpoints -- START ⌛".yellow());
 
-    let devnet = Devnet::new(url)?;
+    let devnet = Devnet::new(url, l1_network_url)?;
 
     match devnet.is_alive().await {
         Ok(_) => {
@@ -273,6 +298,47 @@ pub async fn test_devnet_endpoints(url: Url) -> Result<(), DevnetError> {
         Err(e) => error!(
             "{} {} {}",
             "✗ Devnet account_balance INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .postman_load(PostmanLoadL1MessagingContractParams {
+            network_url: devnet.l1_network_url.clone().to_string(),
+            address: Some("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef".to_string()),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Devnet postman_load COMPATIBLE".green(),
+                "✓".green()
+            );
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet postman_load INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .postman_flush(PostmanFlushParameters { dry_run: false })
+        .await
+    {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Devnet postman_flush COMPATIBLE".green(),
+                "✓".green()
+            );
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet postman_flush INCOMPATIBLE:".red(),
             e.to_string().red(),
             "✗".red()
         ),

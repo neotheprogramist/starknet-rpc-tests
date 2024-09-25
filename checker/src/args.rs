@@ -9,6 +9,9 @@ pub struct Args {
     pub url: Url,
 
     #[arg(long, short, env)]
+    pub l1_network_url: Url,
+
+    #[arg(long, short, env)]
     pub sierra_path: String,
 
     #[arg(long, short, env)]
