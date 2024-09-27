@@ -10,7 +10,9 @@ use blockifier::state::{
     cached_state::{CachedState, GlobalContractCache, GLOBAL_CONTRACT_CACHE_SIZE_FOR_TEST},
     state_api::State,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use starknet_api::block::{BlockHeader, BlockNumber};
+use starknet_api::core::Nonce;
 use starknet_api::{core::CompiledClassHash, hash::StarkFelt};
 use starknet_devnet_types::contract_address::ContractAddress;
 use starknet_devnet_types::contract_class::ContractClass;
@@ -41,7 +43,7 @@ pub trait CustomState {
     ) -> DevnetResult<()>;
 }
 
-#[derive(Default, Clone, Debug, Serialize)]
+#[derive(Default, Clone, Debug, Serialize, Deserialize)]
 /// Utility structure that makes it easier to calculate state diff later on
 pub struct CommittedClassStorage {
     staging: HashMap<ClassHash, ContractClass>,
@@ -67,7 +69,24 @@ impl CommittedClassStorage {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StateWithBlockNumber {
+    pub state: StarknetState,
+    pub block_number: BlockNumber,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct StateWithBlock {
+    pub state: StarknetState,
+    pub blocks: Block,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Block {
+    pub header: BlockHeader,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StarknetState {
     pub state: CachedState<DictState>,
     pub rpc_contract_classes: CommittedClassStorage,
@@ -157,9 +176,9 @@ impl StarknetState {
         for (class_hash, casm_hash) in state_diff.class_hash_to_compiled_class_hash {
             historic_state.set_compiled_class_hash(class_hash.into(), casm_hash.into())?;
         }
-        for (address, _nonce) in state_diff.address_to_nonce {
+        for (address, nonce) in state_diff.address_to_nonce {
             // assuming that historic_state.get_nonce(address) == _nonce - 1
-            historic_state.increment_nonce(address.try_into()?)?;
+            historic_state.set_nonce(address.try_into()?, Nonce(nonce.into()))?;
         }
         for (address, storage_updates) in state_diff.storage_updates {
             let core_address = address.try_into()?;

@@ -98,10 +98,11 @@ use starknet_rs_core::{
     utils::get_selector_from_name,
 };
 use starknet_rs_signers::Signer;
-use starknet_state::{CustomState, StarknetState};
+use starknet_state::{CustomState, StarknetState, StateWithBlockNumber};
 use starknet_transactions::{StarknetTransaction, StarknetTransactions};
 use state_diff::StateDiff;
 use state_update::StateUpdate;
+use std::path::PathBuf;
 
 use tracing::{error, info};
 use traits::{Deployed, HashIdentified, HashIdentifiedMut, UserAccountGenerator};
@@ -159,7 +160,7 @@ impl Default for Starknet {
 }
 
 impl Starknet {
-    pub fn new(config: &StarknetConfig, acc_path: &str) -> DevnetResult<Self> {
+    pub fn new(config: &StarknetConfig, acc_path: &PathBuf) -> DevnetResult<Self> {
         let defaulter = StarknetDefaulter::new(config.fork_config.clone());
         let mut state = StarknetState::new(defaulter);
 
@@ -273,7 +274,51 @@ impl Starknet {
         Ok(this)
     }
 
-    pub fn restart(&mut self, acc_path: &str) -> DevnetResult<()> {
+    pub fn from_init_state(state: StateWithBlockNumber) -> DevnetResult<Self> {
+        let config = StarknetConfig::default();
+
+        let mut this = Self {
+            state: state.state,
+            predeployed_accounts: UserDeployedAccounts::default(),
+            block_context: Self::init_block_context(
+                config.gas_price,
+                config.data_gas_price,
+                ETH_ERC20_CONTRACT_ADDRESS,
+                STRK_ERC20_CONTRACT_ADDRESS,
+                config.chain_id,
+                state.block_number.0 + 1,
+            ),
+            blocks: StarknetBlocks::new(state.block_number.0 + 1),
+            transactions: StarknetTransactions::default(),
+            config: config.clone(),
+            pending_block_timestamp_shift: 0,
+            next_block_timestamp: None,
+            messaging: Default::default(),
+            dump_events: Default::default(),
+            transaction_receipts: Default::default(),
+        };
+
+        this.restart_pending_block()?;
+
+        // Create an empty genesis block, set start_time before if it's set
+        if let Some(start_time) = config.start_time {
+            this.set_next_block_timestamp(start_time);
+        };
+
+        // Load starknet transactions
+        if this.config.dump_path.is_some() && this.config.re_execute_on_init {
+            // Try to load transactions from dump_path, if there is no file skip this step
+            match this.load_events() {
+                Ok(events) => this.re_execute(events)?,
+                Err(Error::FileNotFound) => {}
+                Err(err) => return Err(err),
+            };
+        }
+
+        Ok(this)
+    }
+
+    pub fn restart(&mut self, acc_path: &PathBuf) -> DevnetResult<()> {
         self.config.re_execute_on_init = false;
         *self = Starknet::new(&self.config, acc_path)?;
         info!("Starknet Devnet restarted");
