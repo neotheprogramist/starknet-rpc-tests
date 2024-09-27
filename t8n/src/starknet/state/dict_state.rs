@@ -113,7 +113,7 @@ impl<'de> Deserialize<'de> for DictState {
             storage_view,
             address_to_nonce: helper.address_to_nonce,
             address_to_class_hash: helper.address_to_class_hash,
-            class_hash_to_class: class_hash_to_class,
+            class_hash_to_class,
             class_hash_to_compiled_class_hash: helper.class_hash_to_compiled_class_hash,
             defaulter: StarknetDefaulter::default(),
         })
@@ -132,9 +132,8 @@ impl Serialize for DictState {
             .iter()
             .map(|(k, v)| {
                 let (contract_address, storage_key) = k;
-                let contract_address_str =
-                    format!("contract_address: {}", contract_address.0.to_string());
-                let storage_key_str = format!("storage_key: {}", storage_key.0.to_string());
+                let contract_address_str = format!("contract_address: {}", *contract_address.0);
+                let storage_key_str = format!("storage_key: {}", *storage_key.0);
                 (format!("{}, {}", contract_address_str, storage_key_str), v)
             })
             .collect();

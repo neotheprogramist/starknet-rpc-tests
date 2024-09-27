@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 use blockifier::state::state_api::StateReader;
 use starknet_devnet_types::{
@@ -78,7 +78,7 @@ pub trait UserAccountGenerator {
     type Acc: Accounted;
     fn generate_accounts(
         &mut self,
-        json_path: &PathBuf,
+        json_path: &Path,
         class_hash: ClassHash,
         contract_class: &ContractClass,
     ) -> DevnetResult<&Vec<Self::Acc>>;

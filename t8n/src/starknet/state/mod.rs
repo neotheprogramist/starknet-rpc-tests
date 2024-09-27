@@ -102,7 +102,7 @@ use starknet_state::{CustomState, StarknetState, StateWithBlockNumber};
 use starknet_transactions::{StarknetTransaction, StarknetTransactions};
 use state_diff::StateDiff;
 use state_update::StateUpdate;
-use std::path::PathBuf;
+use std::path::Path;
 
 use tracing::{error, info};
 use traits::{Deployed, HashIdentified, HashIdentifiedMut, UserAccountGenerator};
@@ -160,7 +160,7 @@ impl Default for Starknet {
 }
 
 impl Starknet {
-    pub fn new(config: &StarknetConfig, acc_path: &PathBuf) -> DevnetResult<Self> {
+    pub fn new(config: &StarknetConfig, acc_path: &Path) -> DevnetResult<Self> {
         let defaulter = StarknetDefaulter::new(config.fork_config.clone());
         let mut state = StarknetState::new(defaulter);
 
@@ -318,7 +318,7 @@ impl Starknet {
         Ok(this)
     }
 
-    pub fn restart(&mut self, acc_path: &PathBuf) -> DevnetResult<()> {
+    pub fn restart(&mut self, acc_path: &Path) -> DevnetResult<()> {
         self.config.re_execute_on_init = false;
         *self = Starknet::new(&self.config, acc_path)?;
         info!("Starknet Devnet restarted");
