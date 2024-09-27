@@ -37,11 +37,10 @@ cargo run -p checker -- \
 
 **Note on L1 Network URL:**
 For the `--l1-network-url` parameter, you can use various Ethereum node providers:
+
 - Alchemy: `https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY`
 - Infura: `https://sepolia.infura.io/v3/YOUR_PROJECT_ID`
 - QuickNode: `https://YOUR_SUBDOMAIN.quiknode.pro/YOUR_API_KEY/`
-
-
 
 For more details, see [checker readme](./checker/README.md)
 
