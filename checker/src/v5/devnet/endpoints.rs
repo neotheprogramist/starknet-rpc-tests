@@ -6,8 +6,9 @@ use super::{
     models::{
         AbortBlocksParams, AbortBlocksResponse, AccountBalanceParams, AccountBalanceResponse,
         CreateBlockResponse, ForkStatusResponse, IncreaseTimeParams, IncreaseTimeResponse,
-        MintTokensParams, MintTokensResponse, PostmanFlushParameters, PostmanFlushResponse,
-        PostmanLoadL1MessagingContractParams, PostmanLoadL1MessagingContractResponse,
+        MintTokensParams, MintTokensResponse, MsgToL2, PostmanFlushParameters,
+        PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
+        PostmanLoadL1MessagingContractResponse, PostmanSendMessageToL2Response,
         SerializableAccount, SetTimeParams, SetTimeResponse,
     },
 };
@@ -162,6 +163,21 @@ pub async fn postman_flush(
         .send()
         .await?
         .json::<PostmanFlushResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn postman_send_message_to_l2(
+    url: Url,
+    params: MsgToL2,
+) -> Result<PostmanSendMessageToL2Response, DevnetError> {
+    let response = Client::new()
+        .post(url.join("/postman/send_message_to_l2")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<PostmanSendMessageToL2Response>()
         .await?;
 
     Ok(response)

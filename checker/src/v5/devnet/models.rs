@@ -99,7 +99,22 @@ pub struct PostmanFlushParameters {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PostmanFlushResponse {
     pub messages_to_l1: Vec<MsgToL1>,
-    pub messages_to_l2: Vec<MsgToL1>,
+    pub messages_to_l2: Vec<MsgToL2>,
     pub generated_l2_transactions: Vec<TxnHash>,
     pub l1_provider: String,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
+pub struct MsgToL2 {
+    pub l2_contract_address: Felt,
+    pub entry_point_selector: Felt,
+    pub l1_contract_address: Felt,
+    pub payload: Vec<Felt>,
+    pub paid_fee_on_l1: Felt,
+    pub nonce: Felt,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct PostmanSendMessageToL2Response {
+    pub transaction_hash: TxnHash,
 }

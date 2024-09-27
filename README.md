@@ -21,7 +21,7 @@ cargo install starknet-devnet --version 0.0.7
 Now run starknet-devnet
 
 ```bash
-\
+starknet-devnet --state-archive-capacity full
 ```
 
 After building the crate, you can use it to check the compatibility between the supported versions of Starknet Devnet.

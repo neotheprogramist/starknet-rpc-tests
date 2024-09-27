@@ -1,5 +1,6 @@
 pub mod endpoints;
 pub mod errors;
+pub mod helpers;
 pub mod models;
 
 use crate::v5::devnet::models::{
@@ -7,11 +8,12 @@ use crate::v5::devnet::models::{
 };
 use colored::*;
 use errors::DevnetError;
+use helpers::prepare_postman_send_message_to_l2;
 use models::{
     AbortBlocksParams, AbortBlocksResponse, AccountBalanceParams, AccountBalanceResponse,
-    CreateBlockResponse, ForkStatusResponse, MintTokensParams, MintTokensResponse,
+    CreateBlockResponse, ForkStatusResponse, MintTokensParams, MintTokensResponse, MsgToL2,
     PostmanFlushParameters, PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
-    PostmanLoadL1MessagingContractResponse, SerializableAccount,
+    PostmanLoadL1MessagingContractResponse, PostmanSendMessageToL2Response, SerializableAccount,
 };
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_5_0::FeeUnit;
@@ -68,6 +70,10 @@ pub trait DevnetEndpoints {
         &self,
         params: PostmanFlushParameters,
     ) -> impl Future<Output = Result<PostmanFlushResponse, DevnetError>> + Send;
+    fn postman_send_message_to_l2(
+        &self,
+        params: MsgToL2,
+    ) -> impl Future<Output = Result<PostmanSendMessageToL2Response, DevnetError>> + Send;
 }
 
 impl DevnetEndpoints for Devnet {
@@ -130,12 +136,23 @@ impl DevnetEndpoints for Devnet {
     ) -> Result<PostmanFlushResponse, DevnetError> {
         endpoints::postman_flush(self.url.clone(), params).await
     }
+    async fn postman_send_message_to_l2(
+        &self,
+        params: MsgToL2,
+    ) -> Result<PostmanSendMessageToL2Response, DevnetError> {
+        endpoints::postman_send_message_to_l2(self.url.clone(), params).await
+    }
 }
 
-pub async fn test_devnet_endpoints(url: Url, l1_network_url: Url) -> Result<(), DevnetError> {
+pub async fn test_devnet_endpoints(
+    url: Url,
+    l1_network_url: Url,
+    sierra_path: &str,
+    casm_path: &str,
+) -> Result<(), DevnetError> {
     info!("{}", "⌛ Testing Devnet V5 endpoints -- START ⌛".yellow());
 
-    let devnet = Devnet::new(url, l1_network_url)?;
+    let devnet = Devnet::new(url.clone(), l1_network_url)?;
 
     match devnet.is_alive().await {
         Ok(_) => {
@@ -339,6 +356,31 @@ pub async fn test_devnet_endpoints(url: Url, l1_network_url: Url) -> Result<(), 
         Err(e) => error!(
             "{} {} {}",
             "✗ Devnet postman_flush INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    let msg_to_l2 = prepare_postman_send_message_to_l2(
+        url.clone(),
+        sierra_path,
+        casm_path,
+        devnet.l1_network_url.clone(),
+    )
+    .await
+    .unwrap();
+
+    match devnet.postman_send_message_to_l2(msg_to_l2.clone()).await {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Devnet postman_send_message_to_l2 COMPATIBLE".green(),
+                "✓".green()
+            );
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet postman_send_message_to_l2 INCOMPATIBLE:".red(),
             e.to_string().red(),
             "✗".red()
         ),
