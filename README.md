@@ -54,7 +54,7 @@ The `t8n` tool is designed to process transactions and manage state changes in t
 ## Usage
 
 ```bash
-cargo run -p t8n -- --txns-path t8n/src/starknet/input/txns.json --state-path t8n/src/starknet/output/state.json --acc-path t8n/src/starknet/input/acc.json
+cargo run -p t8n -- --txns-path t8n/src/starknet/input/txns.json --state-path target/t8n/output.json --acc-path t8n/src/starknet/input/acc.json
 ```
 
 For more details, see [t8n readme](./t8n/README.md)
