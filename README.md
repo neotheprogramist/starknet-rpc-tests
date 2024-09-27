@@ -21,14 +21,26 @@ cargo install starknet-devnet --version 0.0.7
 Now run starknet-devnet
 
 ```bash
-starknet-devnet
+starknet-devnet --state-archive-capacity full
 ```
 
 After building the crate, you can use it to check the compatibility between the supported versions of Starknet Devnet.
 
 ```bash
-cargo run -p checker -- --url http://127.0.0.1:5050/ --sierra-path target/dev/contracts_HelloStarknet.contract_class.json --casm-path target/dev/contracts_HelloStarknet.compiled_contract_class.json --version v5
+cargo run -p checker -- \
+    --url http://127.0.0.1:5050/ \
+    --l1-network-url <L1_NETWORK_URL> \
+    --sierra-path target/dev/contracts_HelloStarknet.contract_class.json \
+    --casm-path target/dev/contracts_HelloStarknet.compiled_contract_class.json \
+    --version v5
 ```
+
+**Note on L1 Network URL:**
+For the `--l1-network-url` parameter, you can use various Ethereum node providers:
+
+- Alchemy: `https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY`
+- Infura: `https://sepolia.infura.io/v3/YOUR_PROJECT_ID`
+- QuickNode: `https://YOUR_SUBDOMAIN.quiknode.pro/YOUR_API_KEY/`
 
 For more details, see [checker readme](./checker/README.md)
 

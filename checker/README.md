@@ -58,6 +58,7 @@ Environment variables are also working
 ```toml
 [env]
 URL = "http://127.0.0.1:5050/"
+L1_NETWORK_URL = "https://eth-sepolia.g.alchemy.com/v2/key"
 SIERRA_PATH = "target/dev/contracts_HelloStarknet.contract_class.json"
 CASM_PATH = "target/dev/contracts_HelloStarknet.compiled_contract_class.json"
 ```
