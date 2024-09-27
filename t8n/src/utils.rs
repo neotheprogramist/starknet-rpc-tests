@@ -1,19 +1,32 @@
-use serde::Serialize;
-
 use crate::starknet::state::add_declare_transaction::add_declare_transaction;
 use crate::starknet::state::add_deploy_account_transaction::add_deploy_account_transaction;
 use crate::starknet::state::add_invoke_transaction::add_invoke_transaction;
 use crate::starknet::state::errors::Error;
+use crate::starknet::state::starknet_state::{StateWithBlock, StateWithBlockNumber};
 use crate::starknet::state::Starknet;
+use serde::Serialize;
 use starknet_devnet_types::rpc::transaction_receipt::TransactionReceipt;
 use starknet_devnet_types::rpc::transactions::BroadcastedTransaction;
+use std::path::PathBuf;
 use std::{
     fs::{self, File},
     io::BufReader,
 };
 use tracing::{error, info};
 
-pub fn read_transactions_file(file_path: &str) -> Result<Vec<BroadcastedTransaction>, Error> {
+pub fn read_state_file(file_path: &PathBuf) -> Result<StateWithBlockNumber, Error> {
+    let file = File::open(file_path)?;
+    let reader = BufReader::new(file);
+
+    let state_with_block: StateWithBlock = serde_json::from_reader(reader)?;
+    let state_with_block_number = StateWithBlockNumber {
+        state: state_with_block.state,
+        block_number: state_with_block.blocks.header.block_number,
+    };
+    Ok(state_with_block_number)
+}
+
+pub fn read_transactions_file(file_path: &PathBuf) -> Result<Vec<BroadcastedTransaction>, Error> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
     let transactions: Vec<BroadcastedTransaction> = serde_json::from_reader(reader)?;
@@ -90,7 +103,7 @@ pub fn handle_transactions(
     Ok(())
 }
 
-pub fn write_result_state_file<T: Serialize>(file_path: &str, data: &T) -> Result<(), Error> {
+pub fn write_result_state_file<T: Serialize>(file_path: &PathBuf, data: &T) -> Result<(), Error> {
     if let Some(parent) = std::path::Path::new(file_path).parent() {
         fs::create_dir_all(parent)?;
     }
@@ -100,6 +113,6 @@ pub fn write_result_state_file<T: Serialize>(file_path: &str, data: &T) -> Resul
         e
     })?;
 
-    info!("State written into {}", file_path);
+    info!("State written into {:?}", file_path);
     Ok(())
 }
