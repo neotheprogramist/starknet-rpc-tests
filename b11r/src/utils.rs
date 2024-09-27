@@ -27,6 +27,6 @@ pub fn write_block_file<T: Serialize>(file_path: PathBuf, data: &T) -> Result<()
         e
     })?;
 
-    info!("State written into {}", file_path.display());
+    info!("Block written into {}", file_path.display());
     Ok(())
 }

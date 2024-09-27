@@ -7,6 +7,10 @@ use clap::Parser;
 use utils::{read_input_file, write_block_file};
 
 fn main() -> Result<(), Error> {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::INFO)
+        .init();
+
     let args = Args::parse();
 
     let b11r_input = read_input_file(args.input_path)?;
