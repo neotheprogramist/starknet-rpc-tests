@@ -4,7 +4,7 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
-blockifier = { git = "https://github.com/neotheprogramist/blockifier.git", branch = "feat/1-serde", features = [
+blockifier = { git = "https://github.com/neotheprogramist/blockifier.git", branch = "feat/add-deserialization-serialization", features = [
   "testing",
 ] }
 cairo-lang-casm = "=2.6.0"
