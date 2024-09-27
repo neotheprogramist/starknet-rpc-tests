@@ -15,4 +15,5 @@ starknet-devnet-types.workspace = true
 starknet-types-core.workspace = true
 starknet-types-rpc.workspace = true
 thiserror.workspace = true
+tracing-subscriber.workspace = true
 tracing.workspace = true

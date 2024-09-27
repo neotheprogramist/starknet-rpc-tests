@@ -7,6 +7,8 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
+    #[error("Account path not provided")]
+    AccPathNotProvided,
     #[error(transparent)]
     StarknetApiError(#[from] starknet_api::StarknetApiError),
     #[error(transparent)]

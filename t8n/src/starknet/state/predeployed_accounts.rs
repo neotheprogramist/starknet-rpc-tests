@@ -1,4 +1,4 @@
-use std::{fs::File, io::BufReader};
+use std::{fs::File, io::BufReader, path::Path};
 
 use serde::Serialize;
 use starknet_devnet_types::{
@@ -46,7 +46,7 @@ impl UserAccountGenerator for UserDeployedAccounts {
 
     fn generate_accounts(
         &mut self,
-        json_path: &str,
+        json_path: &Path,
         class_hash: ClassHash,
         contract_class: &ContractClass,
     ) -> DevnetResult<&Vec<Self::Acc>> {

@@ -40,7 +40,6 @@ impl Serialize for StarknetBlocks {
     where
         S: Serializer,
     {
-        // Find the block with the highest block_number
         if let Some((highest_block_hash, highest_block)) = self
             .hash_to_block
             .iter()
@@ -60,7 +59,6 @@ impl Serialize for StarknetBlocks {
 
             state.end()
         } else {
-            // If no block is found, serialize nothing
             serializer.serialize_none()
         }
     }

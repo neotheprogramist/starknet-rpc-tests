@@ -52,8 +52,18 @@ The `t8n` tool is designed to process transactions and manage state changes in t
 
 ## Usage
 
+Use the initial state mode to start with a fresh state:
+
 ```bash
 cargo run -p t8n -- --txns-path t8n/src/starknet/input/txns.json --state-path target/t8n/output.json --acc-path t8n/src/starknet/input/acc.json
+```
+
+### Forwarded State Mode
+
+You can use the forwarded state mode to initialize the state from a previous t8n run:
+
+```bash
+cargo run -p t8n -- --txns-path t8n/src/starknet/input/txns_2.json --state-path target/t8n/output.json --forwarded-state
 ```
 
 For more details, see [t8n readme](./t8n/README.md)
