@@ -52,10 +52,3 @@ pub struct MintResponse {
     unit: FeeUnit,
     tx_hash: Felt,
 }
-
-// #[derive(Serialize, Deserialize, Debug)]
-// pub struct MintResponse {
-//     new_balance: U256,
-//     unit: FeeUnit,
-//     tx_hash: Felt,
-// }

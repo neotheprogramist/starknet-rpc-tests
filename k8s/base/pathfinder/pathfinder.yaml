@@ -7,7 +7,7 @@ metadata:
 spec:
   initContainers:
     - name: wait-for-db-snapshot
-      image: busybox
+      image: docker.io/busybox
       command:
         [
           "sh",
@@ -54,7 +54,7 @@ metadata:
 spec:
   initContainers:
     - name: wait-for-db-snapshot
-      image: busybox
+      image: docker.io/busybox
       command:
         [
           "sh",
@@ -66,7 +66,7 @@ spec:
           mountPath: /usr/share/pathfinder/data
   containers:
     - name: pathfinder-2
-      image: eqlabs/pathfinder:v0.14.1
+      image: docker.io/eqlabs/pathfinder:v0.14.1
       ports:
         - containerPort: 80
         - containerPort: 9090
