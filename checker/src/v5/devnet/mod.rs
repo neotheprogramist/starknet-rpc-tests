@@ -65,7 +65,7 @@ pub trait DevnetEndpoints {
         &self,
         params: AbortBlocksParams,
     ) -> impl Future<Output = Result<AbortBlocksResponse, DevnetError>> + Send;
-    fn postman_load(
+    fn postman_load_l1_messaging_contract(
         &self,
         params: PostmanLoadL1MessagingContractParams,
     ) -> impl Future<Output = Result<PostmanLoadL1MessagingContractResponse, DevnetError>> + Send;
@@ -133,11 +133,11 @@ impl DevnetEndpoints for Devnet {
     ) -> Result<AbortBlocksResponse, DevnetError> {
         endpoints::abort_blocks(self.url.clone(), params).await
     }
-    async fn postman_load(
+    async fn postman_load_l1_messaging_contract(
         &self,
         params: PostmanLoadL1MessagingContractParams,
     ) -> Result<PostmanLoadL1MessagingContractResponse, DevnetError> {
-        endpoints::postman_load(self.url.clone(), params).await
+        endpoints::postman_load_l1_messaging_contract(self.url.clone(), params).await
     }
     async fn postman_flush(
         &self,
@@ -364,7 +364,7 @@ pub async fn test_devnet_endpoints(
     }
 
     match devnet
-        .postman_load(PostmanLoadL1MessagingContractParams {
+        .postman_load_l1_messaging_contract(PostmanLoadL1MessagingContractParams {
             network_url: devnet.l1_network_url.clone().to_string(),
             address: Some("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef".to_string()),
         })

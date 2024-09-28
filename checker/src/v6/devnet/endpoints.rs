@@ -4,7 +4,10 @@ use url::Url;
 use super::{
     errors::DevnetError,
     models::{
-        AccountBalanceParams, AccountBalanceResponse, DumpPath, LoadPath, SerializableAccount,
+        AccountBalanceParams, AccountBalanceResponse, DumpPath, LoadPath, MsgToL2,
+        PostmanFlushParameters, PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
+        PostmanLoadL1MessagingContractResponse, PostmanSendMessageToL2Response,
+        SerializableAccount,
     },
 };
 
@@ -58,4 +61,61 @@ pub async fn load(url: Url, params: LoadPath) -> Result<(), DevnetError> {
         .await?;
 
     Ok(())
+}
+
+pub async fn postman_load_l1_messaging_contract(
+    url: Url,
+    params: PostmanLoadL1MessagingContractParams,
+) -> Result<PostmanLoadL1MessagingContractResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("postman/load_l1_messaging_contract")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<PostmanLoadL1MessagingContractResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn postman_flush(
+    url: Url,
+    params: PostmanFlushParameters,
+) -> Result<PostmanFlushResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("/postman/flush")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<PostmanFlushResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn postman_send_message_to_l2(
+    url: Url,
+    params: MsgToL2,
+) -> Result<PostmanSendMessageToL2Response, DevnetError> {
+    let response = Client::new()
+        .post(url.join("/postman/send_message_to_l2")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<PostmanSendMessageToL2Response>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn restart(url: Url) -> Result<(), DevnetError> {
+    let response = Client::new().post(url.join("restart")?).send().await?;
+
+    if response.status().is_success() {
+        Ok(())
+    } else {
+        Err(DevnetError::Restart {
+            msg: response.text().await?,
+        })
+    }
 }

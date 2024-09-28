@@ -158,7 +158,7 @@ pub async fn abort_blocks(
     Ok(response)
 }
 
-pub async fn postman_load(
+pub async fn postman_load_l1_messaging_contract(
     url: Url,
     params: PostmanLoadL1MessagingContractParams,
 ) -> Result<PostmanLoadL1MessagingContractResponse, DevnetError> {

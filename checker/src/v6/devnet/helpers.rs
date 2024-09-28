@@ -2,14 +2,14 @@ use std::str::FromStr;
 
 use super::endpoints::postman_load_l1_messaging_contract;
 use super::models::PostmanLoadL1MessagingContractParams;
-use crate::v5::devnet::errors::DevnetError;
-use crate::v5::devnet::models::MsgToL2;
-use crate::v5::rpc::endpoints::endpoints_functions::get_transaction_receipt;
-use crate::v5::rpc::endpoints::utils::get_selector_from_name;
-use crate::v5::rpc::providers::jsonrpc::{HttpTransport, JsonRpcClient};
-use crate::v5::rpc::providers::provider::Provider;
+use crate::v6::devnet::errors::DevnetError;
+use crate::v6::devnet::models::MsgToL2;
+use crate::v6::rpc::endpoints::endpoints_functions::get_transaction_receipt;
+use crate::v6::rpc::endpoints::utils::get_selector_from_name;
+use crate::v6::rpc::providers::jsonrpc::{HttpTransport, JsonRpcClient};
+use crate::v6::rpc::providers::provider::Provider;
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_5_0::{BlockId, BlockTag, MsgFromL1};
+use starknet_types_rpc::v0_6_0::{BlockId, BlockTag, MsgFromL1};
 use url::Url;
 
 pub async fn prepare_postman_send_message_to_l2(
