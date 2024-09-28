@@ -118,3 +118,13 @@ pub struct MsgToL2 {
 pub struct PostmanSendMessageToL2Response {
     pub transaction_hash: TxnHash,
 }
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct DumpPath {
+    pub path: Option<String>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct LoadPath {
+    pub path: Option<String>,
+}

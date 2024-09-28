@@ -11,9 +11,10 @@ use errors::DevnetError;
 use helpers::prepare_postman_send_message_to_l2;
 use models::{
     AbortBlocksParams, AbortBlocksResponse, AccountBalanceParams, AccountBalanceResponse,
-    CreateBlockResponse, ForkStatusResponse, MintTokensParams, MintTokensResponse, MsgToL2,
-    PostmanFlushParameters, PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
-    PostmanLoadL1MessagingContractResponse, PostmanSendMessageToL2Response, SerializableAccount,
+    CreateBlockResponse, DumpPath, ForkStatusResponse, LoadPath, MintTokensParams,
+    MintTokensResponse, MsgToL2, PostmanFlushParameters, PostmanFlushResponse,
+    PostmanLoadL1MessagingContractParams, PostmanLoadL1MessagingContractResponse,
+    PostmanSendMessageToL2Response, SerializableAccount,
 };
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_5_0::FeeUnit;
@@ -42,6 +43,8 @@ pub trait DevnetEndpoints {
     fn account_balance(
         &self,
     ) -> impl Future<Output = Result<AccountBalanceResponse, DevnetError>> + Send;
+    fn dump(&self, params: DumpPath) -> impl Future<Output = Result<(), DevnetError>> + Send;
+    fn load(&self, params: LoadPath) -> impl Future<Output = Result<(), DevnetError>> + Send;
     fn restart(&self) -> impl Future<Output = Result<(), DevnetError>> + Send;
     fn set_time(
         &self,
@@ -96,6 +99,12 @@ impl DevnetEndpoints for Devnet {
 
     async fn predeployed_accounts(&self) -> Result<Vec<SerializableAccount>, DevnetError> {
         endpoints::get_predeployed_accounts(self.url.clone()).await
+    }
+    async fn dump(&self, params: DumpPath) -> Result<(), DevnetError> {
+        endpoints::dump(self.url.clone(), params).await
+    }
+    async fn load(&self, params: LoadPath) -> Result<(), DevnetError> {
+        endpoints::load(self.url.clone(), params).await
     }
     async fn restart(&self) -> Result<(), DevnetError> {
         endpoints::restart(self.url.clone()).await
@@ -177,6 +186,40 @@ pub async fn test_devnet_endpoints(
         Err(e) => error!(
             "{} {} {}",
             "✗ Devnet fork_status INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .dump(DumpPath {
+            path: Some("./dump".to_string()),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet dump COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet dump INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .load(LoadPath {
+            path: Some("./dump".to_string()),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet load COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet load INCOMPATIBLE:".red(),
             e.to_string().red(),
             "✗".red()
         ),

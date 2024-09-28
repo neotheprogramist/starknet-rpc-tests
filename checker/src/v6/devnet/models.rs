@@ -21,3 +21,13 @@ pub struct SerializableAccount {
     pub public_key: Felt,
     pub private_key: Felt,
 }
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct DumpPath {
+    pub path: Option<String>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
+pub struct LoadPath {
+    pub path: Option<String>,
+}

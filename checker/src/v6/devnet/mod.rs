@@ -4,7 +4,9 @@ pub mod models;
 
 use colored::*;
 use errors::DevnetError;
-use models::{AccountBalanceParams, AccountBalanceResponse, SerializableAccount};
+use models::{
+    AccountBalanceParams, AccountBalanceResponse, DumpPath, LoadPath, SerializableAccount,
+};
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_6_0::PriceUnit;
 
@@ -30,6 +32,8 @@ pub trait DevnetEndpoints {
     fn account_balance(
         &self,
     ) -> impl Future<Output = Result<AccountBalanceResponse, DevnetError>> + Send;
+    fn dump(&self, path: DumpPath) -> impl Future<Output = Result<(), DevnetError>> + Send;
+    fn load(&self, path: LoadPath) -> impl Future<Output = Result<(), DevnetError>> + Send;
 }
 
 impl DevnetEndpoints for Devnet {
@@ -52,6 +56,12 @@ impl DevnetEndpoints for Devnet {
 
     async fn predeployed_accounts(&self) -> Result<Vec<SerializableAccount>, DevnetError> {
         endpoints::get_predeployed_accounts(self.url.clone()).await
+    }
+    async fn dump(&self, path: DumpPath) -> Result<(), DevnetError> {
+        endpoints::dump(self.url.clone(), path).await
+    }
+    async fn load(&self, path: LoadPath) -> Result<(), DevnetError> {
+        endpoints::load(self.url.clone(), path).await
     }
 }
 
@@ -99,6 +109,40 @@ pub async fn test_devnet_endpoints(url: Url) -> Result<(), DevnetError> {
         Err(e) => error!(
             "{} {} {}",
             "✗ Devnet account_balance INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .dump(DumpPath {
+            path: Some("./dump".to_string()),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet dump COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet dump INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .load(LoadPath {
+            path: Some("./load".to_string()),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet load COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet load INCOMPATIBLE:".red(),
             e.to_string().red(),
             "✗".red()
         ),
