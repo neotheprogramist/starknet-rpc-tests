@@ -42,7 +42,14 @@ async fn main() -> Result<(), String> {
             }
         }
         Version::V6 => {
-            if let Err(e) = V6::devnet::test_devnet_endpoints(args.url.clone()).await {
+            if let Err(e) = V6::devnet::test_devnet_endpoints(
+                args.url.clone(),
+                args.l1_network_url.clone(),
+                &args.sierra_path,
+                &args.casm_path,
+            )
+            .await
+            {
                 error!("Failure: {}", e.to_string().red());
             }
 

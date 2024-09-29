@@ -5,9 +5,9 @@ use super::{
     errors::DevnetError,
     models::{
         AbortBlocksParams, AbortBlocksResponse, AccountBalanceParams, AccountBalanceResponse,
-        CreateBlockResponse, ForkStatusResponse, IncreaseTimeParams, IncreaseTimeResponse,
-        MintTokensParams, MintTokensResponse, MsgToL2, PostmanFlushParameters,
-        PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
+        CreateBlockResponse, DumpPath, ForkStatusResponse, IncreaseTimeParams,
+        IncreaseTimeResponse, LoadPath, MintTokensParams, MintTokensResponse, MsgToL2,
+        PostmanFlushParameters, PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
         PostmanLoadL1MessagingContractResponse, PostmanSendMessageToL2Response,
         SerializableAccount, SetTimeParams, SetTimeResponse,
     },
@@ -60,6 +60,26 @@ pub async fn get_predeployed_accounts(url: Url) -> Result<Vec<SerializableAccoun
         .await?;
 
     Ok(response)
+}
+
+pub async fn dump(url: Url, params: DumpPath) -> Result<(), DevnetError> {
+    Client::new()
+        .post(url.join("dump")?)
+        .json(&params)
+        .send()
+        .await?;
+
+    Ok(())
+}
+
+pub async fn load(url: Url, params: LoadPath) -> Result<(), DevnetError> {
+    Client::new()
+        .post(url.join("load")?)
+        .json(&params)
+        .send()
+        .await?;
+
+    Ok(())
 }
 
 pub async fn set_time(url: Url, params: SetTimeParams) -> Result<SetTimeResponse, DevnetError> {
@@ -138,7 +158,7 @@ pub async fn abort_blocks(
     Ok(response)
 }
 
-pub async fn postman_load(
+pub async fn postman_load_l1_messaging_contract(
     url: Url,
     params: PostmanLoadL1MessagingContractParams,
 ) -> Result<PostmanLoadL1MessagingContractResponse, DevnetError> {

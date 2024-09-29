@@ -13,6 +13,7 @@ clap_derive = "4.5.13"
 colored = "2.1.0"
 crypto-bigint = "0.5.5"
 lambdaworks-math = { version = "0.7.0", default-features = false }
+num-bigint = { version = "0.4", features = ["serde"], default-features = false }
 pathfinder-types = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "dd6870ca52ebccee3e79fa71c5d83a59c7f4a8e9" }
 rand = "0.8.5"
 regex = "1.10.6"
