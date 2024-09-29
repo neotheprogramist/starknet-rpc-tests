@@ -34,7 +34,7 @@ pub struct DumpPath {
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]
 pub struct LoadPath {
-    pub path: Option<String>,
+    pub path: String,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize)]

@@ -196,7 +196,7 @@ pub async fn test_devnet_endpoints(
 
     match devnet
         .load(LoadPath {
-            path: Some("./dump".to_string()),
+            path: "./load".to_string(),
         })
         .await
     {
