@@ -10,6 +10,7 @@ clap.workspace = true
 colored.workspace = true
 crypto-bigint.workspace = true
 lambdaworks-math.workspace = true
+num-bigint.workspace = true
 rand.workspace = true
 regex.workspace = true
 reqwest.workspace = true

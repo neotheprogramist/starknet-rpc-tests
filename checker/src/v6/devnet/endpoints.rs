@@ -4,10 +4,12 @@ use url::Url;
 use super::{
     errors::DevnetError,
     models::{
-        AccountBalanceParams, AccountBalanceResponse, DumpPath, LoadPath, MsgToL2,
+        AbortBlocksParams, AbortBlocksResponse, AccountBalanceParams, AccountBalanceResponse,
+        CreateBlockResponse, DevnetConfigResponse, DumpPath, IncreaseTimeParams,
+        IncreaseTimeResponse, LoadPath, MintTokensParams, MintTokensResponse, MsgToL2,
         PostmanFlushParameters, PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
         PostmanLoadL1MessagingContractResponse, PostmanSendMessageToL2Response,
-        SerializableAccount,
+        SerializableAccount, SetTimeParams, SetTimeResponse,
     },
 };
 
@@ -118,4 +120,80 @@ pub async fn restart(url: Url) -> Result<(), DevnetError> {
             msg: response.text().await?,
         })
     }
+}
+
+pub async fn create_block(url: Url) -> Result<CreateBlockResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("create_block")?)
+        .send()
+        .await?
+        .json::<CreateBlockResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn abort_blocks(
+    url: Url,
+    abort_blocks_params: AbortBlocksParams,
+) -> Result<AbortBlocksResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("abort_blocks")?)
+        .json(&abort_blocks_params)
+        .send()
+        .await?
+        .json::<AbortBlocksResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn set_time(url: Url, params: SetTimeParams) -> Result<SetTimeResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("set_time")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<SetTimeResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn increase_time(
+    url: Url,
+    params: IncreaseTimeParams,
+) -> Result<IncreaseTimeResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("increase_time")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<IncreaseTimeResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn mint(url: Url, params: MintTokensParams) -> Result<MintTokensResponse, DevnetError> {
+    let response = Client::new()
+        .post(url.join("mint")?)
+        .json(&params)
+        .send()
+        .await?
+        .json::<MintTokensResponse>()
+        .await?;
+
+    Ok(response)
+}
+
+pub async fn devnet_config(url: Url) -> Result<DevnetConfigResponse, DevnetError> {
+    let response = Client::new()
+        .get(url.join("config")?)
+        .send()
+        .await?
+        .json::<DevnetConfigResponse>()
+        .await?;
+
+    Ok(response)
 }

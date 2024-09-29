@@ -552,7 +552,7 @@ pub async fn test_rpc_endpoints_v0_0_6(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_transaction_receiptCOMPATIBLE".green(),
+                "✓ Rpc get_transaction_receipt COMPATIBLE".green(),
                 "✓".green()
             )
         }

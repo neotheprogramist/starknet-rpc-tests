@@ -46,7 +46,7 @@ pub async fn prepare_postman_send_message_to_l2(
         entry_point_selector: get_selector_from_name("deposit")?,
         l1_contract_address: Felt::from_str(&l1_contract_address.messaging_contract_address)?,
         payload: vec![(1_u32).into(), (10_u32).into()],
-        paid_fee_on_l1: estimate.overall_fee.into(),
+        paid_fee_on_l1: estimate.overall_fee,
         nonce: Felt::ZERO,
     };
     Ok(msg_to_l2)

@@ -7,9 +7,12 @@ use colored::*;
 use errors::DevnetError;
 use helpers::prepare_postman_send_message_to_l2;
 use models::{
-    AccountBalanceParams, AccountBalanceResponse, DumpPath, LoadPath, MsgToL2,
-    PostmanFlushParameters, PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
+    AbortBlocksParams, AbortBlocksResponse, AccountBalanceParams, AccountBalanceResponse,
+    CreateBlockResponse, DevnetConfigResponse, DumpPath, IncreaseTimeParams, IncreaseTimeResponse,
+    LoadPath, MintTokensParams, MintTokensResponse, MsgToL2, PostmanFlushParameters,
+    PostmanFlushResponse, PostmanLoadL1MessagingContractParams,
     PostmanLoadL1MessagingContractResponse, PostmanSendMessageToL2Response, SerializableAccount,
+    SetTimeParams, SetTimeResponse,
 };
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_6_0::PriceUnit;
@@ -20,12 +23,15 @@ use url::Url;
 
 pub struct Devnet {
     pub url: Url,
-    pub network_url: Url,
+    pub l1_network_url: Url,
 }
 
 impl Devnet {
-    pub fn new(url: Url, network_url: Url) -> Result<Self, DevnetError> {
-        Ok(Self { url, network_url })
+    pub fn new(url: Url, l1_network_url: Url) -> Result<Self, DevnetError> {
+        Ok(Self {
+            url,
+            l1_network_url,
+        })
     }
 }
 
@@ -52,6 +58,27 @@ pub trait DevnetEndpoints {
         params: MsgToL2,
     ) -> impl Future<Output = Result<PostmanSendMessageToL2Response, DevnetError>> + Send;
     fn restart(&self) -> impl Future<Output = Result<(), DevnetError>> + Send;
+    fn create_block(&self)
+        -> impl Future<Output = Result<CreateBlockResponse, DevnetError>> + Send;
+    fn abort_blocks(
+        &self,
+        params: AbortBlocksParams,
+    ) -> impl Future<Output = Result<AbortBlocksResponse, DevnetError>> + Send;
+    fn set_time(
+        &self,
+        params: SetTimeParams,
+    ) -> impl Future<Output = Result<SetTimeResponse, DevnetError>> + Send;
+    fn increase_time(
+        &self,
+        params: IncreaseTimeParams,
+    ) -> impl Future<Output = Result<IncreaseTimeResponse, DevnetError>> + Send;
+    fn mint(
+        &self,
+        params: MintTokensParams,
+    ) -> impl Future<Output = Result<MintTokensResponse, DevnetError>> + Send;
+    fn devnet_config(
+        &self,
+    ) -> impl Future<Output = Result<DevnetConfigResponse, DevnetError>> + Send;
 }
 
 impl DevnetEndpoints for Devnet {
@@ -102,17 +129,41 @@ impl DevnetEndpoints for Devnet {
     async fn restart(&self) -> Result<(), DevnetError> {
         endpoints::restart(self.url.clone()).await
     }
+    async fn create_block(&self) -> Result<CreateBlockResponse, DevnetError> {
+        endpoints::create_block(self.url.clone()).await
+    }
+    async fn abort_blocks(
+        &self,
+        params: AbortBlocksParams,
+    ) -> Result<AbortBlocksResponse, DevnetError> {
+        endpoints::abort_blocks(self.url.clone(), params).await
+    }
+    async fn set_time(&self, params: SetTimeParams) -> Result<SetTimeResponse, DevnetError> {
+        endpoints::set_time(self.url.clone(), params).await
+    }
+    async fn increase_time(
+        &self,
+        params: IncreaseTimeParams,
+    ) -> Result<IncreaseTimeResponse, DevnetError> {
+        endpoints::increase_time(self.url.clone(), params).await
+    }
+    async fn mint(&self, params: MintTokensParams) -> Result<MintTokensResponse, DevnetError> {
+        endpoints::mint(self.url.clone(), params).await
+    }
+    async fn devnet_config(&self) -> Result<DevnetConfigResponse, DevnetError> {
+        endpoints::devnet_config(self.url.clone()).await
+    }
 }
 
 pub async fn test_devnet_endpoints(
     url: Url,
-    network_url: Url,
+    l1_network_url: Url,
     sierra_path: &str,
     casm_path: &str,
 ) -> Result<(), DevnetError> {
     info!("{}", "⌛ Testing Devnet V6 endpoints -- START ⌛".yellow());
 
-    let devnet = Devnet::new(url.clone(), network_url)?;
+    let devnet = Devnet::new(url.clone(), l1_network_url)?;
 
     match devnet.is_alive().await {
         Ok(_) => {
@@ -126,6 +177,146 @@ pub async fn test_devnet_endpoints(
         ),
     }
 
+    match devnet
+        .dump(DumpPath {
+            path: Some("./dump".to_string()),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet dump COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet dump INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .load(LoadPath {
+            path: Some("./dump".to_string()),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet load COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet load INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .set_time(SetTimeParams {
+            time: 3203391149,
+            generate_block: Some(true),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet set_time COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet set_time INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .increase_time(IncreaseTimeParams { time: 3735928559 })
+        .await
+    {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Devnet increase_time COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet increase_time INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .mint(MintTokensParams {
+            address: Felt::from_hex(
+                "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
+            )
+            .unwrap(),
+            amount: 244837814099629,
+            unit: Some(PriceUnit::Wei),
+        })
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet mint COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet mint INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+    match devnet.create_block().await {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Devnet create_block COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet create_block INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet
+        .abort_blocks(AbortBlocksParams {
+            starting_block_hash: devnet.create_block().await.unwrap().block_hash,
+        })
+        .await
+    {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Devnet abort_block COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet abort_block INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet.restart().await {
+        Ok(_) => {
+            info!("{} {}", "✓ Devnet restart COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet restart INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
     match devnet.predeployed_accounts().await {
         Ok(_) => {
             info!(
@@ -159,54 +350,8 @@ pub async fn test_devnet_endpoints(
     }
 
     match devnet
-        .dump(DumpPath {
-            path: Some("./dump".to_string()),
-        })
-        .await
-    {
-        Ok(_) => {
-            info!("{} {}", "✓ Devnet dump COMPATIBLE".green(), "✓".green())
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Devnet dump INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
-
-    match devnet
-        .load(LoadPath {
-            path: Some("./load".to_string()),
-        })
-        .await
-    {
-        Ok(_) => {
-            info!("{} {}", "✓ Devnet load COMPATIBLE".green(), "✓".green())
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Devnet load INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
-
-    match devnet.restart().await {
-        Ok(_) => {
-            info!("{} {}", "✓ Devnet restart COMPATIBLE".green(), "✓".green())
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Devnet restart INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
-
-    match devnet
         .postman_load_l1_messaging_contract(PostmanLoadL1MessagingContractParams {
-            network_url: devnet.network_url.to_string(),
+            network_url: devnet.l1_network_url.clone().to_string(),
             address: Some("0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef".to_string()),
         })
         .await
@@ -214,13 +359,13 @@ pub async fn test_devnet_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Devnet postman_load_l1_messaging_contract COMPATIBLE".green(),
+                "✓ Devnet postman_load COMPATIBLE".green(),
                 "✓".green()
-            )
+            );
         }
         Err(e) => error!(
             "{} {} {}",
-            "✗ Devnet postman_load_l1_messaging_contract INCOMPATIBLE:".red(),
+            "✗ Devnet postman_load INCOMPATIBLE:".red(),
             e.to_string().red(),
             "✗".red()
         ),
@@ -235,7 +380,7 @@ pub async fn test_devnet_endpoints(
                 "{} {}",
                 "✓ Devnet postman_flush COMPATIBLE".green(),
                 "✓".green()
-            )
+            );
         }
         Err(e) => error!(
             "{} {} {}",
@@ -249,7 +394,7 @@ pub async fn test_devnet_endpoints(
         url.clone(),
         sierra_path,
         casm_path,
-        devnet.network_url.clone(),
+        devnet.l1_network_url.clone(),
     )
     .await
     .unwrap();
@@ -265,6 +410,22 @@ pub async fn test_devnet_endpoints(
         Err(e) => error!(
             "{} {} {}",
             "✗ Devnet postman_send_message_to_l2 INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    match devnet.devnet_config().await {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Devnet devnet_config COMPATIBLE".green(),
+                "✓".green()
+            );
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Devnet devnet_config INCOMPATIBLE:".red(),
             e.to_string().red(),
             "✗".red()
         ),
