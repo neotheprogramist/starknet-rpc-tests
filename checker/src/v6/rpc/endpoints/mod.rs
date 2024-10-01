@@ -6,8 +6,8 @@ pub mod utils;
 
 use colored::*;
 use endpoints_functions::{
-    add_declare_transaction, add_invoke_transaction, block_number, call, chain_id,
-    estimate_message_fee, get_block_transaction_count, get_block_with_tx_hashes,
+    add_declare_transaction, add_declare_transaction_v3, add_invoke_transaction, block_number,
+    call, chain_id, estimate_message_fee, get_block_transaction_count, get_block_with_tx_hashes,
     get_block_with_txs, get_class, get_class_at, get_class_hash_at, get_state_update,
     get_storage_at, get_transaction_by_block_id_and_index, get_transaction_by_hash_deploy_acc,
     get_transaction_by_hash_invoke, get_transaction_by_hash_non_existent_tx,
@@ -36,6 +36,12 @@ impl Rpc {
 
 pub trait RpcEndpoints {
     fn add_declare_transaction(
+        &self,
+        sierra_path: &str,
+        casm_path: &str,
+    ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
+
+    fn add_declare_transaction_v3(
         &self,
         sierra_path: &str,
         casm_path: &str,
@@ -137,6 +143,14 @@ impl RpcEndpoints for Rpc {
         casm_path: &str,
     ) -> Result<Felt, RpcError> {
         add_declare_transaction(self.url.clone(), sierra_path, casm_path).await
+    }
+
+    async fn add_declare_transaction_v3(
+        &self,
+        sierra_path: &str,
+        casm_path: &str,
+    ) -> Result<Felt, RpcError> {
+        add_declare_transaction_v3(self.url.clone(), sierra_path, casm_path).await
     }
 
     async fn add_invoke_transaction(
@@ -290,8 +304,25 @@ pub async fn test_rpc_endpoints_v0_0_6(
             "✗".red()
         ),
     }
-    restart_devnet(url.clone()).await?;
 
+    restart_devnet(url.clone()).await?;
+    match rpc.add_declare_transaction_v3(sierra_path, casm_path).await {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Rpc add_declare_transaction V3 COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Rpc add_declare_transaction V3 INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+    
+    restart_devnet(url.clone()).await?;
     match rpc.add_invoke_transaction(sierra_path, casm_path).await {
         Ok(_) => {
             info!(

@@ -49,6 +49,13 @@ pub struct MintRequest {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct MintRequest2 {
+    pub amount: u128,
+    pub address: Felt,
+    pub unit: PriceUnit,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
 pub struct MintResponse {
     new_balance: String,
     unit: PriceUnit,

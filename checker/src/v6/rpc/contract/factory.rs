@@ -4,7 +4,7 @@ use starknet_types_rpc::v0_6_0::{
 };
 
 use crate::v6::rpc::accounts::{
-    account::{Account, AccountError, ConnectedAccount, ExecutionV1},
+    account::{Account, AccountError, ConnectedAccount, ExecutionV1, ExecutionV3},
     call::Call,
 };
 
@@ -56,19 +56,19 @@ pub struct DeploymentV1<'f, A> {
 /// Abstraction over contract deployment via the UDC. This type uses `INVOKE` v3 transactions under
 /// the hood, and hence pays transaction fees in STRK. To use v1 transactions for ETH fee payment,
 /// use [DeploymentV1] instead.
-// #[must_use]
-// pub struct DeploymentV3<'f, A> {
-//     factory: &'f ContractFactory<A>,
-//     constructor_calldata: Vec<Felt>,
-//     salt: Felt,
-//     unique: bool,
-//     // The following fields allow us to mimic an `Execution` API.
-//     nonce: Option<Felt>,
-//     gas: Option<u64>,
-//     gas_price: Option<u128>,
-//     gas_estimate_multiplier: f64,
-//     gas_price_estimate_multiplier: f64,
-// }
+#[must_use]
+pub struct DeploymentV3<'f, A> {
+    factory: &'f ContractFactory<A>,
+    constructor_calldata: Vec<Felt>,
+    salt: Felt,
+    unique: bool,
+    // The following fields allow us to mimic an `Execution` API.
+    nonce: Option<Felt>,
+    gas: Option<u64>,
+    gas_price: Option<u128>,
+    gas_estimate_multiplier: f64,
+    gas_price_estimate_multiplier: f64,
+}
 
 impl<A> ContractFactory<A> {
     pub fn new(class_hash: Felt, account: A) -> Self {
@@ -105,24 +105,24 @@ where
         }
     }
 
-    // pub fn deploy_v3(
-    //     &self,
-    //     constructor_calldata: Vec<Felt>,
-    //     salt: Felt,
-    //     unique: bool,
-    // ) -> DeploymentV3<A> {
-    //     DeploymentV3 {
-    //         factory: self,
-    //         constructor_calldata,
-    //         salt,
-    //         unique,
-    //         nonce: None,
-    //         gas: None,
-    //         gas_price: None,
-    //         gas_estimate_multiplier: 1.5,
-    //         gas_price_estimate_multiplier: 1.5,
-    //     }
-    // }
+    pub fn deploy_v3(
+        &self,
+        constructor_calldata: Vec<Felt>,
+        salt: Felt,
+        unique: bool,
+    ) -> DeploymentV3<A> {
+        DeploymentV3 {
+            factory: self,
+            constructor_calldata,
+            salt,
+            unique,
+            nonce: None,
+            gas: None,
+            gas_price: None,
+            gas_estimate_multiplier: 1.5,
+            gas_price_estimate_multiplier: 1.5,
+        }
+    }
 
     #[deprecated = "use version specific variants (`deploy_v1` & `deploy_v3`) instead"]
     pub fn deploy(
@@ -158,42 +158,43 @@ impl<'f, A> DeploymentV1<'f, A> {
     }
 }
 
-// impl<'f, A> DeploymentV3<'f, A> {
-//     pub fn nonce(self, nonce: Felt) -> Self {
-//         Self {
-//             nonce: Some(nonce),
-//             ..self
-//         }
-//     }
+#[allow(dead_code)]
+impl<'f, A> DeploymentV3<'f, A> {
+    pub fn nonce(self, nonce: Felt) -> Self {
+        Self {
+            nonce: Some(nonce),
+            ..self
+        }
+    }
 
-//     pub fn gas(self, gas: u64) -> Self {
-//         Self {
-//             gas: Some(gas),
-//             ..self
-//         }
-//     }
+    pub fn gas(self, gas: u64) -> Self {
+        Self {
+            gas: Some(gas),
+            ..self
+        }
+    }
 
-//     pub fn gas_price(self, gas_price: u128) -> Self {
-//         Self {
-//             gas_price: Some(gas_price),
-//             ..self
-//         }
-//     }
+    pub fn gas_price(self, gas_price: u128) -> Self {
+        Self {
+            gas_price: Some(gas_price),
+            ..self
+        }
+    }
 
-//     pub fn gas_estimate_multiplier(self, gas_estimate_multiplier: f64) -> Self {
-//         Self {
-//             gas_estimate_multiplier,
-//             ..self
-//         }
-//     }
+    pub fn gas_estimate_multiplier(self, gas_estimate_multiplier: f64) -> Self {
+        Self {
+            gas_estimate_multiplier,
+            ..self
+        }
+    }
 
-//     pub fn gas_price_estimate_multiplier(self, gas_price_estimate_multiplier: f64) -> Self {
-//         Self {
-//             gas_price_estimate_multiplier,
-//             ..self
-//         }
-//     }
-// }
+    pub fn gas_price_estimate_multiplier(self, gas_price_estimate_multiplier: f64) -> Self {
+        Self {
+            gas_price_estimate_multiplier,
+            ..self
+        }
+    }
+}
 #[allow(dead_code)]
 impl<'f, A> DeploymentV1<'f, A>
 where
@@ -217,27 +218,28 @@ where
     }
 }
 
-// impl<'f, A> DeploymentV3<'f, A>
-// where
-//     A: Account,
-// {
-//     /// Calculate the resulting contract address without sending a transaction.
-//     pub fn deployed_address(&self) -> Felt {
-//         get_udc_deployed_address(
-//             self.salt,
-//             self.factory.class_hash,
-//             &if self.unique {
-//                 UdcUniqueness::Unique(UdcUniqueSettings {
-//                     deployer_address: self.factory.account.address(),
-//                     udc_contract_address: self.factory.udc_address,
-//                 })
-//             } else {
-//                 UdcUniqueness::NotUnique
-//             },
-//             &self.constructor_calldata,
-//         )
-//     }
-// }
+#[allow(dead_code)]
+impl<'f, A> DeploymentV3<'f, A>
+where
+    A: Account,
+{
+    /// Calculate the resulting contract address without sending a transaction.
+    pub fn deployed_address(&self) -> Felt {
+        get_udc_deployed_address(
+            self.salt,
+            self.factory.class_hash,
+            &if self.unique {
+                UdcUniqueness::Unique(UdcUniqueSettings {
+                    deployer_address: self.factory.account.address(),
+                    udc_contract_address: self.factory.udc_address,
+                })
+            } else {
+                UdcUniqueness::NotUnique
+            },
+            &self.constructor_calldata,
+        )
+    }
+}
 
 use std::fmt::Debug;
 #[allow(dead_code)]
@@ -266,29 +268,30 @@ where
     }
 }
 
-// impl<'f, A> DeploymentV3<'f, A>
-// where
-//     A: ConnectedAccount + Sync,
-// {
-//     pub async fn estimate_fee(&self) -> Result<FeeEstimate, AccountError<A::SignError>> {
-//         let execution: ExecutionV3<A> = self.into();
-//         execution.estimate_fee().await
-//     }
+#[allow(dead_code)]
+impl<'f, A> DeploymentV3<'f, A>
+where
+    A: ConnectedAccount + Sync,
+{
+    pub async fn estimate_fee(&self) -> Result<FeeEstimate, AccountError<A::SignError>> {
+        let execution: ExecutionV3<A> = self.into();
+        execution.estimate_fee().await
+    }
 
-//     pub async fn simulate(
-//         &self,
-//         skip_validate: bool,
-//         skip_fee_charge: bool,
-//     ) -> Result<SimulatedTransaction, AccountError<A::SignError>> {
-//         let execution: ExecutionV3<A> = self.into();
-//         execution.simulate(skip_validate, skip_fee_charge).await
-//     }
+    pub async fn simulate(
+        &self,
+        skip_validate: bool,
+        skip_fee_charge: bool,
+    ) -> Result<SimulateTransactionsResult, AccountError<A::SignError>> {
+        let execution: ExecutionV3<A> = self.into();
+        execution.simulate(skip_validate, skip_fee_charge).await
+    }
 
-//     pub async fn send(&self) -> Result<InvokeTransactionResult, AccountError<A::SignError>> {
-//         let execution: ExecutionV3<A> = self.into();
-//         execution.send().await
-//     }
-// }
+    pub async fn send(&self) -> Result<AddInvokeTransactionResult, AccountError<A::SignError>> {
+        let execution: ExecutionV3<A> = self.into();
+        execution.send().await
+    }
+}
 
 impl<'f, A> From<&DeploymentV1<'f, A>> for ExecutionV1<'f, A> {
     fn from(value: &DeploymentV1<'f, A>) -> Self {
@@ -325,45 +328,45 @@ impl<'f, A> From<&DeploymentV1<'f, A>> for ExecutionV1<'f, A> {
     }
 }
 
-// impl<'f, A> From<&DeploymentV3<'f, A>> for ExecutionV3<'f, A> {
-//     fn from(value: &DeploymentV3<'f, A>) -> Self {
-//         let mut calldata = vec![
-//             value.factory.class_hash,
-//             value.salt,
-//             if value.unique { Felt::ONE } else { Felt::ZERO },
-//             value.constructor_calldata.len().into(),
-//         ];
-//         calldata.extend_from_slice(&value.constructor_calldata);
+impl<'f, A> From<&DeploymentV3<'f, A>> for ExecutionV3<'f, A> {
+    fn from(value: &DeploymentV3<'f, A>) -> Self {
+        let mut calldata = vec![
+            value.factory.class_hash,
+            value.salt,
+            if value.unique { Felt::ONE } else { Felt::ZERO },
+            value.constructor_calldata.len().into(),
+        ];
+        calldata.extend_from_slice(&value.constructor_calldata);
 
-//         let execution = Self::new(
-//             vec![Call {
-//                 to: value.factory.udc_address,
-//                 selector: SELECTOR_DEPLOYCONTRACT,
-//                 calldata,
-//             }],
-//             &value.factory.account,
-//         );
+        let execution = Self::new(
+            vec![Call {
+                to: value.factory.udc_address,
+                selector: SELECTOR_DEPLOYCONTRACT,
+                calldata,
+            }],
+            &value.factory.account,
+        );
 
-//         let execution = if let Some(nonce) = value.nonce {
-//             execution.nonce(nonce)
-//         } else {
-//             execution
-//         };
+        let execution = if let Some(nonce) = value.nonce {
+            execution.nonce(nonce)
+        } else {
+            execution
+        };
 
-//         let execution = if let Some(gas) = value.gas {
-//             execution.gas(gas)
-//         } else {
-//             execution
-//         };
+        let execution = if let Some(gas) = value.gas {
+            execution.gas(gas)
+        } else {
+            execution
+        };
 
-//         let execution = if let Some(gas_price) = value.gas_price {
-//             execution.gas_price(gas_price)
-//         } else {
-//             execution
-//         };
+        let execution = if let Some(gas_price) = value.gas_price {
+            execution.gas_price(gas_price)
+        } else {
+            execution
+        };
 
-//         let execution = execution.gas_estimate_multiplier(value.gas_estimate_multiplier);
+        let execution = execution.gas_estimate_multiplier(value.gas_estimate_multiplier);
 
-//         execution.gas_price_estimate_multiplier(value.gas_price_estimate_multiplier)
-//     }
-// }
+        execution.gas_price_estimate_multiplier(value.gas_price_estimate_multiplier)
+    }
+}
