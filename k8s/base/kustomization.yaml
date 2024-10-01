@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - pathfinder
   - anvil
+  - madara
 
 secretGenerator:
   - name: secret
