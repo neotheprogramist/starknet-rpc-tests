@@ -68,11 +68,11 @@ pub trait Account: ExecutionEncoder + Sized {
         query_only: bool,
     ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>> + Send;
 
-    // async fn sign_execution_v3(
-    //     &self,
-    //     execution: &RawExecutionV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError>;
+    async fn sign_execution_v3(
+        &self,
+        execution: &RawExecutionV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError>;
 
     fn sign_declaration_v2(
         &self,
@@ -80,17 +80,11 @@ pub trait Account: ExecutionEncoder + Sized {
         query_only: bool,
     ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>> + Send;
 
-    // async fn sign_declaration_v3(
-    //     &self,
-    //     declaration: &RawDeclarationV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError>;
-
-    // async fn sign_legacy_declaration(
-    //     &self,
-    //     legacy_declaration: &RawLegacyDeclaration,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError>;
+    async fn sign_declaration_v3(
+        &self,
+        declaration: &RawDeclarationV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError>;
 
     /// Whether the underlying signer implementation is interactive, such as a hardware wallet.
     /// Implementations should return `true` if the signing operation is very expensive, even if not
@@ -103,10 +97,10 @@ pub trait Account: ExecutionEncoder + Sized {
     fn execute_v1(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
         ExecutionV1::new(calls, self)
     }
-
-    // fn execute_v3(&self, calls: Vec<Call>) -> ExecutionV3<Self> {
-    //     ExecutionV3::new(calls, self)
-    // }
+    #[allow(dead_code)]
+    fn execute_v3(&self, calls: Vec<Call>) -> ExecutionV3<Self> {
+        ExecutionV3::new(calls, self)
+    }
     #[allow(dead_code)]
     #[deprecated = "use version specific variants (`execute_v1` & `execute_v3`) instead"]
     fn execute(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
@@ -121,13 +115,13 @@ pub trait Account: ExecutionEncoder + Sized {
         DeclarationV2::new(contract_class, compiled_class_hash, self)
     }
 
-    // fn declare_v3(
-    //     &self,
-    //     contract_class: Arc<ContractClass>,
-    //     compiled_class_hash: Felt,
-    // ) -> DeclarationV3<Self> {
-    //     DeclarationV3::new(contract_class, compiled_class_hash, self)
-    // }
+    fn declare_v3(
+        &self,
+        contract_class: Arc<ContractClass>,
+        compiled_class_hash: Felt,
+    ) -> DeclarationV3<Self> {
+        DeclarationV3::new(contract_class, compiled_class_hash, self)
+    }
     #[allow(dead_code)]
     #[deprecated = "use version specific variants (`declare_v1` & `declare_v3`) instead"]
     fn declare(
@@ -137,13 +131,6 @@ pub trait Account: ExecutionEncoder + Sized {
     ) -> DeclarationV2<Self> {
         self.declare_v2(contract_class, compiled_class_hash)
     }
-
-    // fn declare_legacy(
-    //     &self,
-    //     contract_class: Arc<DeprecatedContractClass>,
-    // ) -> LegacyDeclaration<Self> {
-    //     LegacyDeclaration::new(contract_class, self)
-    // }
 }
 
 #[auto_impl(&, Box, Arc)]
@@ -426,13 +413,13 @@ where
         (*self).sign_execution_v1(execution, query_only).await
     }
 
-    // async fn sign_execution_v3(
-    //     &self,
-    //     execution: &RawExecutionV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     (*self).sign_execution_v3(execution, query_only).await
-    // }
+    async fn sign_execution_v3(
+        &self,
+        execution: &RawExecutionV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        (*self).sign_execution_v3(execution, query_only).await
+    }
 
     async fn sign_declaration_v2(
         &self,
@@ -442,23 +429,13 @@ where
         (*self).sign_declaration_v2(declaration, query_only).await
     }
 
-    // async fn sign_declaration_v3(
-    //     &self,
-    //     declaration: &RawDeclarationV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     (*self).sign_declaration_v3(declaration, query_only).await
-    // }
-
-    // async fn sign_legacy_declaration(
-    //     &self,
-    //     legacy_declaration: &RawLegacyDeclaration,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     (*self)
-    //         .sign_legacy_declaration(legacy_declaration, query_only)
-    //         .await
-    // }
+    async fn sign_declaration_v3(
+        &self,
+        declaration: &RawDeclarationV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        (*self).sign_declaration_v3(declaration, query_only).await
+    }
 
     fn is_signer_interactive(&self) -> bool {
         (*self).is_signer_interactive()
@@ -487,13 +464,13 @@ where
         self.as_ref().sign_execution_v1(execution, query_only).await
     }
 
-    // async fn sign_execution_v3(
-    //     &self,
-    //     execution: &RawExecutionV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     self.as_ref().sign_execution_v3(execution, query_only).await
-    // }
+    async fn sign_execution_v3(
+        &self,
+        execution: &RawExecutionV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        self.as_ref().sign_execution_v3(execution, query_only).await
+    }
 
     async fn sign_declaration_v2(
         &self,
@@ -505,25 +482,15 @@ where
             .await
     }
 
-    // async fn sign_declaration_v3(
-    //     &self,
-    //     declaration: &RawDeclarationV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     self.as_ref()
-    //         .sign_declaration_v3(declaration, query_only)
-    //         .await
-    // }
-
-    // async fn sign_legacy_declaration(
-    //     &self,
-    //     legacy_declaration: &RawLegacyDeclaration,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     self.as_ref()
-    //         .sign_legacy_declaration(legacy_declaration, query_only)
-    //         .await
-    // }
+    async fn sign_declaration_v3(
+        &self,
+        declaration: &RawDeclarationV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        self.as_ref()
+            .sign_declaration_v3(declaration, query_only)
+            .await
+    }
 
     fn is_signer_interactive(&self) -> bool {
         self.as_ref().is_signer_interactive()
@@ -552,13 +519,13 @@ where
         self.as_ref().sign_execution_v1(execution, query_only).await
     }
 
-    // async fn sign_execution_v3(
-    //     &self,
-    //     execution: &RawExecutionV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     self.as_ref().sign_execution_v3(execution, query_only).await
-    // }
+    async fn sign_execution_v3(
+        &self,
+        execution: &RawExecutionV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        self.as_ref().sign_execution_v3(execution, query_only).await
+    }
 
     async fn sign_declaration_v2(
         &self,
@@ -570,25 +537,15 @@ where
             .await
     }
 
-    // async fn sign_declaration_v3(
-    //     &self,
-    //     declaration: &RawDeclarationV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     self.as_ref()
-    //         .sign_declaration_v3(declaration, query_only)
-    //         .await
-    // }
-
-    // async fn sign_legacy_declaration(
-    //     &self,
-    //     legacy_declaration: &RawLegacyDeclaration,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     self.as_ref()
-    //         .sign_legacy_declaration(legacy_declaration, query_only)
-    //         .await
-    // }
+    async fn sign_declaration_v3(
+        &self,
+        declaration: &RawDeclarationV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        self.as_ref()
+            .sign_declaration_v3(declaration, query_only)
+            .await
+    }
 
     fn is_signer_interactive(&self) -> bool {
         self.as_ref().is_signer_interactive()
