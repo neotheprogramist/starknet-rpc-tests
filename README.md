@@ -52,6 +52,8 @@ The `t8n` tool is designed to process transactions and manage state changes in t
 
 ## Usage
 
+### Initial State Mode
+
 Use the initial state mode to start with a fresh state:
 
 ```bash
