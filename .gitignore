@@ -24,3 +24,6 @@ rclone.conf
 
 # Ignore SQLite database files (e.g. pathfinder db snapshot)
 *.sqlite
+
+dump
+dumpdir
