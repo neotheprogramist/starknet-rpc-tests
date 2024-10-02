@@ -4,12 +4,15 @@ use crypto_utils::curve::signer::compute_hash_on_elements;
 use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::PoseidonHasher;
 use starknet_types_rpc::v0_6_0::{
-    BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedDeclareTxnV3, BroadcastedTxn, ClassAndTxnHash, ContractClass, DaMode, FeeEstimate, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping, SimulateTransactionsResult, SimulationFlag
+    BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedDeclareTxnV3, BroadcastedTxn,
+    ClassAndTxnHash, ContractClass, DaMode, FeeEstimate, MaybePendingBlockWithTxHashes,
+    ResourceBounds, ResourceBoundsMapping, SimulateTransactionsResult, SimulationFlag,
 };
 use std::sync::Arc;
 
 use super::{
-    Account, AccountError, ConnectedAccount, DeclarationV2, DeclarationV3, PreparedDeclarationV2, PreparedDeclarationV3, RawDeclarationV2, RawDeclarationV3
+    Account, AccountError, ConnectedAccount, DeclarationV2, DeclarationV3, PreparedDeclarationV2,
+    PreparedDeclarationV3, RawDeclarationV2, RawDeclarationV3,
 };
 
 /// Cairo string for "declare"
@@ -470,7 +473,6 @@ where
             }
         };
 
-
         Ok(PreparedDeclarationV3 {
             account: self.account,
             inner: RawDeclarationV3 {
@@ -499,7 +501,7 @@ where
                 gas_price: 0,
             },
         };
-        let declare = prepared.get_declare_request(true, skip_signature).await?;
+        let declare = prepared.get_declare_request(false, skip_signature).await?;
 
         self.account
             .provider()
@@ -544,7 +546,7 @@ where
                 gas_price: self.gas_price.unwrap_or_default(),
             },
         };
-        let declare = prepared.get_declare_request(true, skip_signature).await?;
+        let declare = prepared.get_declare_request(false, skip_signature).await?;
 
         let mut flags = vec![];
 
@@ -566,7 +568,6 @@ where
             .map_err(AccountError::Provider)
     }
 }
-
 
 #[allow(dead_code)]
 impl RawDeclarationV2 {
@@ -775,7 +776,7 @@ where
                 vec![]
             } else {
                 self.account
-                    .sign_declaration_v3(&self.inner, false)
+                    .sign_declaration_v3(&self.inner, query_only)
                     .await
                     .map_err(AccountError::Signing)?
             },

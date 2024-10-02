@@ -88,4 +88,3 @@ pub async fn mint_2(base_url: Url, mint_request: &MintRequest2) -> Result<MintRe
         Ok(mint_response)
     }
 }
-

@@ -4,7 +4,10 @@ use crate::v6::rpc::signers::signer::Signer;
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_6_0::{BlockId, BlockTag};
 
-use super::{AccountFactory, PreparedAccountDeploymentV1, RawAccountDeploymentV1};
+use super::{
+    AccountFactory, PreparedAccountDeploymentV1, PreparedAccountDeploymentV3,
+    RawAccountDeploymentV1, RawAccountDeploymentV3,
+};
 
 pub struct OpenZeppelinAccountFactory<S, P> {
     class_hash: Felt,
@@ -86,15 +89,15 @@ where
         Ok(vec![signature.r, signature.s])
     }
 
-    // async fn sign_deployment_v3(
-    //     &self,
-    //     deployment: &RawAccountDeploymentV3,
-    //     query_only: bool,
-    // ) -> Result<Vec<Felt>, Self::SignError> {
-    //     let tx_hash = PreparedAccountDeploymentV3::from_raw(deployment.clone(), self)
-    //         .transaction_hash(query_only);
-    //     let signature = self.signer.sign_hash(&tx_hash).await?;
+    async fn sign_deployment_v3(
+        &self,
+        deployment: &RawAccountDeploymentV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        let tx_hash = PreparedAccountDeploymentV3::from_raw(deployment.clone(), self)
+            .transaction_hash(query_only);
+        let signature = self.signer.sign_hash(&tx_hash).await?;
 
-    //     Ok(vec![signature.r, signature.s])
-    // }
+        Ok(vec![signature.r, signature.s])
+    }
 }

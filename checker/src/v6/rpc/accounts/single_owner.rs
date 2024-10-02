@@ -5,7 +5,10 @@ use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_6_0::{BlockId, BlockTag};
 
 use super::{
-    account::{Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3, RawExecutionV1, RawExecutionV3},
+    account::{
+        Account, ConnectedAccount, ExecutionEncoder, RawDeclarationV2, RawDeclarationV3,
+        RawExecutionV1, RawExecutionV3,
+    },
     call::Call,
     errors::ComputeClassHashError,
 };
@@ -155,7 +158,6 @@ where
 
         Ok(vec![signature.r, signature.s])
     }
-
 
     fn is_signer_interactive(&self) -> bool {
         self.signer.is_interactive()

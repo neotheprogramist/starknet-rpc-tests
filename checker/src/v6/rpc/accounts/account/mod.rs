@@ -86,7 +86,6 @@ pub trait Account: ExecutionEncoder + Sized {
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError>;
 
-
     /// Whether the underlying signer implementation is interactive, such as a hardware wallet.
     /// Implementations should return `true` if the signing operation is very expensive, even if not
     /// strictly "interactive" as in requiring human input.
@@ -98,7 +97,7 @@ pub trait Account: ExecutionEncoder + Sized {
     fn execute_v1(&self, calls: Vec<Call>) -> ExecutionV1<Self> {
         ExecutionV1::new(calls, self)
     }
-
+    #[allow(dead_code)]
     fn execute_v3(&self, calls: Vec<Call>) -> ExecutionV3<Self> {
         ExecutionV3::new(calls, self)
     }
@@ -132,7 +131,6 @@ pub trait Account: ExecutionEncoder + Sized {
     ) -> DeclarationV2<Self> {
         self.declare_v2(contract_class, compiled_class_hash)
     }
-
 }
 
 #[auto_impl(&, Box, Arc)]
@@ -493,7 +491,6 @@ where
             .sign_declaration_v3(declaration, query_only)
             .await
     }
-
 
     fn is_signer_interactive(&self) -> bool {
         self.as_ref().is_signer_interactive()

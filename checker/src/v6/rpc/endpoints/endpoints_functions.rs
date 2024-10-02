@@ -4,7 +4,10 @@ use rand::{rngs::StdRng, RngCore, SeedableRng};
 
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::v0_6_0::{
-    AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, ContractClass, DeployAccountTxn, DeployAccountTxnV1, DeployTxnReceipt, FeeEstimate, FunctionCall, InvokeTxn, InvokeTxnV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate, MsgFromL1, PriceUnit, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus
+    AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs, ContractClass,
+    DeployAccountTxn, DeployAccountTxnV1, DeployTxnReceipt, FeeEstimate, FunctionCall, InvokeTxn,
+    InvokeTxnV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs, MaybePendingStateUpdate,
+    MsgFromL1, PriceUnit, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
 };
 
 use tracing::{info, warn};
@@ -19,7 +22,7 @@ use crate::v6::rpc::{
             structs::{MintRequest, MintRequest2},
         },
         deployment::{
-            deploy::deploy_account,
+            deploy::{deploy_account, deploy_account_v3},
             structs::{ValidatedWaitParams, WaitForTx},
         },
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
@@ -40,7 +43,7 @@ use super::{
     utils::{get_compiled_contract, get_selector_from_name},
 };
 
-pub async fn add_declare_transaction(
+pub async fn add_declare_transaction_v2(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
@@ -158,21 +161,21 @@ pub async fn add_declare_transaction_v3(
 
     match mint_2(
         url.clone(),
-            &MintRequest2 {
-                amount: u128::MAX,
-                address: create_acc_data.address,
-                unit: PriceUnit::Fri,
-            },
-        )
-        .await
-        {
-            Ok(_) => {}
-            Err(e) => {
-                info!("{}", "Could not mint tokens");
-                return Err(e.into());
-            }
-        };
-    
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
+
     match mint_2(
         url.clone(),
         &MintRequest2 {
@@ -197,7 +200,7 @@ pub async fn add_declare_transaction_v3(
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+    match deploy_account_v3(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => Some(value),
         Err(e) => {
             info!("{}", "Could not deploy an account");
@@ -254,7 +257,7 @@ pub async fn add_declare_transaction_v3(
     }
 }
 
-pub async fn add_invoke_transaction(
+pub async fn add_invoke_transaction_v1(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
@@ -359,6 +362,141 @@ pub async fn add_invoke_transaction(
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .send()
+                .await
+                .unwrap();
+            Ok(result)
+        }
+        Err(e) => {
+            info!("Could not deploy the contract {}", e);
+            Err(e)
+        }
+    }
+}
+
+pub async fn add_invoke_transaction_v3(
+    url: Url,
+    sierra_path: &str,
+    casm_path: &str,
+) -> Result<AddInvokeTransactionResult, RpcError> {
+    let (flattened_sierra_class, compiled_class_hash) =
+        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+
+    let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
+    let create_acc_data =
+        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+            Ok(value) => value,
+            Err(e) => {
+                warn!("{}", "Could not create an account");
+                return Err(e.into());
+            }
+        };
+
+    match mint_2(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Fri,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
+
+    match mint_2(
+        url.clone(),
+        &MintRequest2 {
+            amount: u128::MAX,
+            address: create_acc_data.address,
+            unit: PriceUnit::Wei,
+        },
+    )
+    .await
+    {
+        Ok(_) => {}
+        Err(e) => {
+            info!("{}", "Could not mint tokens");
+            return Err(e.into());
+        }
+    };
+
+    let wait_conifg = WaitForTx {
+        wait: true,
+        wait_params: ValidatedWaitParams::default(),
+    };
+
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    match deploy_account_v3(&provider, chain_id, wait_conifg, create_acc_data).await {
+        Ok(value) => Some(value),
+        Err(e) => {
+            info!("{}", "Could not deploy an account");
+            return Err(e.into());
+        }
+    };
+    let sender_address = create_acc_data.address;
+    let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
+
+    let mut account = SingleOwnerAccount::new(
+        JsonRpcClient::new(HttpTransport::new(url.clone())),
+        signer,
+        sender_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    account.set_block_id(BlockId::Tag(BlockTag::Latest));
+
+    let hash = match account
+        .declare_v3(Arc::new(flattened_sierra_class), compiled_class_hash)
+        .send()
+        .await
+    {
+        Ok(result) => Ok(result.class_hash),
+        Err(AccountError::Signing(sign_error)) => {
+            if sign_error.to_string().contains("is already declared") {
+                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+            } else {
+                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                    "Transaction execution error: {}",
+                    sign_error
+                ))))
+            }
+        }
+
+        Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
+            if starkneterror.to_string().contains("is already declared") {
+                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+            } else {
+                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                    "Transaction execution error: {}",
+                    starkneterror
+                ))))
+            }
+        }
+
+        Err(e) => {
+            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
+            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                "Account error: {}",
+                e
+            ))))
+        }
+    };
+    match hash {
+        Ok(class_hash) => {
+            let factory = ContractFactory::new(class_hash, account);
+            let mut salt_buffer = [0u8; 32];
+            let mut rng = StdRng::from_entropy();
+            rng.fill_bytes(&mut salt_buffer[1..]);
+            let result = factory
+                .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .send()
                 .await
                 .unwrap();

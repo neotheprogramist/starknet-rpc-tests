@@ -1,6 +1,8 @@
 use starknet_types_core::{felt::Felt, hash::PoseidonHasher};
 use starknet_types_rpc::v0_6_0::{
-    AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, DaMode, FeeEstimate, InvokeTxnV1, InvokeTxnV3, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping, SimulateTransactionsResult, SimulationFlag
+    AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, DaMode, FeeEstimate,
+    InvokeTxnV1, InvokeTxnV3, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping,
+    SimulateTransactionsResult, SimulationFlag,
 };
 
 use crate::v6::rpc::{
@@ -10,7 +12,8 @@ use crate::v6::rpc::{
 use crypto_utils::curve::signer::compute_hash_on_elements;
 
 use super::{
-    Account, AccountError, ConnectedAccount, ExecutionEncoder, ExecutionV1, ExecutionV3, PreparedExecutionV1, PreparedExecutionV3, RawExecutionV1, RawExecutionV3
+    Account, AccountError, ConnectedAccount, ExecutionEncoder, ExecutionV1, ExecutionV3,
+    PreparedExecutionV1, PreparedExecutionV3, RawExecutionV1, RawExecutionV3,
 };
 
 /// Cairo string for "invoke"
@@ -451,7 +454,7 @@ where
                 (gas, gas_price)
             }
         };
-        
+
         Ok(PreparedExecutionV3 {
             account: self.account,
             inner: RawExecutionV3 {
@@ -479,7 +482,7 @@ where
             },
         };
         let invoke = prepared
-            .get_invoke_request(true, skip_signature)
+            .get_invoke_request(false, skip_signature)
             .await
             .map_err(AccountError::Signing)?;
 
@@ -526,7 +529,7 @@ where
             },
         };
         let invoke = prepared
-            .get_invoke_request(true, skip_signature)
+            .get_invoke_request(false, skip_signature)
             .await
             .map_err(AccountError::Signing)?;
 

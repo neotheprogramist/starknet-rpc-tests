@@ -67,6 +67,33 @@ pub async fn get_deployment_result(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
+pub async fn get_deployment_result_v3(
+    provider: &JsonRpcClient<HttpTransport>,
+    account_type: AccountType,
+    class_hash: Felt,
+    signing_key: SigningKey,
+    salt: Felt,
+    chain_id: Felt,
+    max_fee: Option<Felt>,
+    wait_config: WaitForTx,
+) -> Result<Felt, CreationError> {
+    match account_type {
+        AccountType::Oz => {
+            deploy_oz_account_v3(
+                provider,
+                class_hash,
+                signing_key,
+                salt,
+                chain_id,
+                max_fee,
+                wait_config,
+            )
+            .await
+        }
+    }
+}
+
 async fn deploy_oz_account(
     provider: &JsonRpcClient<HttpTransport>,
     class_hash: Felt,
@@ -86,6 +113,27 @@ async fn deploy_oz_account(
     .unwrap();
 
     deploy_account(factory, provider, salt, max_fee, wait_config, class_hash).await
+}
+
+async fn deploy_oz_account_v3(
+    provider: &JsonRpcClient<HttpTransport>,
+    class_hash: Felt,
+    signing_key: SigningKey,
+    salt: Felt,
+    chain_id: Felt,
+    max_fee: Option<Felt>,
+    wait_config: WaitForTx,
+) -> Result<Felt, CreationError> {
+    let factory = OpenZeppelinAccountFactory::new(
+        class_hash,
+        chain_id,
+        LocalWallet::from_signing_key(signing_key),
+        provider,
+    )
+    .await
+    .unwrap();
+
+    deploy_account_v3(factory, provider, salt, max_fee, wait_config, class_hash).await
 }
 
 #[allow(unused_variables)]
@@ -110,6 +158,32 @@ where
         }
     };
     let result = deployment.max_fee(deploy_max_fee).send().await.unwrap();
+
+    Ok(result.transaction_hash)
+}
+
+#[allow(unused_variables)]
+async fn deploy_account_v3<T>(
+    account_factory: T,
+    provider: &JsonRpcClient<HttpTransport>,
+    salt: Felt,
+    max_fee: Option<Felt>,
+    wait_config: WaitForTx,
+    class_hash: Felt,
+) -> Result<Felt, CreationError>
+where
+    T: AccountFactory + Sync,
+{
+    let deployment = account_factory.deploy_v3(salt);
+    let deploy_max_fee = if let Some(max_fee) = max_fee {
+        max_fee
+    } else {
+        match deployment.estimate_fee().await {
+            Ok(max_fee) => Felt::from_dec_str(&max_fee.overall_fee.to_string()).unwrap(),
+            Err(error) => return Err(CreationError::RpcError(error.to_string())),
+        }
+    };
+    let result = deployment.send().await.unwrap();
 
     Ok(result.transaction_hash)
 }
