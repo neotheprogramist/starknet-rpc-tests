@@ -99,9 +99,9 @@ where
     async fn sign_execution_v1(
         &self,
         execution: &RawExecutionV1,
-        query_only: bool,
+        _query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
-        let tx_hash = execution.transaction_hash(self.chain_id, self.address, query_only, self);
+        let tx_hash = execution.transaction_hash(self.chain_id, self.address, false, self);
         let signature = self
             .signer
             .sign_hash(&tx_hash)
