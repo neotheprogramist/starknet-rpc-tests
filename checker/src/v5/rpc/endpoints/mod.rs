@@ -11,7 +11,7 @@ use endpoints_functions::{
     get_block_with_txs, get_class, get_class_at, get_class_hash_at, get_state_update,
     get_storage_at, get_transaction_by_block_id_and_index, get_transaction_by_hash_deploy_acc,
     get_transaction_by_hash_invoke, get_transaction_by_hash_non_existent_tx,
-    get_transaction_receipt, get_transaction_status_succeeded,
+    get_transaction_receipt, get_transaction_status_succeeded, invoke_contract,
 };
 use errors::RpcError;
 use starknet_types_core::felt::Felt;
@@ -42,6 +42,12 @@ pub trait RpcEndpoints {
     ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
 
     async fn add_invoke_transaction(
+        &self,
+        sierra_path: &str,
+        casm_path: &str,
+    ) -> Result<AddInvokeTransactionResult, RpcError>;
+
+    async fn invoke_contract(
         &self,
         sierra_path: &str,
         casm_path: &str,
@@ -145,6 +151,14 @@ impl RpcEndpoints for Rpc {
         casm_path: &str,
     ) -> Result<AddInvokeTransactionResult, RpcError> {
         add_invoke_transaction(self.url.clone(), sierra_path, casm_path).await
+    }
+
+    async fn invoke_contract(
+        &self,
+        sierra_path: &str,
+        casm_path: &str,
+    ) -> Result<AddInvokeTransactionResult, RpcError> {
+        invoke_contract(self.url.clone(), sierra_path, casm_path).await
     }
 
     async fn block_number(&self, url: Url) -> Result<u64, RpcError> {
@@ -302,6 +316,24 @@ pub async fn test_rpc_endpoints(
         Err(e) => error!(
             "{} {} {}",
             "✗ Rpc add_invoke_transaction INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
+    restart_devnet(url.clone()).await?;
+
+    match rpc.invoke_contract(sierra_path, casm_path).await {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Rpc invoke_contract COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Rpc invoke_contract INCOMPATIBLE:".red(),
             e.to_string().red(),
             "✗".red()
         ),
