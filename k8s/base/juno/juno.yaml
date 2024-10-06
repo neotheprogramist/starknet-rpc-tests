@@ -1,0 +1,67 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: juno-1
+  labels:
+    name: juno-1
+spec:
+  initContainers:
+    - name: wait-for-anvil
+      image: docker.io/busybox
+      command:
+        [
+          "sh",
+          "-c",
+          "until nc -z anvil-service 8545; do echo waiting for anvil; sleep 2; done;",
+        ]
+    - name: wait-for-db-snapshot
+      image: docker.io/busybox
+      command:
+        [
+          "sh",
+          "-c",
+          'while [ ! -d /var/lib/juno/juno-sepolia ]; do echo "Waiting for snapshot"; sleep 10; done; echo "Snapshot found, starting juno..."',
+        ]
+      volumeMounts: 
+        - name: juno-data-1
+          mountPath: /var/lib/juno
+  containers:
+    - name: juno-1
+      image: docker.io/nethermind/juno:latest
+      ports:
+        - containerPort: 6060
+      args:
+        - "--http"
+        - "--http-port"
+        - "6060"
+        - "--http-host"
+        - "0.0.0.0"
+        - "--db-path"
+        - "/var/lib/juno/juno-sepolia"
+        - "--eth-node"
+        - "ws://anvil-service:8545"
+        - "--network"
+        - "sepolia"
+      volumeMounts:
+        - name: juno-data-1
+          mountPath: /var/lib/juno
+  volumes:
+    - name: juno-data-1
+      persistentVolumeClaim:
+        claimName: juno-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: juno-service-1
+spec:
+  type: NodePort
+  selector:
+    name: juno-1
+  ports:
+    - name: rpc
+      protocol: TCP
+      port: 6060
+      targetPort: 6060
+      nodePort: 30032
