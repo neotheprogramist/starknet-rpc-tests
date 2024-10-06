@@ -23,7 +23,7 @@ spec:
           "-c",
           'while [ ! -d /var/lib/juno/juno-sepolia ]; do echo "Waiting for snapshot"; sleep 10; done; echo "Snapshot found, starting juno..."',
         ]
-      volumeMounts: 
+      volumeMounts:
         - name: juno-data-1
           mountPath: /var/lib/juno
   containers:

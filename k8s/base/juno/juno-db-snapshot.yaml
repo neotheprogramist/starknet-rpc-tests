@@ -6,20 +6,15 @@ spec:
   initContainers:
     - name: init-copy
       image: docker.io/piotr439/juno-dbs:latest
-      command:
-        [
-          "sh",
-          "-c",
-          "cp -r /snapshots/juno-sepolia /var/lib/juno",
-        ]
-      volumeMounts: 
+      command: ["sh", "-c", "cp -r /snapshots/juno-sepolia /var/lib/juno"]
+      volumeMounts:
         - name: juno-data-1
           mountPath: /var/lib/juno
   containers:
     - name: juno-placeholder
       image: busybox
       command: ["sh", "-c", "sleep 3600"]
-      volumeMounts: 
+      volumeMounts:
         - name: juno-data-1
           mountPath: /var/lib/juno
   volumes:
