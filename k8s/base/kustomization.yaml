@@ -5,6 +5,7 @@ resources:
   - pathfinder
   - anvil
   - madara
+  - juno
 
 secretGenerator:
   - name: secret
