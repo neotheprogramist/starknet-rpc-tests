@@ -6,6 +6,7 @@ resources:
   - anvil
   - madara
   - juno
+  - papyrus
 
 secretGenerator:
   - name: secret

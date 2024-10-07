@@ -31,3 +31,9 @@ nodes:
       - containerPort: 30032
         hostPort: 30032
         protocol: TCP
+      - containerPort: 30033
+        hostPort: 30033
+        protocol: TCP
+      - containerPort: 30034
+        hostPort: 30034
+        protocol: TCP
