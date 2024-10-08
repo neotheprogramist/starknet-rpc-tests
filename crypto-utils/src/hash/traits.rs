@@ -1,4 +1,4 @@
-use crate::felt::Felt;
+use starknet_types_core::felt::Felt;
 
 pub trait StarkHash {
     /// Computes the hash of two Felt

@@ -1,6 +1,6 @@
-use crate::felt::Felt;
+use starknet_types_core::felt::Felt;
 
-use starknet_types_core::curve
+use starknet_types_core::hash::Poseidon;
 
 #[derive(Debug, Default)]
 
