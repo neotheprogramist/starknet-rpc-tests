@@ -28,11 +28,15 @@ spec:
         - "madara"
         - "--base-path"
         - "/madara/data"
-        - "--network"
-        - "test"
+        - "--telemetry-disabled"
+        - "--rpc-cors"
+        - "*"
+        - "--rpc-external"
+        - "--devnet"
+        - "--preset"
+        - "devnet"
         - "--l1-endpoint"
         - "http://anvil-service:8545"
-        - "--full"
       volumeMounts:
         - name: madara-data-1
           mountPath: /madara/data
@@ -61,6 +65,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: madara-pvc
 spec:
+  storageClassName: topolvm-provisioner
   accessModes:
     - ReadWriteOnce
   resources:
