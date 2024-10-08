@@ -4,11 +4,11 @@ metadata:
   name: pathfinder-pvc
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 16Gi
-  storageClassName: manual
+  storageClassName: topolvm-provisioner
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -16,8 +16,8 @@ metadata:
   name: pathfinder-pvc-2
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 16Gi
-  storageClassName: manual
+  storageClassName: topolvm-provisioner

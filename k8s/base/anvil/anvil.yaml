@@ -32,5 +32,5 @@ spec:
     - protocol: TCP
       port: 8545
       targetPort: 8545
-      nodePort: 30000
+      nodePort: 32000
   type: NodePort

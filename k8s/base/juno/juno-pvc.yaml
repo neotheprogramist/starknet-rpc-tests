@@ -4,8 +4,8 @@ metadata:
   name: juno-pvc
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 16Gi
-  storageClassName: manual
+  storageClassName: topolvm-provisioner

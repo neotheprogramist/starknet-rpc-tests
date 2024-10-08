@@ -19,7 +19,7 @@ spec:
           mountPath: /usr/share/pathfinder/data
   containers:
     - name: pathfinder-1
-      image: eqlabs/pathfinder:v0.14.1
+      image: docker.io/eqlabs/pathfinder:v0.14.1
       ports:
         - containerPort: 80
         - containerPort: 9090
@@ -105,17 +105,17 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 80
-      nodePort: 30001
+      nodePort: 32001
     - name: monitor
       protocol: TCP
       port: 9090
       targetPort: 9090
-      nodePort: 30011
+      nodePort: 32011
     - name: rpc
       protocol: TCP
       port: 9545
       targetPort: 9545
-      nodePort: 30021
+      nodePort: 32021
 ---
 apiVersion: v1
 kind: Service
@@ -130,14 +130,14 @@ spec:
       protocol: TCP
       port: 80
       targetPort: 80
-      nodePort: 30002
+      nodePort: 32002
     - name: monitor
       protocol: TCP
       port: 9090
       targetPort: 9090
-      nodePort: 30012
+      nodePort: 32012
     - name: rpc
       protocol: TCP
       port: 9545
       targetPort: 9545
-      nodePort: 30022
+      nodePort: 32022
