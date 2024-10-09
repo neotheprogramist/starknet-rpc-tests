@@ -3,7 +3,7 @@ use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::{Pedersen, StarkHash};
 use starknet_types_rpc::v0_7_1::{ContractClass, TxnHash};
 use tokio::io::AsyncReadExt;
-use tracing::{debug, error};
+use tracing::{debug, error, warn};
 use url::Url;
 
 use crate::v7::rpc::{
@@ -99,5 +99,73 @@ pub fn get_storage_var_address(var_name: &str, args: &[Felt]) -> Result<Felt, No
         Ok(normalize_address(res))
     } else {
         Err(NonAsciiNameError)
+    }
+}
+
+pub fn validate_inputs(
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
+) -> Result<(Felt, Felt, Felt, Felt, Felt), RpcError> {
+    match (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) {
+        (
+            Some(account_address),
+            Some(private_key),
+            Some(erc20_strk_contract_address),
+            Some(erc20_eth_contract_address),
+            Some(amount_per_test),
+        ) => {
+            if amount_per_test <= Felt::ZERO {
+                warn!("Amount per test must be greater than zero");
+                return Err(RpcError::InvalidInput(
+                    "Amount per test must be greater than zero".to_string(),
+                ));
+            };
+            Ok((
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            ))
+        }
+        (None, _, _, _, _) => {
+            warn!("Account address is required");
+            Err(RpcError::InvalidInput(
+                "Account address is required".to_string(),
+            ))
+        }
+        (_, None, _, _, _) => {
+            warn!("Private key is required to fund generated account");
+            Err(RpcError::InvalidInput(
+                "Private key is required".to_string(),
+            ))
+        }
+        (_, _, None, _, _) => {
+            warn!("ERC20 STRK contract address is required");
+            Err(RpcError::InvalidInput(
+                "ERC20 STRK contract address is required".to_string(),
+            ))
+        }
+        (_, _, _, None, _) => {
+            warn!("ERC20 ETH contract address is required");
+            Err(RpcError::InvalidInput(
+                "ERC20 ETH contract address is required".to_string(),
+            ))
+        }
+        (_, _, _, _, None) => {
+            warn!("Amount per test is required");
+            Err(RpcError::InvalidInput(
+                "Amount per test is required".to_string(),
+            ))
+        }
     }
 }

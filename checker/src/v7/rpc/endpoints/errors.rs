@@ -38,6 +38,8 @@ pub enum RpcError {
     UnexpectedBlockResponseType(String),
     #[error("TxnExecutionStatus reverted {0}")]
     TxnExecutionStatus(String),
+    #[error("Required input not provided {0}")]
+    InvalidInput(String),
 }
 
 #[derive(Error, Debug)]

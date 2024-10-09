@@ -25,6 +25,7 @@ pub async fn create_account(
     let class_hash = class_hash.unwrap_or_else(|| match account_type {
         AccountType::Oz => Felt::from_hex(OZ_CLASS_HASH).unwrap(),
     });
+    println!("CLASS HASH {:?}", class_hash);
     let account_response = generate_account(provider, salt, class_hash, &account_type).await?;
     Ok(account_response)
 }

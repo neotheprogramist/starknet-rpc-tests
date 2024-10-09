@@ -36,6 +36,7 @@ pub async fn deploy_account(
             Felt::ZERO,
         ),
     };
+    println!("account_data {:?}", account_data);
     let result = if provider
         .get_class_hash_at(BlockId::Tag(BlockTag::Pending), address)
         .await

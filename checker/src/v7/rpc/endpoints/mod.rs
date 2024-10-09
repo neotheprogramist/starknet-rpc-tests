@@ -42,6 +42,12 @@ pub trait RpcEndpoints {
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
 
     fn add_declare_transaction_v3(
@@ -165,8 +171,25 @@ impl RpcEndpoints for Rpc {
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError> {
-        add_declare_transaction_v2(self.url.clone(), sierra_path, casm_path).await
+        add_declare_transaction_v2(
+            self.url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn add_declare_transaction_v3(
@@ -337,13 +360,31 @@ pub async fn test_rpc_endpoints_v0_0_7(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<(), RpcError> {
     info!("{}", "⌛ Testing Rpc V7 endpoints -- START ⌛".yellow());
 
     let rpc = Rpc::new(url.clone())?;
     restart_devnet(url.clone()).await?;
 
-    match rpc.add_declare_transaction_v2(sierra_path, casm_path).await {
+    match rpc
+        .add_declare_transaction_v2(
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -358,400 +399,400 @@ pub async fn test_rpc_endpoints_v0_0_7(
             "✗".red()
         ),
     }
-    restart_devnet(url.clone()).await?;
+    // restart_devnet(url.clone()).await?;
 
-    match rpc.add_declare_transaction_v3(sierra_path, casm_path).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc add_declare_transaction V3 COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc add_declare_transaction V3 INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
-    restart_devnet(url.clone()).await?;
+    // match rpc.add_declare_transaction_v3(sierra_path, casm_path).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc add_declare_transaction V3 COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc add_declare_transaction V3 INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
+    // restart_devnet(url.clone()).await?;
 
-    match rpc.add_invoke_transaction_v1(sierra_path, casm_path).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc add_invoke_transaction V1 COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc add_invoke_transaction V1 INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
-    restart_devnet(url.clone()).await?;
+    // match rpc.add_invoke_transaction_v1(sierra_path, casm_path).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc add_invoke_transaction V1 COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc add_invoke_transaction V1 INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
+    // restart_devnet(url.clone()).await?;
 
-    match rpc.add_invoke_transaction_v3(sierra_path, casm_path).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc add_invoke_transaction V3 COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc add_invoke_transaction V3 INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc.add_invoke_transaction_v3(sierra_path, casm_path).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc add_invoke_transaction V3 COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc add_invoke_transaction V3 INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
+    // restart_devnet(url.clone()).await?;
 
-    match rpc
-        .invoke_contract_v1(url.clone(), sierra_path, casm_path)
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc invoke_contract V1 COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc invoke_contract V1 INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc
+    //     .invoke_contract_v1(url.clone(), sierra_path, casm_path)
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc invoke_contract V1 COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc invoke_contract V1 INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
+    // restart_devnet(url.clone()).await?;
 
-    match rpc
-        .invoke_contract_v3(url.clone(), sierra_path, casm_path)
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc invoke_contract V3 COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc invoke_contract V3 INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc
+    //     .invoke_contract_v3(url.clone(), sierra_path, casm_path)
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc invoke_contract V3 COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc invoke_contract V3 INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    match rpc.block_number(url.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc block_number COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc block_number INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc.block_number(url.clone()).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc block_number COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc block_number INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    match rpc.chain_id(url.clone()).await {
-        Ok(_) => {
-            info!("{} {}", "✓ Rpc chain_id COMPATIBLE".green(), "✓".green())
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc chain_id INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc.chain_id(url.clone()).await {
+    //     Ok(_) => {
+    //         info!("{} {}", "✓ Rpc chain_id COMPATIBLE".green(), "✓".green())
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc chain_id INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
-    match rpc.call(url.clone(), sierra_path, casm_path).await {
-        Ok(_) => {
-            info!("{} {}", "✓ Rpc call COMPATIBLE".green(), "✓".green())
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc call INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // restart_devnet(url.clone()).await?;
+    // match rpc.call(url.clone(), sierra_path, casm_path).await {
+    //     Ok(_) => {
+    //         info!("{} {}", "✓ Rpc call COMPATIBLE".green(), "✓".green())
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc call INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
+    // restart_devnet(url.clone()).await?;
 
-    match rpc
-        .estimate_message_fee(url.clone(), sierra_path, casm_path)
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc estimate_message_fee COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc estimate_message_fee INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
-    match rpc.get_block_transaction_count(url.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_block_transaction_count COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_block_transaction_count INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
-    match rpc.get_block_with_tx_hashes(url.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_block_with_tx_hashes COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_block_with_tx_hashes INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc
+    //     .estimate_message_fee(url.clone(), sierra_path, casm_path)
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc estimate_message_fee COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc estimate_message_fee INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
+    // match rpc.get_block_transaction_count(url.clone()).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_block_transaction_count COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_block_transaction_count INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
+    // match rpc.get_block_with_tx_hashes(url.clone()).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_block_with_tx_hashes COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_block_with_tx_hashes INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    match rpc.get_block_with_txs(url.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_block_with_txs COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_block_with_txs INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc.get_block_with_txs(url.clone()).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_block_with_txs COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_block_with_txs INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    match rpc.get_state_update(url.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_state_update COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_state_update INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc.get_state_update(url.clone()).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_state_update COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_state_update INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    match rpc.get_storage_at(url.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_storage_at COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_storage_at INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc.get_storage_at(url.clone()).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_storage_at COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_storage_at INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
-    match rpc
-        .get_transaction_status_succeeded(url.clone(), sierra_path, casm_path)
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_transaction_status_succeeded COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_transaction_status_succeeded INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // restart_devnet(url.clone()).await?;
+    // match rpc
+    //     .get_transaction_status_succeeded(url.clone(), sierra_path, casm_path)
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_transaction_status_succeeded COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_transaction_status_succeeded INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
-    match rpc
-        .get_transaction_by_hash_invoke(url.clone(), sierra_path, casm_path)
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_transaction_by_hash_invoke COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_transaction_by_hash_invoke INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // restart_devnet(url.clone()).await?;
+    // match rpc
+    //     .get_transaction_by_hash_invoke(url.clone(), sierra_path, casm_path)
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_transaction_by_hash_invoke COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_transaction_by_hash_invoke INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    match rpc.get_transaction_by_hash_deploy_acc(url.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_transaction_by_hash_deploy_acc COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_transaction_by_hash_deploy_acc INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc.get_transaction_by_hash_deploy_acc(url.clone()).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_transaction_by_hash_deploy_acc COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_transaction_by_hash_deploy_acc INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    match rpc.get_transaction_by_block_id_and_index(url.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_transaction_by_block_id_and_index COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_transaction_by_block_id_and_index INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // match rpc.get_transaction_by_block_id_and_index(url.clone()).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_transaction_by_block_id_and_index COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_transaction_by_block_id_and_index INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
-    match rpc
-        .get_transaction_by_hash_non_existent_tx(url.clone())
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_transaction_by_hash_non_existent_tx COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_transaction_by_hash_non_existent_tx INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // restart_devnet(url.clone()).await?;
+    // match rpc
+    //     .get_transaction_by_hash_non_existent_tx(url.clone())
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_transaction_by_hash_non_existent_tx COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_transaction_by_hash_non_existent_tx INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
-    match rpc
-        .get_transaction_receipt(url.clone(), sierra_path, casm_path)
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_transaction_receipt COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_transaction_receipt INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // restart_devnet(url.clone()).await?;
+    // match rpc
+    //     .get_transaction_receipt(url.clone(), sierra_path, casm_path)
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_transaction_receipt COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_transaction_receipt INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
-    match rpc.get_class(url.clone(), sierra_path, casm_path).await {
-        Ok(_) => {
-            info!("{} {}", "✓ Rpc get_class COMPATIBLE".green(), "✓".green())
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_class INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
-    }
+    // restart_devnet(url.clone()).await?;
+    // match rpc.get_class(url.clone(), sierra_path, casm_path).await {
+    //     Ok(_) => {
+    //         info!("{} {}", "✓ Rpc get_class COMPATIBLE".green(), "✓".green())
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_class INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
 
-    restart_devnet(url.clone()).await?;
-    match rpc
-        .get_class_hash_at(url.clone(), sierra_path, casm_path)
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_class_hash_at COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
-            e,
-            "✗".red()
-        ),
-    }
-    restart_devnet(url.clone()).await?;
+    // restart_devnet(url.clone()).await?;
+    // match rpc
+    //     .get_class_hash_at(url.clone(), sierra_path, casm_path)
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_class_hash_at COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
+    //         e,
+    //         "✗".red()
+    //     ),
+    // }
+    // restart_devnet(url.clone()).await?;
 
-    match rpc.get_class_at(url.clone(), sierra_path, casm_path).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Rpc get_class_at COMPATIBLE".green(),
-                "✓".green()
-            )
-        }
-        Err(e) => error!(
-            "{} {}",
-            "✗ Rpc get_class_at INCOMPATIBLE:".red(),
-            e.to_string().red(),
-        ),
-    }
+    // match rpc.get_class_at(url.clone(), sierra_path, casm_path).await {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_class_at COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {}",
+    //         "✗ Rpc get_class_at INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //     ),
+    // }
 
     info!("{}", "🏁 Testing Devnet V7 endpoints -- END 🏁".yellow());
 

@@ -39,73 +39,137 @@ use crate::v7::rpc::{
         jsonrpc::{HttpTransport, JsonRpcClient, StarknetError},
         provider::{Provider, ProviderError},
     },
-    signers::local_wallet::LocalWallet,
+    signers::{key_pair::SigningKey, local_wallet::LocalWallet},
 };
 
 use super::{
     declare_contract::{parse_class_hash_from_error, RunnerError},
     errors::RpcError,
-    utils::{get_compiled_contract, get_selector_from_name},
+    utils::{get_compiled_contract, get_selector_from_name, validate_inputs},
 };
-
+use tokio::time::{sleep, Duration};
 pub async fn add_declare_transaction_v2(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<Felt, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 warn!("{}", "Could not create an account");
                 return Err(e.into());
             }
         };
+    println!("generate acc data: {:?}", create_acc_data);
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    println!("user passed account {:?}", user_passed_account);
+
+    let eth_bal_before = provider
+        .call(
+            FunctionCall {
+                calldata: vec![account_address],
+                contract_address: erc20_eth_contract_address,
+                entry_point_selector: get_selector_from_name("balance_of").unwrap(),
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await;
+    println!("eth balance before {:?}", eth_bal_before);
+
+    let resp = user_passed_account
+        .execute_v1(vec![Call {
+            to: erc20_eth_contract_address,
+            selector: get_selector_from_name("transfer")?,
+            // calldata: vec![create_acc_data.address, amount_per_test],
+            calldata: vec![
+                Felt::from_hex_unchecked(
+                    "0x5e9e93c6235f8ae6c2f4f0069bd30753ec21b26fbad80cfbf5da2c1bc573d69",
+                ),
+                amount_per_test,
+            ],
+        }])
+        .send()
+        .await
+        .unwrap();
+    println!("transfer resp {:?}", resp);
+    sleep(Duration::from_secs(45)).await;
+
+    let receipt = user_passed_account
+        .provider()
+        .get_transaction_receipt(resp.transaction_hash)
+        .await
+        .unwrap();
+    println!("receipt {:?}", receipt);
+
+    let eth_bal_after = provider
+        .call(
+            FunctionCall {
+                calldata: vec![account_address],
+                contract_address: erc20_eth_contract_address,
+                entry_point_selector: get_selector_from_name("balance_of").unwrap(),
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await;
+    println!("eth bal after {:?}", eth_bal_after);
+
+    let eth_bal_after_for_new_acc = provider
+        .call(
+            FunctionCall {
+                // calldata: vec![create_acc_data.address],
+                calldata: vec![Felt::from_hex_unchecked(
+                    "0x5e9e93c6235f8ae6c2f4f0069bd30753ec21b26fbad80cfbf5da2c1bc573d69",
+                )],
+                contract_address: erc20_eth_contract_address,
+                entry_point_selector: get_selector_from_name("balance_of").unwrap(),
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await;
+    println!(
+        "eth_bal_after_for_new_acc bal after {:?}",
+        eth_bal_after_for_new_acc
+    );
 
     let wait_conifg = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
-
-    let chain_id = get_chain_id(&provider).await.unwrap();
 
     match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => Some(value),
@@ -114,6 +178,7 @@ pub async fn add_declare_transaction_v2(
             return Err(e.into());
         }
     };
+    println!("deployed acc");
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
@@ -126,7 +191,8 @@ pub async fn add_declare_transaction_v2(
     );
 
     account.set_block_id(BlockId::Tag(BlockTag::Latest));
-
+    println!("set block id for new acc");
+    sleep(Duration::from_secs(45)).await;
     match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
