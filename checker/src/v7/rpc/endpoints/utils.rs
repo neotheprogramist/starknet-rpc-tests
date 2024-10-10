@@ -182,7 +182,7 @@ pub fn validate_inputs(
         }
     }
 }
-
+use starknet_types_rpc::TxnExecutionStatus;
 pub async fn wait_for_sent_transaction(
     transaction_hash: Felt,
     user_passed_account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
@@ -225,16 +225,50 @@ pub async fn wait_for_sent_transaction(
                 return Err(RpcError::TransactionRejected(transaction_hash.to_string()));
             }
             TxnFinalityAndExecutionStatus {
-                finality_status,
-                execution_status,
+                finality_status: TxnStatus::AcceptedOnL2,
+                execution_status: Some(TxnExecutionStatus::Succeeded),
                 ..
             } => {
-                // Zwróć finality_status, gdy transakcja jest zaakceptowana
-                info!(
-                    "Transaction accepted with finality status: {:?}",
-                    finality_status
-                );
-                return Ok(finality_status);
+                info!("Transaction accepted on L2 with execution status: Succeeded");
+                return Ok(TxnStatus::AcceptedOnL2);
+            }
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::AcceptedOnL2,
+                execution_status: Some(TxnExecutionStatus::Reverted),
+                ..
+            } => {
+                return Err(RpcError::TransactionFailed(transaction_hash.to_string()));
+            }
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::AcceptedOnL1,
+                execution_status: Some(TxnExecutionStatus::Succeeded),
+                ..
+            } => {
+                info!("Transaction accepted on L1 with execution status: Succeeded");
+                continue;
+            }
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::AcceptedOnL1,
+                execution_status: Some(TxnExecutionStatus::Reverted),
+                ..
+            } => {
+                return Err(RpcError::TransactionFailed(transaction_hash.to_string()));
+            }
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::AcceptedOnL1,
+                execution_status: None,
+                ..
+            } => {
+                info!("Transaction accepted on L1 but execution status is not available.");
+                continue;
+            }
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::AcceptedOnL2,
+                execution_status: None,
+                ..
+            } => {
+                info!("Transaction accepted on L2 but execution status is not available.");
+                continue;
             }
         }
     }

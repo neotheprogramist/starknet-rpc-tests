@@ -34,7 +34,7 @@ use crate::v7::rpc::{
         utils::mint::mint,
     },
     contract::factory::ContractFactory,
-    endpoints::errors::CallError,
+    endpoints::{errors::CallError, utils::wait_for_sent_transaction},
     providers::{
         jsonrpc::{HttpTransport, JsonRpcClient, StarknetError},
         provider::{Provider, ProviderError},
@@ -89,69 +89,61 @@ pub async fn add_declare_transaction_v2(
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    let user_passed_account = SingleOwnerAccount::new(
+    let mut user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
         LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
         account_address,
         chain_id,
         ExecutionEncoding::New,
     );
+    user_passed_account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let resp1: AddInvokeTransactionResult<Felt> = user_passed_account
-        .execute_v1(vec![Call {
-            to: erc20_eth_contract_address,
-            selector: get_selector_from_name("transfer")?,
-            calldata: vec![
-                create_acc_data.address,
-                amount_per_test,
-                Felt::from_dec_str("0").unwrap(),
-            ],
-        }])
-        .send()
-        .await
-        .unwrap();
-    info!("transfer resp {:?}", resp1);
+    // let resp1: AddInvokeTransactionResult<Felt> = user_passed_account
+    //     .execute_v1(vec![Call {
+    //         to: erc20_eth_contract_address,
+    //         selector: get_selector_from_name("transfer")?,
+    //         calldata: vec![create_acc_data.address, amount_per_test, Felt::ZERO],
+    //     }])
+    //     .send()
+    //     .await
+    //     .unwrap();
+    // info!("transfer resp {:?}", resp1);
 
-    sleep(Duration::from_secs(60)).await;
+    // sleep(Duration::from_secs(60)).await;
     let resp2 = user_passed_account
         .execute_v3(vec![
             Call {
                 to: erc20_strk_contract_address,
                 selector: get_selector_from_name("transfer")?,
-                calldata: vec![
-                    create_acc_data.address,
-                    amount_per_test,
-                    Felt::from_dec_str("0").unwrap(),
-                ],
+                calldata: vec![create_acc_data.address, amount_per_test, Felt::ZERO],
             },
-            // Call {
-            //     to: erc20_eth_contract_address,
-            //     selector: get_selector_from_name("transfer")?,
-            //     calldata: vec![
-            //         create_acc_data.address,
-            //         amount_per_test,
-            //         Felt::from_dec_str("0").unwrap(),
-            //     ],
-            // },
+            Call {
+                to: erc20_eth_contract_address,
+                selector: get_selector_from_name("transfer")?,
+                calldata: vec![create_acc_data.address, amount_per_test, Felt::ZERO],
+            },
         ])
         .send()
         .await
         .unwrap();
     println!("resp2 {:?}", resp2);
 
-    sleep(Duration::from_secs(100)).await;
-    let status1 = user_passed_account
-        .provider()
-        .get_transaction_status(resp1.transaction_hash)
-        .await
-        .unwrap();
-    info!("receipt {:?}", status1);
-    let status2 = user_passed_account
-        .provider()
-        .get_transaction_status(resp2.transaction_hash)
-        .await
-        .unwrap();
-    info!("receipt {:?}", status2);
+    // sleep(Duration::from_secs(100)).await;
+    // let status1 = user_passed_account
+    //     .provider()
+    //     .get_transaction_status(resp1.transaction_hash)
+    //     .await
+    //     .unwrap();
+    // info!("receipt {:?}", status1);
+    // let status2 = user_passed_account
+    //     .provider()
+    //     .get_transaction_status(resp2.transaction_hash)
+    //     .await
+    //     .unwrap();
+    // info!("receipt {:?}", status2);
+    let r = wait_for_sent_transaction(resp2.transaction_hash, &user_passed_account).await?;
+    // let r = wait_for_sent_transaction(resp1.transaction_hash, &user_passed_account).await?;
+    info!("txn status {:?}", r);
 
     let eth_bal_after_for_new_acc = provider
         .call(
@@ -160,13 +152,10 @@ pub async fn add_declare_transaction_v2(
                 contract_address: erc20_eth_contract_address,
                 entry_point_selector: get_selector_from_name("balance_of").unwrap(),
             },
-            BlockId::Tag(BlockTag::Latest),
+            BlockId::Tag(BlockTag::Pending),
         )
         .await;
-    info!(
-        "eth_bal_after_for_new_acc bal after {:?}",
-        eth_bal_after_for_new_acc
-    );
+    info!("created acc eth balance {:?}", eth_bal_after_for_new_acc);
     let eth_bal_after_for_new_acc2 = provider
         .call(
             FunctionCall {
@@ -174,13 +163,10 @@ pub async fn add_declare_transaction_v2(
                 contract_address: erc20_strk_contract_address,
                 entry_point_selector: get_selector_from_name("balance_of").unwrap(),
             },
-            BlockId::Tag(BlockTag::Latest),
+            BlockId::Tag(BlockTag::Pending),
         )
         .await;
-    info!(
-        "eth_bal_after_for_new_acc2 bal after {:?}",
-        eth_bal_after_for_new_acc2
-    );
+    info!("ecreated acc strk balance {:?}", eth_bal_after_for_new_acc2);
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -206,9 +192,9 @@ pub async fn add_declare_transaction_v2(
         ExecutionEncoding::New,
     );
 
-    account.set_block_id(BlockId::Tag(BlockTag::Latest));
+    account.set_block_id(BlockId::Tag(BlockTag::Pending));
     info!("set block id for new acc");
-    sleep(Duration::from_secs(100)).await;
+    // sleep(Duration::from_secs(60)).await;
     match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()

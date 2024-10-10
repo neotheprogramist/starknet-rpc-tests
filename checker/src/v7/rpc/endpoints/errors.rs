@@ -44,6 +44,8 @@ pub enum RpcError {
     Timeout(String),
     #[error("Txn rejected {0}")]
     TransactionRejected(String),
+    #[error("Txn failed {0}")]
+    TransactionFailed(String),
 }
 
 #[derive(Error, Debug)]
