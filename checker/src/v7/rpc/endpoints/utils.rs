@@ -1,11 +1,24 @@
+use std::time::Duration;
+
 use reqwest::Client;
 use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::{Pedersen, StarkHash};
 use starknet_types_rpc::v0_7_1::{ContractClass, TxnHash};
+use starknet_types_rpc::{
+    BlockId, BlockTag, FunctionCall, TxnFinalityAndExecutionStatus, TxnStatus,
+};
 use tokio::io::AsyncReadExt;
-use tracing::{debug, error, warn};
+use tokio::time::sleep;
+use tracing::{debug, error, info, warn};
 use url::Url;
 
+use crate::v7::rpc::accounts::account::ConnectedAccount;
+use crate::v7::rpc::accounts::call::Call;
+use crate::v7::rpc::accounts::creation::structs::GenerateAccountResponse;
+use crate::v7::rpc::accounts::single_owner::SingleOwnerAccount;
+use crate::v7::rpc::providers::jsonrpc::{HttpTransport, JsonRpcClient};
+use crate::v7::rpc::providers::provider::Provider;
+use crate::v7::rpc::signers::local_wallet::LocalWallet;
 use crate::v7::rpc::{
     accounts::account::{normalize_address, starknet_keccak},
     contract::{CompiledClass, HashAndFlatten, SierraClass},
@@ -166,6 +179,63 @@ pub fn validate_inputs(
             Err(RpcError::InvalidInput(
                 "Amount per test is required".to_string(),
             ))
+        }
+    }
+}
+
+pub async fn wait_for_sent_transaction(
+    transaction_hash: Felt,
+    user_passed_account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
+) -> Result<TxnStatus, RpcError> {
+    let start_fetching = std::time::Instant::now();
+    let wait_for = Duration::from_secs(60);
+
+    loop {
+        if start_fetching.elapsed() > wait_for {
+            return Err(RpcError::Timeout(
+                "Transaction not mined in 60 seconds.".to_string(),
+            ));
+        }
+
+        let status = match user_passed_account
+            .provider()
+            .get_transaction_status(transaction_hash)
+            .await
+        {
+            Ok(status) => status,
+            Err(_e) => {
+                sleep(Duration::from_secs(1)).await;
+                continue;
+            }
+        };
+
+        match status {
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::Received,
+                ..
+            } => {
+                info!("Transaction received.");
+                sleep(Duration::from_secs(1)).await;
+                continue;
+            }
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::Rejected,
+                ..
+            } => {
+                return Err(RpcError::TransactionRejected(transaction_hash.to_string()));
+            }
+            TxnFinalityAndExecutionStatus {
+                finality_status,
+                execution_status,
+                ..
+            } => {
+                // Zwróć finality_status, gdy transakcja jest zaakceptowana
+                info!(
+                    "Transaction accepted with finality status: {:?}",
+                    finality_status
+                );
+                return Ok(finality_status);
+            }
         }
     }
 }

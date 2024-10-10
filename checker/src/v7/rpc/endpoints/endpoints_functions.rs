@@ -71,7 +71,7 @@ pub async fn add_declare_transaction_v2(
                 return Err(e.into());
             }
         };
-    println!("generate acc data: {:?}", create_acc_data);
+    info!("generate acc data: {:?}", create_acc_data);
 
     let (
         account_address,
@@ -97,73 +97,89 @@ pub async fn add_declare_transaction_v2(
         ExecutionEncoding::New,
     );
 
-    println!("user passed account {:?}", user_passed_account);
-
-    let eth_bal_before = provider
-        .call(
-            FunctionCall {
-                calldata: vec![account_address],
-                contract_address: erc20_eth_contract_address,
-                entry_point_selector: get_selector_from_name("balance_of").unwrap(),
-            },
-            BlockId::Tag(BlockTag::Latest),
-        )
-        .await;
-    println!("eth balance before {:?}", eth_bal_before);
-
-    let resp = user_passed_account
+    let resp1: AddInvokeTransactionResult<Felt> = user_passed_account
         .execute_v1(vec![Call {
             to: erc20_eth_contract_address,
             selector: get_selector_from_name("transfer")?,
-            // calldata: vec![create_acc_data.address, amount_per_test],
             calldata: vec![
-                Felt::from_hex_unchecked(
-                    "0x5e9e93c6235f8ae6c2f4f0069bd30753ec21b26fbad80cfbf5da2c1bc573d69",
-                ),
+                create_acc_data.address,
                 amount_per_test,
+                Felt::from_dec_str("0").unwrap(),
             ],
         }])
         .send()
         .await
         .unwrap();
-    println!("transfer resp {:?}", resp);
-    sleep(Duration::from_secs(45)).await;
+    info!("transfer resp {:?}", resp1);
 
-    let receipt = user_passed_account
-        .provider()
-        .get_transaction_receipt(resp.transaction_hash)
+    sleep(Duration::from_secs(60)).await;
+    let resp2 = user_passed_account
+        .execute_v3(vec![
+            Call {
+                to: erc20_strk_contract_address,
+                selector: get_selector_from_name("transfer")?,
+                calldata: vec![
+                    create_acc_data.address,
+                    amount_per_test,
+                    Felt::from_dec_str("0").unwrap(),
+                ],
+            },
+            // Call {
+            //     to: erc20_eth_contract_address,
+            //     selector: get_selector_from_name("transfer")?,
+            //     calldata: vec![
+            //         create_acc_data.address,
+            //         amount_per_test,
+            //         Felt::from_dec_str("0").unwrap(),
+            //     ],
+            // },
+        ])
+        .send()
         .await
         .unwrap();
-    println!("receipt {:?}", receipt);
+    println!("resp2 {:?}", resp2);
 
-    let eth_bal_after = provider
-        .call(
-            FunctionCall {
-                calldata: vec![account_address],
-                contract_address: erc20_eth_contract_address,
-                entry_point_selector: get_selector_from_name("balance_of").unwrap(),
-            },
-            BlockId::Tag(BlockTag::Latest),
-        )
-        .await;
-    println!("eth bal after {:?}", eth_bal_after);
+    sleep(Duration::from_secs(100)).await;
+    let status1 = user_passed_account
+        .provider()
+        .get_transaction_status(resp1.transaction_hash)
+        .await
+        .unwrap();
+    info!("receipt {:?}", status1);
+    let status2 = user_passed_account
+        .provider()
+        .get_transaction_status(resp2.transaction_hash)
+        .await
+        .unwrap();
+    info!("receipt {:?}", status2);
 
     let eth_bal_after_for_new_acc = provider
         .call(
             FunctionCall {
-                // calldata: vec![create_acc_data.address],
-                calldata: vec![Felt::from_hex_unchecked(
-                    "0x5e9e93c6235f8ae6c2f4f0069bd30753ec21b26fbad80cfbf5da2c1bc573d69",
-                )],
+                calldata: vec![create_acc_data.address],
                 contract_address: erc20_eth_contract_address,
                 entry_point_selector: get_selector_from_name("balance_of").unwrap(),
             },
             BlockId::Tag(BlockTag::Latest),
         )
         .await;
-    println!(
+    info!(
         "eth_bal_after_for_new_acc bal after {:?}",
         eth_bal_after_for_new_acc
+    );
+    let eth_bal_after_for_new_acc2 = provider
+        .call(
+            FunctionCall {
+                calldata: vec![create_acc_data.address],
+                contract_address: erc20_strk_contract_address,
+                entry_point_selector: get_selector_from_name("balance_of").unwrap(),
+            },
+            BlockId::Tag(BlockTag::Latest),
+        )
+        .await;
+    info!(
+        "eth_bal_after_for_new_acc2 bal after {:?}",
+        eth_bal_after_for_new_acc2
     );
 
     let wait_conifg = WaitForTx {
@@ -178,7 +194,7 @@ pub async fn add_declare_transaction_v2(
             return Err(e.into());
         }
     };
-    println!("deployed acc");
+    info!("deployed acc");
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
@@ -191,8 +207,8 @@ pub async fn add_declare_transaction_v2(
     );
 
     account.set_block_id(BlockId::Tag(BlockTag::Latest));
-    println!("set block id for new acc");
-    sleep(Duration::from_secs(45)).await;
+    info!("set block id for new acc");
+    sleep(Duration::from_secs(100)).await;
     match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()

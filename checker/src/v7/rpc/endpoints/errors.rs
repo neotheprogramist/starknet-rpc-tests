@@ -40,6 +40,10 @@ pub enum RpcError {
     TxnExecutionStatus(String),
     #[error("Required input not provided {0}")]
     InvalidInput(String),
+    #[error("Timeout waiting for tx receipt {0}")]
+    Timeout(String),
+    #[error("Txn rejected {0}")]
+    TransactionRejected(String),
 }
 
 #[derive(Error, Debug)]

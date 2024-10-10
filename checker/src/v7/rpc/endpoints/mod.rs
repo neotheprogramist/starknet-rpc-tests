@@ -370,7 +370,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
     info!("{}", "⌛ Testing Rpc V7 endpoints -- START ⌛".yellow());
 
     let rpc = Rpc::new(url.clone())?;
-    restart_devnet(url.clone()).await?;
+    // restart_devnet(url.clone()).await?;
 
     match rpc
         .add_declare_transaction_v2(
