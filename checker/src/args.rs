@@ -17,6 +17,12 @@ pub struct Args {
     #[arg(long, short = 'c', env)]
     pub casm_path: String,
 
+    #[arg(long, env)]
+    pub sierra_path_2: String,
+
+    #[arg(long, env)]
+    pub casm_path_2: String,
+
     #[arg(long, short, env)]
     pub version: Version,
 

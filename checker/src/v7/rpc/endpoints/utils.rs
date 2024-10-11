@@ -1,20 +1,8 @@
 use std::time::Duration;
 
-use reqwest::Client;
-use starknet_types_core::felt::Felt;
-use starknet_types_core::hash::{Pedersen, StarkHash};
-use starknet_types_rpc::v0_7_1::{ContractClass, TxnHash};
-use starknet_types_rpc::{
-    BlockId, BlockTag, FunctionCall, TxnFinalityAndExecutionStatus, TxnStatus,
-};
-use tokio::io::AsyncReadExt;
-use tokio::time::sleep;
-use tracing::{debug, error, info, warn};
-use url::Url;
-
+use crate::v7::rpc::accounts::account::Account;
 use crate::v7::rpc::accounts::account::ConnectedAccount;
 use crate::v7::rpc::accounts::call::Call;
-use crate::v7::rpc::accounts::creation::structs::GenerateAccountResponse;
 use crate::v7::rpc::accounts::single_owner::SingleOwnerAccount;
 use crate::v7::rpc::providers::jsonrpc::{HttpTransport, JsonRpcClient};
 use crate::v7::rpc::providers::provider::Provider;
@@ -24,6 +12,15 @@ use crate::v7::rpc::{
     contract::{CompiledClass, HashAndFlatten, SierraClass},
     endpoints::errors::RpcError,
 };
+use reqwest::Client;
+use starknet_types_core::felt::Felt;
+use starknet_types_core::hash::{Pedersen, StarkHash};
+use starknet_types_rpc::v0_7_1::{ContractClass, TxnHash};
+use starknet_types_rpc::{BlockId, BlockTag, TxnFinalityAndExecutionStatus, TxnStatus};
+use tokio::io::AsyncReadExt;
+use tokio::time::sleep;
+use tracing::{debug, error, info, warn};
+use url::Url;
 
 use super::{declare_contract::RunnerError, errors::NonAsciiNameError};
 
@@ -272,4 +269,34 @@ pub async fn wait_for_sent_transaction(
             }
         }
     }
+}
+
+pub async fn setup_generated_account(
+    mut user_passed_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
+    erc20_eth_contract_address: Felt,
+    erc20_strk_contract_address: Felt,
+    amount_per_test: Felt,
+    create_acc_data_address: Felt,
+) -> Result<(), RpcError> {
+    user_passed_account.set_block_id(BlockId::Tag(BlockTag::Pending));
+
+    let transfer_execution = user_passed_account
+        .execute_v3(vec![
+            Call {
+                to: erc20_strk_contract_address,
+                selector: get_selector_from_name("transfer")?,
+                calldata: vec![create_acc_data_address, amount_per_test, Felt::ZERO],
+            },
+            Call {
+                to: erc20_eth_contract_address,
+                selector: get_selector_from_name("transfer")?,
+                calldata: vec![create_acc_data_address, amount_per_test, Felt::ZERO],
+            },
+        ])
+        .send()
+        .await
+        .unwrap();
+
+    wait_for_sent_transaction(transfer_execution.transaction_hash, &user_passed_account).await?;
+    Ok(())
 }

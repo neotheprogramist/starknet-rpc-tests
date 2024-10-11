@@ -11,7 +11,7 @@ use starknet_types_rpc::{
         MaybePendingBlockWithTxs, MaybePendingStateUpdate, PriceUnit, StateUpdate, Txn,
         TxnExecutionStatus, TxnReceipt, TxnStatus,
     },
-    MsgFromL1,
+    DeclareTxn, DeployTxn, MsgFromL1,
 };
 
 use tracing::{info, warn};
@@ -34,7 +34,7 @@ use crate::v7::rpc::{
         utils::mint::mint,
     },
     contract::factory::ContractFactory,
-    endpoints::{errors::CallError, utils::wait_for_sent_transaction},
+    endpoints::{declare_contract::extract_class_hash_from_error, errors::CallError},
     providers::{
         jsonrpc::{HttpTransport, JsonRpcClient, StarknetError},
         provider::{Provider, ProviderError},
@@ -45,9 +45,11 @@ use crate::v7::rpc::{
 use super::{
     declare_contract::{parse_class_hash_from_error, RunnerError},
     errors::RpcError,
-    utils::{get_compiled_contract, get_selector_from_name, validate_inputs},
+    utils::{
+        get_compiled_contract, get_selector_from_name, setup_generated_account, validate_inputs,
+    },
 };
-use tokio::time::{sleep, Duration};
+
 pub async fn add_declare_transaction_v2(
     url: Url,
     sierra_path: &str,
@@ -71,7 +73,6 @@ pub async fn add_declare_transaction_v2(
                 return Err(e.into());
             }
         };
-    info!("generate acc data: {:?}", create_acc_data);
 
     let (
         account_address,
@@ -89,84 +90,21 @@ pub async fn add_declare_transaction_v2(
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    let mut user_passed_account = SingleOwnerAccount::new(
+    let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
         LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
         account_address,
         chain_id,
         ExecutionEncoding::New,
     );
-    user_passed_account.set_block_id(BlockId::Tag(BlockTag::Pending));
-
-    // let resp1: AddInvokeTransactionResult<Felt> = user_passed_account
-    //     .execute_v1(vec![Call {
-    //         to: erc20_eth_contract_address,
-    //         selector: get_selector_from_name("transfer")?,
-    //         calldata: vec![create_acc_data.address, amount_per_test, Felt::ZERO],
-    //     }])
-    //     .send()
-    //     .await
-    //     .unwrap();
-    // info!("transfer resp {:?}", resp1);
-
-    // sleep(Duration::from_secs(60)).await;
-    let resp2 = user_passed_account
-        .execute_v3(vec![
-            Call {
-                to: erc20_strk_contract_address,
-                selector: get_selector_from_name("transfer")?,
-                calldata: vec![create_acc_data.address, amount_per_test, Felt::ZERO],
-            },
-            Call {
-                to: erc20_eth_contract_address,
-                selector: get_selector_from_name("transfer")?,
-                calldata: vec![create_acc_data.address, amount_per_test, Felt::ZERO],
-            },
-        ])
-        .send()
-        .await
-        .unwrap();
-    println!("resp2 {:?}", resp2);
-
-    // sleep(Duration::from_secs(100)).await;
-    // let status1 = user_passed_account
-    //     .provider()
-    //     .get_transaction_status(resp1.transaction_hash)
-    //     .await
-    //     .unwrap();
-    // info!("receipt {:?}", status1);
-    // let status2 = user_passed_account
-    //     .provider()
-    //     .get_transaction_status(resp2.transaction_hash)
-    //     .await
-    //     .unwrap();
-    // info!("receipt {:?}", status2);
-    let r = wait_for_sent_transaction(resp2.transaction_hash, &user_passed_account).await?;
-    // let r = wait_for_sent_transaction(resp1.transaction_hash, &user_passed_account).await?;
-    info!("txn status {:?}", r);
-
-    let eth_bal_after_for_new_acc = provider
-        .call(
-            FunctionCall {
-                calldata: vec![create_acc_data.address],
-                contract_address: erc20_eth_contract_address,
-                entry_point_selector: get_selector_from_name("balance_of").unwrap(),
-            },
-            BlockId::Tag(BlockTag::Pending),
-        )
-        .await;
-    info!("created acc eth balance {:?}", eth_bal_after_for_new_acc);
-    let eth_bal_after_for_new_acc2 = provider
-        .call(
-            FunctionCall {
-                calldata: vec![create_acc_data.address],
-                contract_address: erc20_strk_contract_address,
-                entry_point_selector: get_selector_from_name("balance_of").unwrap(),
-            },
-            BlockId::Tag(BlockTag::Pending),
-        )
-        .await;
-    info!("ecreated acc strk balance {:?}", eth_bal_after_for_new_acc2);
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
+    )
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -180,7 +118,6 @@ pub async fn add_declare_transaction_v2(
             return Err(e.into());
         }
     };
-    info!("deployed acc");
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
@@ -193,7 +130,6 @@ pub async fn add_declare_transaction_v2(
     );
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
-    info!("set block id for new acc");
     // sleep(Duration::from_secs(60)).await;
     match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
@@ -236,13 +172,19 @@ pub async fn add_declare_transaction_v3(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<Felt, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 warn!("{}", "Could not create an account");
@@ -250,46 +192,43 @@ pub async fn add_declare_transaction_v3(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
-
-    let chain_id = get_chain_id(&provider).await.unwrap();
 
     match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => Some(value),
@@ -353,13 +292,19 @@ pub async fn add_invoke_transaction_v1(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -367,39 +312,38 @@ pub async fn add_invoke_transaction_v1(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -456,11 +400,8 @@ pub async fn add_invoke_transaction_v1(
             }
         }
         Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
         }
     };
     match hash {
@@ -488,13 +429,19 @@ pub async fn add_invoke_transaction_v3(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -502,39 +449,38 @@ pub async fn add_invoke_transaction_v3(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -592,11 +538,8 @@ pub async fn add_invoke_transaction_v3(
         }
 
         Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
         }
     };
     match hash {
@@ -623,11 +566,17 @@ pub async fn invoke_contract_v1(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -635,39 +584,38 @@ pub async fn invoke_contract_v1(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -728,11 +676,8 @@ pub async fn invoke_contract_v1(
             }
         }
         Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
         }
     };
 
@@ -785,11 +730,17 @@ pub async fn invoke_contract_v3(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -797,39 +748,38 @@ pub async fn invoke_contract_v3(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -890,11 +840,8 @@ pub async fn invoke_contract_v3(
             }
         }
         Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
         }
     };
 
@@ -960,11 +907,21 @@ pub async fn chain_id(url: Url) -> Result<Felt, RpcError> {
     }
 }
 
-pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Felt>, RpcError> {
+pub async fn call(
+    url: Url,
+    sierra_path: &str,
+    casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
+) -> Result<Vec<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -972,39 +929,38 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1065,11 +1021,8 @@ pub async fn call(url: Url, sierra_path: &str, casm_path: &str) -> Result<Vec<Fe
             }
         }
         Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
         }
     };
 
@@ -1125,11 +1078,17 @@ pub async fn estimate_message_fee(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<FeeEstimate<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -1137,39 +1096,38 @@ pub async fn estimate_message_fee(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1233,11 +1191,8 @@ pub async fn estimate_message_fee(
             }
         }
         Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
         }
     };
 
@@ -1363,11 +1318,17 @@ pub async fn get_transaction_status_succeeded(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<TxnStatus, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -1375,39 +1336,38 @@ pub async fn get_transaction_status_succeeded(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1471,11 +1431,8 @@ pub async fn get_transaction_status_succeeded(
             }
         }
         Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
         }
     };
 
@@ -1536,11 +1493,17 @@ pub async fn get_transaction_by_hash_invoke(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<InvokeTxnV1<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -1548,39 +1511,38 @@ pub async fn get_transaction_by_hash_invoke(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
@@ -1644,11 +1606,8 @@ pub async fn get_transaction_by_hash_invoke(
             }
         }
         Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
         }
     };
 
@@ -1690,11 +1649,17 @@ pub async fn get_transaction_by_hash_invoke(
 
 pub async fn get_transaction_by_hash_deploy_acc(
     url: Url,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, Option::None).await {
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
             Ok(value) => value,
             Err(e) => {
                 info!("{}", "Could not create an account");
@@ -1702,54 +1667,52 @@ pub async fn get_transaction_by_hash_deploy_acc(
             }
         };
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Fri,
-        },
-    )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
 
-    match mint(
-        url.clone(),
-        &MintRequest2 {
-            amount: u128::MAX,
-            address: create_acc_data.address,
-            unit: PriceUnit::Wei,
-        },
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
     )
-    .await
-    {
-        Ok(_) => {}
-        Err(e) => {
-            info!("{}", "Could not mint tokens");
-            return Err(e.into());
-        }
-    };
+    .await?;
 
     let wait_conifg = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
-    let txn_hash = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(txn_hash) => txn_hash,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let txn_hash: Felt =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(txn_hash) => txn_hash,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
     let txn = provider.get_transaction_by_hash(txn_hash).await.unwrap();
 
@@ -1763,26 +1726,112 @@ pub async fn get_transaction_by_hash_deploy_acc(
 
 pub async fn get_transaction_by_block_id_and_index(
     url: Url,
-) -> Result<InvokeTxnV1<Felt>, RpcError> {
-    let client = JsonRpcClient::new(HttpTransport::new(url.clone()));
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
+) -> Result<Txn<Felt>, RpcError> {
+    // Change the return type to general Txn
+    let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
+    let create_acc_data =
+        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not create an account");
+                return Err(e.into());
+            }
+        };
 
-    let txn = client
-        .get_transaction_by_block_id_and_index(BlockId::Number(1), 0)
-        .await
-        .unwrap();
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
+
+    let chain_id = get_chain_id(&provider).await.unwrap();
+
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    setup_generated_account(
+        user_passed_account,
+        erc20_eth_contract_address,
+        erc20_strk_contract_address,
+        amount_per_test,
+        create_acc_data.address,
+    )
+    .await?;
+
+    let wait_conifg = WaitForTx {
+        wait: true,
+        wait_params: ValidatedWaitParams::default(),
+    };
+
+    let block = provider.block_hash_and_number().await?;
+
+    let block_txn_count = provider
+        .get_block_transaction_count(BlockId::Hash(block.block_hash))
+        .await?;
+
+    println!("blockTxnCount {:?}", block_txn_count);
+
+    let txn = provider
+        .get_transaction_by_block_id_and_index(BlockId::Hash(block.block_hash), block_txn_count - 1)
+        .await?;
 
     let txn = match txn {
-        Txn::Invoke(InvokeTxn::V1(txn)) => txn,
-        _ => panic!("unexpected tx response type"),
+        Txn::Invoke(InvokeTxn::V0(txn)) => Txn::Invoke(InvokeTxn::V0(txn)),
+        Txn::Invoke(InvokeTxn::V1(txn)) => Txn::Invoke(InvokeTxn::V1(txn)),
+        Txn::Invoke(InvokeTxn::V3(txn)) => Txn::Invoke(InvokeTxn::V3(txn)),
+        Txn::Declare(DeclareTxn::V0(txn)) => Txn::Declare(DeclareTxn::V0(txn)),
+        Txn::Declare(DeclareTxn::V1(txn)) => Txn::Declare(DeclareTxn::V1(txn)),
+        Txn::Declare(DeclareTxn::V2(txn)) => Txn::Declare(DeclareTxn::V2(txn)),
+        Txn::Declare(DeclareTxn::V3(txn)) => Txn::Declare(DeclareTxn::V3(txn)),
+        Txn::DeployAccount(DeployAccountTxn::V1(txn)) => {
+            Txn::DeployAccount(DeployAccountTxn::V1(txn))
+        }
+        Txn::DeployAccount(DeployAccountTxn::V3(txn)) => {
+            Txn::DeployAccount(DeployAccountTxn::V3(txn))
+        }
+        Txn::Deploy(DeployTxn {
+            class_hash,
+            constructor_calldata,
+            contract_address_salt,
+            version,
+        }) => Txn::Deploy(DeployTxn {
+            class_hash,
+            constructor_calldata,
+            contract_address_salt,
+            version,
+        }),
+        _ => {
+            let error_message = format!("Unexpected transaction response type: {:?}", txn);
+            return Err(RpcError::UnexpectedTxnType(error_message));
+        }
     };
 
     Ok(txn)
 }
 
 pub async fn get_transaction_by_hash_non_existent_tx(url: Url) -> Result<(), RpcError> {
-    let client = JsonRpcClient::new(HttpTransport::new(url.clone()));
+    let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
-    let err = client
+    let err = provider
         .get_transaction_by_hash(Felt::from_hex("0x55555").unwrap())
         .await
         .unwrap_err();

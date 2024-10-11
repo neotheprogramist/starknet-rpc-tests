@@ -79,6 +79,8 @@ async fn main() -> Result<(), String> {
                 args.url.clone(),
                 &args.sierra_path,
                 &args.casm_path,
+                &args.sierra_path_2,
+                &args.casm_path_2,
                 args.account_class_hash,
                 args.account_address,
                 args.private_key,

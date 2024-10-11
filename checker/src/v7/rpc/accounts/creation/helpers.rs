@@ -66,7 +66,6 @@ pub async fn generate_account(
         class_hash,
         salt,
         max_fee: Felt::from_dec_str(&fee_estimate.overall_fee.to_string()).unwrap(),
-        // max_fee: Felt::from_dec_str("454").unwrap(),
     };
     Ok(account_response)
 }

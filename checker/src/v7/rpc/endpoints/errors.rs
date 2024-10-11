@@ -36,6 +36,8 @@ pub enum RpcError {
     FromStrError(#[from] FromStrError),
     #[error("Unexpected block type {0}")]
     UnexpectedBlockResponseType(String),
+    #[error("Unexpected txn type {0}")]
+    UnexpectedTxnType(String),
     #[error("TxnExecutionStatus reverted {0}")]
     TxnExecutionStatus(String),
     #[error("Required input not provided {0}")]

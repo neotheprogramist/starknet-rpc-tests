@@ -76,6 +76,16 @@ pub fn parse_class_hash_from_error(error_msg: &str) -> Felt {
     panic!("Failed to extract class hash from error message");
 }
 
+pub fn extract_class_hash_from_error(error_msg: &str) -> Option<Felt> {
+    let re = Regex::new(r#"0x[a-fA-F0-9]{64}"#).unwrap();
+
+    if let Some(capture) = re.find(error_msg) {
+        return Some(Felt::from_hex_unchecked(capture.as_str()));
+    }
+
+    None
+}
+
 #[allow(dead_code)]
 pub async fn get_compiled_contract(
     sierra_path: &str,
