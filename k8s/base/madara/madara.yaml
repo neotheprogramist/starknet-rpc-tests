@@ -29,10 +29,15 @@ spec:
         - "--base-path"
         - "/madara/data"
         - "--network"
-        - "test"
+        - "sepolia"
         - "--l1-endpoint"
         - "http://anvil-service:8545"
         - "--full"
+        - "--gateway-key"
+        - "$(GATEWAY_KEY)"
+      envFrom:
+        - secretRef:
+            name: secret
       volumeMounts:
         - name: madara-data-1
           mountPath: /madara/data
@@ -65,4 +70,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 24Gi
+  storageClassName: topolvm-provisioner

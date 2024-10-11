@@ -64,4 +64,4 @@ spec:
       protocol: TCP
       port: 6060
       targetPort: 6060
-      nodePort: 30032
+      nodePort: 32032
