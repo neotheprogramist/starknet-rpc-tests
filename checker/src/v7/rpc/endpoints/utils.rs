@@ -16,7 +16,9 @@ use reqwest::Client;
 use starknet_types_core::felt::Felt;
 use starknet_types_core::hash::{Pedersen, StarkHash};
 use starknet_types_rpc::v0_7_1::{ContractClass, TxnHash};
-use starknet_types_rpc::{BlockId, BlockTag, TxnFinalityAndExecutionStatus, TxnStatus};
+use starknet_types_rpc::{
+    BlockId, BlockTag, TxnExecutionStatus, TxnFinalityAndExecutionStatus, TxnStatus,
+};
 use tokio::io::AsyncReadExt;
 use tokio::time::sleep;
 use tracing::{debug, error, info, warn};
@@ -179,11 +181,11 @@ pub fn validate_inputs(
         }
     }
 }
-use starknet_types_rpc::TxnExecutionStatus;
+
 pub async fn wait_for_sent_transaction(
     transaction_hash: Felt,
     user_passed_account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
-) -> Result<TxnStatus, RpcError> {
+) -> Result<TxnFinalityAndExecutionStatus, RpcError> {
     let start_fetching = std::time::Instant::now();
     let wait_for = Duration::from_secs(60);
 
@@ -226,8 +228,7 @@ pub async fn wait_for_sent_transaction(
                 execution_status: Some(TxnExecutionStatus::Succeeded),
                 ..
             } => {
-                info!("Transaction accepted on L2 with execution status: Succeeded");
-                return Ok(TxnStatus::AcceptedOnL2);
+                return Ok(status);
             }
             TxnFinalityAndExecutionStatus {
                 finality_status: TxnStatus::AcceptedOnL2,
@@ -241,7 +242,6 @@ pub async fn wait_for_sent_transaction(
                 execution_status: Some(TxnExecutionStatus::Succeeded),
                 ..
             } => {
-                info!("Transaction accepted on L1 with execution status: Succeeded");
                 continue;
             }
             TxnFinalityAndExecutionStatus {
@@ -256,7 +256,6 @@ pub async fn wait_for_sent_transaction(
                 execution_status: None,
                 ..
             } => {
-                info!("Transaction accepted on L1 but execution status is not available.");
                 continue;
             }
             TxnFinalityAndExecutionStatus {
@@ -264,7 +263,6 @@ pub async fn wait_for_sent_transaction(
                 execution_status: None,
                 ..
             } => {
-                info!("Transaction accepted on L2 but execution status is not available.");
                 continue;
             }
         }

@@ -96,6 +96,8 @@ pub struct Args {
         requires = "erc20_eth_contract_address"
     )]
     pub amount_per_test: Option<Felt>,
+    // #[arg(long, env, default = false)]
+    // pub starknet_devnet_api_tests: bool,
 }
 
 #[derive(ValueEnum, Debug, Clone)]

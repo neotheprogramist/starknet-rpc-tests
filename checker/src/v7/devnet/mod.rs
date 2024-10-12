@@ -165,6 +165,12 @@ pub async fn test_devnet_endpoints(
     l1_network_url: Url,
     sierra_path: &str,
     casm_path: &str,
+    class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<(), DevnetError> {
     info!("{}", "⌛ Testing Devnet V7 endpoints -- START ⌛".yellow());
 
@@ -400,6 +406,12 @@ pub async fn test_devnet_endpoints(
         sierra_path,
         casm_path,
         devnet.l1_network_url.clone(),
+        class_hash,
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
     )
     .await
     .unwrap();

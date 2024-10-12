@@ -55,6 +55,7 @@ pub enum CairoShortStringToFeltError {
     NonAsciiCharacter,
     StringTooLong,
 }
+use std::fmt::Debug;
 pub trait Account: ExecutionEncoder + Sized {
     type SignError: Error + Send + Sync;
 
@@ -127,7 +128,10 @@ pub trait Account: ExecutionEncoder + Sized {
         &self,
         contract_class: ContractClass<Felt>,
         compiled_class_hash: Felt,
-    ) -> DeclarationV3<Self> {
+    ) -> DeclarationV3<Self>
+    where
+        Self: Debug,
+    {
         DeclarationV3::new(contract_class, compiled_class_hash, self)
     }
 

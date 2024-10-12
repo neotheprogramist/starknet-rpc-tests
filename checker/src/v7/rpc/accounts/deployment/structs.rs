@@ -3,7 +3,7 @@ use starknet_types_core::felt::Felt;
 
 // used in wait_for_tx. Txs will be fetched every 5s with timeout of 300s - so 60 attempts
 #[allow(dead_code)]
-pub const WAIT_TIMEOUT: u16 = 300;
+pub const WAIT_TIMEOUT: u16 = 600;
 #[allow(dead_code)]
 pub const WAIT_RETRY_INTERVAL: u8 = 5;
 #[allow(dead_code)]

@@ -17,9 +17,13 @@ use endpoints_functions::{
 };
 use errors::RpcError;
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_7_1::{
-    AddInvokeTransactionResult, BlockWithTxHashes, BlockWithTxs, ContractClass, DeployAccountTxnV3,
-    DeployTxnReceipt, FeeEstimate, InvokeTxnV1, StateUpdate, Txn, TxnStatus,
+use starknet_types_rpc::{
+    v0_7_1::{
+        AddInvokeTransactionResult, BlockWithTxHashes, BlockWithTxs, ContractClass,
+        DeployAccountTxnV3, DeployTxnReceipt, FeeEstimate, InvokeTxnV1, StateUpdate, Txn,
+        TxnStatus,
+    },
+    InvokeTxnReceipt,
 };
 
 use tracing::{error, info};
@@ -151,7 +155,11 @@ pub trait RpcEndpoints {
 
     async fn get_state_update(&self, url: Url) -> Result<StateUpdate<Felt>, RpcError>;
 
-    async fn get_storage_at(&self, url: Url) -> Result<Felt, RpcError>;
+    async fn get_storage_at(
+        &self,
+        url: Url,
+        erc20_eth_contract_address: Option<Felt>,
+    ) -> Result<Felt, RpcError>;
 
     async fn get_transaction_status_succeeded(
         &self,
@@ -208,13 +216,39 @@ pub trait RpcEndpoints {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
-    ) -> Result<DeployTxnReceipt<Felt>, RpcError>;
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> Result<InvokeTxnReceipt<Felt>, RpcError>;
+
+    // TODO: fix that
+    // async fn get_transaction_receipt_revert(
+    //     &self,
+    //     url: Url,
+    //     sierra_path: &str,
+    //     casm_path: &str,
+    //     account_class_hash: Option<Felt>,
+    //     account_address: Option<Felt>,
+    //     private_key: Option<Felt>,
+    //     erc20_strk_contract_address: Option<Felt>,
+    //     erc20_eth_contract_address: Option<Felt>,
+    //     amount_per_test: Option<Felt>,
+    // ) -> Result<(), RpcError>;
 
     async fn get_class(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError>;
 
     async fn get_class_hash_at(
@@ -222,6 +256,12 @@ pub trait RpcEndpoints {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError>;
 
     async fn get_class_at(
@@ -229,6 +269,12 @@ pub trait RpcEndpoints {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError>;
 }
 
@@ -464,8 +510,12 @@ impl RpcEndpoints for Rpc {
         get_state_update(url.clone()).await
     }
 
-    async fn get_storage_at(&self, url: Url) -> Result<Felt, RpcError> {
-        get_storage_at(url.clone()).await
+    async fn get_storage_at(
+        &self,
+        url: Url,
+        erc20_eth_contract_address: Option<Felt>,
+    ) -> Result<Felt, RpcError> {
+        get_storage_at(url.clone(), erc20_eth_contract_address).await
     }
 
     async fn get_transaction_status_succeeded(
@@ -573,17 +623,77 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
-    ) -> Result<DeployTxnReceipt<Felt>, RpcError> {
-        get_transaction_receipt(url.clone(), sierra_path, casm_path).await
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> Result<InvokeTxnReceipt<Felt>, RpcError> {
+        get_transaction_receipt(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
+    // TODO: fix that
+    // async fn get_transaction_receipt_revert(
+    //     &self,
+    //     url: Url,
+    //     sierra_path: &str,
+    //     casm_path: &str,
+    //     account_class_hash: Option<Felt>,
+    //     account_address: Option<Felt>,
+    //     private_key: Option<Felt>,
+    //     erc20_strk_contract_address: Option<Felt>,
+    //     erc20_eth_contract_address: Option<Felt>,
+    //     amount_per_test: Option<Felt>,
+    // ) -> Result<(), RpcError> {
+    //     get_transaction_receipt_revert(
+    //         url.clone(),
+    //         sierra_path,
+    //         casm_path,
+    //         account_class_hash,
+    //         account_address,
+    //         private_key,
+    //         erc20_strk_contract_address,
+    //         erc20_eth_contract_address,
+    //         amount_per_test,
+    //     )
+    //     .await
+    // }
 
     async fn get_class(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError> {
-        get_class(url.clone(), sierra_path, casm_path).await
+        get_class(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_class_hash_at(
@@ -591,8 +701,25 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError> {
-        get_class_hash_at(url.clone(), sierra_path, casm_path).await
+        get_class_hash_at(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_class_at(
@@ -600,8 +727,25 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError> {
-        get_class_at(url.clone(), sierra_path, casm_path).await
+        get_class_at(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 }
 
@@ -935,7 +1079,10 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc.get_storage_at(url.clone()).await {
+    match rpc
+        .get_storage_at(url.clone(), erc20_eth_contract_address)
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -1082,74 +1229,145 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    // restart_devnet(url.clone()).await?;
+    match rpc
+        .get_transaction_receipt(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Rpc get_transaction_receipt COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Rpc get_transaction_receipt INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
+
     // match rpc
-    //     .get_transaction_receipt(url.clone(), sierra_path, casm_path)
+    //     .get_transaction_receipt_revert(
+    //         url.clone(),
+    //         sierra_path,
+    //         casm_path,
+    //         class_hash,
+    //         account_address,
+    //         private_key,
+    //         erc20_strk_contract_address,
+    //         erc20_eth_contract_address,
+    //         amount_per_test,
+    //     )
     //     .await
     // {
     //     Ok(_) => {
     //         info!(
     //             "{} {}",
-    //             "✓ Rpc get_transaction_receipt COMPATIBLE".green(),
+    //             "✓ Rpc get_transaction_receipt_revert COMPATIBLE".green(),
     //             "✓".green()
     //         )
     //     }
     //     Err(e) => error!(
     //         "{} {} {}",
-    //         "✗ Rpc get_transaction_receipt INCOMPATIBLE:".red(),
+    //         "✗ Rpc get_transaction_receipt_revert INCOMPATIBLE:".red(),
     //         e.to_string().red(),
     //         "✗".red()
     //     ),
     // }
 
-    // restart_devnet(url.clone()).await?;
-    // match rpc.get_class(url.clone(), sierra_path, casm_path).await {
-    //     Ok(_) => {
-    //         info!("{} {}", "✓ Rpc get_class COMPATIBLE".green(), "✓".green())
-    //     }
-    //     Err(e) => error!(
-    //         "{} {} {}",
-    //         "✗ Rpc get_class INCOMPATIBLE:".red(),
-    //         e.to_string().red(),
-    //         "✗".red()
-    //     ),
-    // }
+    match rpc
+        .get_class(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
+        Ok(_) => {
+            info!("{} {}", "✓ Rpc get_class COMPATIBLE".green(), "✓".green())
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Rpc get_class INCOMPATIBLE:".red(),
+            e.to_string().red(),
+            "✗".red()
+        ),
+    }
 
-    // restart_devnet(url.clone()).await?;
-    // match rpc
-    //     .get_class_hash_at(url.clone(), sierra_path, casm_path)
-    //     .await
-    // {
-    //     Ok(_) => {
-    //         info!(
-    //             "{} {}",
-    //             "✓ Rpc get_class_hash_at COMPATIBLE".green(),
-    //             "✓".green()
-    //         )
-    //     }
-    //     Err(e) => error!(
-    //         "{} {} {}",
-    //         "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
-    //         e,
-    //         "✗".red()
-    //     ),
-    // }
-    // restart_devnet(url.clone()).await?;
+    match rpc
+        .get_class_hash_at(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Rpc get_class_hash_at COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {} {}",
+            "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
+            e,
+            "✗".red()
+        ),
+    }
 
-    // match rpc.get_class_at(url.clone(), sierra_path, casm_path).await {
-    //     Ok(_) => {
-    //         info!(
-    //             "{} {}",
-    //             "✓ Rpc get_class_at COMPATIBLE".green(),
-    //             "✓".green()
-    //         )
-    //     }
-    //     Err(e) => error!(
-    //         "{} {}",
-    //         "✗ Rpc get_class_at INCOMPATIBLE:".red(),
-    //         e.to_string().red(),
-    //     ),
-    // }
+    match rpc
+        .get_class_at(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
+        Ok(_) => {
+            info!(
+                "{} {}",
+                "✓ Rpc get_class_at COMPATIBLE".green(),
+                "✓".green()
+            )
+        }
+        Err(e) => error!(
+            "{} {}",
+            "✗ Rpc get_class_at INCOMPATIBLE:".red(),
+            e.to_string().red(),
+        ),
+    }
 
     info!("{}", "🏁 Testing Devnet V7 endpoints -- END 🏁".yellow());
 
