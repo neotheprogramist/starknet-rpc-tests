@@ -1,4 +1,4 @@
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 
@@ -6,15 +6,13 @@ use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{
     v0_7_1::{
         AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs,
-        ContractClass, DeployAccountTxn, DeployAccountTxnV3, DeployTxnReceipt, FeeEstimate,
-        FunctionCall, InvokeTxn, InvokeTxnV1, MaybePendingBlockWithTxHashes,
-        MaybePendingBlockWithTxs, MaybePendingStateUpdate, StateUpdate, Txn, TxnExecutionStatus,
-        TxnReceipt, TxnStatus,
+        ContractClass, DeployAccountTxn, DeployAccountTxnV3, FeeEstimate, FunctionCall, InvokeTxn,
+        InvokeTxnV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
+        MaybePendingStateUpdate, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
     },
-    DeclareTxn, DeployTxn, EventFilterWithPageRequest, InvokeTxnReceipt, MsgFromL1, PriceUnit,
+    DeclareTxn, DeployTxn, InvokeTxnReceipt, MsgFromL1,
 };
 
-use tokio::time::sleep;
 use tracing::{info, warn};
 use url::Url;
 
@@ -25,14 +23,12 @@ use crate::v7::rpc::{
         creation::{
             create::{create_account, AccountType},
             helpers::get_chain_id,
-            structs::MintRequest2,
         },
         deployment::{
             deploy::deploy_account,
             structs::{ValidatedWaitParams, WaitForTx},
         },
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
-        utils::mint::mint,
     },
     contract::factory::ContractFactory,
     endpoints::{declare_contract::extract_class_hash_from_error, errors::CallError},
@@ -52,6 +48,7 @@ use super::{
     },
 };
 
+#[allow(clippy::too_many_arguments)]
 pub async fn add_declare_transaction_v2(
     url: Url,
     sierra_path: &str,
@@ -172,6 +169,7 @@ pub async fn add_declare_transaction_v2(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn add_declare_transaction_v3(
     url: Url,
     sierra_path: &str,
@@ -294,6 +292,7 @@ pub async fn add_declare_transaction_v3(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn add_invoke_transaction_v1(
     url: Url,
     sierra_path: &str,
@@ -434,6 +433,7 @@ pub async fn add_invoke_transaction_v1(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn add_invoke_transaction_v3(
     url: Url,
     sierra_path: &str,
@@ -574,6 +574,7 @@ pub async fn add_invoke_transaction_v3(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn invoke_contract_v1(
     url: Url,
     sierra_path: &str,
@@ -725,8 +726,8 @@ pub async fn invoke_contract_v1(
             if let Some(contract_address) = receipt
                 .common_receipt_properties
                 .events
-                .get(0)
-                .and_then(|event| event.data.get(0))
+                .first()
+                .and_then(|event| event.data.first())
             {
                 *contract_address
             } else {
@@ -750,6 +751,7 @@ pub async fn invoke_contract_v1(
     Ok(result)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn invoke_contract_v3(
     url: Url,
     sierra_path: &str,
@@ -902,8 +904,8 @@ pub async fn invoke_contract_v3(
             if let Some(contract_address) = receipt
                 .common_receipt_properties
                 .events
-                .get(0)
-                .and_then(|event| event.data.get(0))
+                .first()
+                .and_then(|event| event.data.first())
             {
                 *contract_address
             } else {
@@ -945,6 +947,7 @@ pub async fn chain_id(url: Url) -> Result<Felt, RpcError> {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn call(
     url: Url,
     sierra_path: &str,
@@ -1096,8 +1099,8 @@ pub async fn call(
             if let Some(contract_address) = receipt
                 .common_receipt_properties
                 .events
-                .get(0)
-                .and_then(|event| event.data.get(0))
+                .first()
+                .and_then(|event| event.data.first())
             {
                 *contract_address
             } else {
@@ -1125,6 +1128,7 @@ pub async fn call(
     Ok(balance)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn estimate_message_fee(
     url: Url,
     sierra_path: &str,
@@ -1276,8 +1280,8 @@ pub async fn estimate_message_fee(
             if let Some(contract_address) = receipt
                 .common_receipt_properties
                 .events
-                .get(0)
-                .and_then(|event| event.data.get(0))
+                .first()
+                .and_then(|event| event.data.first())
             {
                 *contract_address
             } else {
@@ -1380,6 +1384,7 @@ pub async fn get_storage_at(
     Ok(storage_value)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn get_transaction_status_succeeded(
     url: Url,
     sierra_path: &str,
@@ -1553,6 +1558,7 @@ pub async fn get_transaction_status_succeeded(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn get_transaction_by_hash_invoke(
     url: Url,
     sierra_path: &str,
@@ -1916,6 +1922,7 @@ pub async fn get_transaction_by_hash_non_existent_tx(url: Url) -> Result<(), Rpc
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn get_transaction_receipt(
     url: Url,
     sierra_path: &str,
@@ -2066,8 +2073,8 @@ pub async fn get_transaction_receipt(
             if let Some(contract_address) = receipt
                 .common_receipt_properties
                 .events
-                .get(0)
-                .and_then(|event| event.data.get(0))
+                .first()
+                .and_then(|event| event.data.first())
             {
                 *contract_address
             } else {
@@ -2220,6 +2227,7 @@ pub async fn get_transaction_receipt(
 //     }
 // }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn get_class(
     url: Url,
     sierra_path: &str,
@@ -2349,6 +2357,7 @@ pub async fn get_class(
     Ok(contract_class)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn get_class_hash_at(
     url: Url,
     sierra_path: &str,
@@ -2500,8 +2509,8 @@ pub async fn get_class_hash_at(
             if let Some(contract_address) = receipt
                 .common_receipt_properties
                 .events
-                .get(0)
-                .and_then(|event| event.data.get(0))
+                .first()
+                .and_then(|event| event.data.first())
             {
                 *contract_address
             } else {
@@ -2523,6 +2532,7 @@ pub async fn get_class_hash_at(
     Ok(contract_class_hash)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn get_class_at(
     url: Url,
     sierra_path: &str,
@@ -2674,8 +2684,8 @@ pub async fn get_class_at(
             if let Some(contract_address) = receipt
                 .common_receipt_properties
                 .events
-                .get(0)
-                .and_then(|event| event.data.get(0))
+                .first()
+                .and_then(|event| event.data.first())
             {
                 *contract_address
             } else {

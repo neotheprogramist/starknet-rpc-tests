@@ -21,6 +21,8 @@ use std::future::Future;
 use tracing::{error, info};
 use url::Url;
 
+use crate::v7::rpc::endpoints::utils::restart_devnet;
+
 pub struct Devnet {
     pub url: Url,
     pub l1_network_url: Url,
@@ -160,6 +162,7 @@ impl DevnetEndpoints for Devnet {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn test_devnet_endpoints(
     url: Url,
     l1_network_url: Url,
@@ -447,6 +450,8 @@ pub async fn test_devnet_endpoints(
             "✗".red()
         ),
     }
+
+    restart_devnet(url).await?;
 
     info!("{}", "🏁 Testing Devnet V7 endpoints -- END 🏁".yellow());
     Ok(())

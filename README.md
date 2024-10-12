@@ -21,7 +21,7 @@ cargo install starknet-devnet --version 0.0.7
 Now run starknet-devnet
 
 ```bash
-starknet-devnet --state-archive-capacity full --dump-on exit --dump-path dumpdir
+starknet-devnet --state-archive-capacity full --dump-on exit --dump-path dumpdir --seed 0
 ```
 
 After building the crate, you can use it to check the compatibility between the supported versions of Starknet Devnet.
@@ -30,9 +30,18 @@ After building the crate, you can use it to check the compatibility between the 
 cargo run -p checker -- \
     --url http://127.0.0.1:5050/ \
     --l1-network-url <L1_NETWORK_URL> \
-    --sierra-path target/dev/contracts_HelloStarknet.contract_class.json \
-    --casm-path target/dev/contracts_HelloStarknet.compiled_contract_class.json \
-    --version v5
+    --sierra-path target/dev/contracts_contracts_sample_contract_1_HelloStarknet.contract_class.json \
+    --casm-path target/dev/contracts_contracts_sample_contract_1_HelloStarknet.compiled_contract_class.json \
+    --sierra-path-2 target/dev/contracts_contracts_sample_contract_2_HelloStarknet.contract_class.json \
+    --casm-path-2 target/dev/contracts_contracts_sample_contract_2_HelloStarknet.compiled_contract_class.json \
+    --devnet-tests \
+    --private-key <PRIVATE_KEY> \
+    --account-address <ACCOUNT_ADDRESS> \
+    --account-class-hash <ACCOUNT_CLASS_HASH> \
+    --erc20-strk-contract-address <ERC20_STRK_CONTRACT_ADDRESS> \
+    --erc20-eth-contract-address <ERC20_ETH_CONTRACT_ADDRESS> \
+    --amount-per-test <AMOUNT_PER_TEST> \
+    --version v7
 ```
 
 **Note on L1 Network URL:**

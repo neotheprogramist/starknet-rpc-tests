@@ -20,15 +20,18 @@ async fn main() -> Result<(), String> {
 
     match args.version {
         Version::V5 => {
-            if let Err(e) = V5::devnet::test_devnet_endpoints(
-                args.url.clone(),
-                args.l1_network_url.clone(),
-                &args.sierra_path,
-                &args.casm_path,
-            )
-            .await
-            {
-                error!("Failure: {}", e.to_string().red());
+            if args.run_devnet_tests {
+                // Sprawdzenie argumentu
+                if let Err(e) = V5::devnet::test_devnet_endpoints(
+                    args.url.clone(),
+                    args.l1_network_url.clone(),
+                    &args.sierra_path,
+                    &args.casm_path,
+                )
+                .await
+                {
+                    error!("Failure: {}", e.to_string().red());
+                }
             }
 
             if let Err(e) = V5::rpc::endpoints::test_rpc_endpoints(
@@ -42,15 +45,18 @@ async fn main() -> Result<(), String> {
             }
         }
         Version::V6 => {
-            if let Err(e) = V6::devnet::test_devnet_endpoints(
-                args.url.clone(),
-                args.l1_network_url.clone(),
-                &args.sierra_path,
-                &args.casm_path,
-            )
-            .await
-            {
-                error!("Failure: {}", e.to_string().red());
+            if args.run_devnet_tests {
+                // Sprawdzenie argumentu
+                if let Err(e) = V6::devnet::test_devnet_endpoints(
+                    args.url.clone(),
+                    args.l1_network_url.clone(),
+                    &args.sierra_path,
+                    &args.casm_path,
+                )
+                .await
+                {
+                    error!("Failure: {}", e.to_string().red());
+                }
             }
 
             if let Err(e) = V6::rpc::endpoints::test_rpc_endpoints_v0_0_6(
@@ -64,16 +70,24 @@ async fn main() -> Result<(), String> {
             }
         }
         Version::V7 => {
-            // if let Err(e) = V7::devnet::test_devnet_endpoints(
-            //     args.url.clone(),
-            //     args.l1_network_url.clone(),
-            //     &args.sierra_path,
-            //     &args.casm_path,
-            // )
-            // .await
-            // {
-            //     error!("Failure: {}", e.to_string().red());
-            // }
+            if args.run_devnet_tests {
+                if let Err(e) = V7::devnet::test_devnet_endpoints(
+                    args.url.clone(),
+                    args.l1_network_url.clone(),
+                    &args.sierra_path,
+                    &args.casm_path,
+                    args.account_class_hash,
+                    args.account_address,
+                    args.private_key,
+                    args.erc20_strk_contract_address,
+                    args.erc20_eth_contract_address,
+                    args.amount_per_test,
+                )
+                .await
+                {
+                    error!("Failure: {}", e.to_string().red());
+                }
+            }
 
             if let Err(e) = V7::rpc::endpoints::test_rpc_endpoints_v0_0_7(
                 args.url.clone(),

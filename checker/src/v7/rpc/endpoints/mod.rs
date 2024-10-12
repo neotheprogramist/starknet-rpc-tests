@@ -20,15 +20,13 @@ use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{
     v0_7_1::{
         AddInvokeTransactionResult, BlockWithTxHashes, BlockWithTxs, ContractClass,
-        DeployAccountTxnV3, DeployTxnReceipt, FeeEstimate, InvokeTxnV1, StateUpdate, Txn,
-        TxnStatus,
+        DeployAccountTxnV3, InvokeTxnV1, StateUpdate, Txn, TxnStatus,
     },
-    InvokeTxnReceipt,
+    FeeEstimate, InvokeTxnReceipt,
 };
 
 use tracing::{error, info};
 use url::Url;
-use utils::restart_devnet;
 
 pub struct Rpc {
     pub url: Url,
@@ -42,6 +40,7 @@ impl Rpc {
 
 #[allow(dead_code)]
 pub trait RpcEndpoints {
+    #[allow(clippy::too_many_arguments)]
     fn add_declare_transaction_v2(
         &self,
         sierra_path: &str,
@@ -54,6 +53,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
 
+    #[allow(clippy::too_many_arguments)]
     fn add_declare_transaction_v3(
         &self,
         sierra_path: &str,
@@ -66,6 +66,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
 
+    #[allow(clippy::too_many_arguments)]
     async fn add_invoke_transaction_v1(
         &self,
         sierra_path: &str,
@@ -78,6 +79,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn add_invoke_transaction_v3(
         &self,
         sierra_path: &str,
@@ -90,6 +92,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn invoke_contract_v1(
         &self,
         url: Url,
@@ -103,6 +106,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn invoke_contract_v3(
         &self,
         url: Url,
@@ -120,6 +124,7 @@ pub trait RpcEndpoints {
 
     async fn chain_id(&self, url: Url) -> Result<Felt, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn call(
         &self,
         url: Url,
@@ -133,6 +138,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<Vec<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn estimate_message_fee(
         &self,
         url: Url,
@@ -161,6 +167,7 @@ pub trait RpcEndpoints {
         erc20_eth_contract_address: Option<Felt>,
     ) -> Result<Felt, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_status_succeeded(
         &self,
         url: Url,
@@ -174,6 +181,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<TxnStatus, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_by_hash_invoke(
         &self,
         url: Url,
@@ -187,6 +195,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<InvokeTxnV1<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_by_hash_deploy_acc(
         &self,
         url: Url,
@@ -198,6 +207,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<DeployAccountTxnV3<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_by_block_id_and_index(
         &self,
         url: Url,
@@ -211,6 +221,7 @@ pub trait RpcEndpoints {
 
     async fn get_transaction_by_hash_non_existent_tx(&self, url: Url) -> Result<(), RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_receipt(
         &self,
         url: Url,
@@ -238,6 +249,7 @@ pub trait RpcEndpoints {
     //     amount_per_test: Option<Felt>,
     // ) -> Result<(), RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_class(
         &self,
         url: Url,
@@ -251,6 +263,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_class_hash_at(
         &self,
         url: Url,
@@ -264,6 +277,7 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_class_at(
         &self,
         url: Url,
@@ -749,6 +763,7 @@ impl RpcEndpoints for Rpc {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn test_rpc_endpoints_v0_0_7(
     url: Url,
     sierra_path: &str,
