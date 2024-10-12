@@ -17,14 +17,16 @@ use endpoints_functions::{
 };
 use errors::RpcError;
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::v0_7_1::{
-    AddInvokeTransactionResult, BlockWithTxHashes, BlockWithTxs, ContractClass, DeployAccountTxnV3,
-    DeployTxnReceipt, FeeEstimate, InvokeTxnV1, StateUpdate, TxnStatus,
+use starknet_types_rpc::{
+    v0_7_1::{
+        AddInvokeTransactionResult, BlockWithTxHashes, BlockWithTxs, ContractClass,
+        DeployAccountTxnV3, InvokeTxnV1, StateUpdate, Txn, TxnStatus,
+    },
+    FeeEstimate, InvokeTxnReceipt,
 };
 
 use tracing::{error, info};
 use url::Url;
-use utils::restart_devnet;
 
 pub struct Rpc {
     pub url: Url,
@@ -38,60 +40,116 @@ impl Rpc {
 
 #[allow(dead_code)]
 pub trait RpcEndpoints {
+    #[allow(clippy::too_many_arguments)]
     fn add_declare_transaction_v2(
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
 
+    #[allow(clippy::too_many_arguments)]
     fn add_declare_transaction_v3(
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
 
+    #[allow(clippy::too_many_arguments)]
     async fn add_invoke_transaction_v1(
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn add_invoke_transaction_v3(
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn invoke_contract_v1(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn invoke_contract_v3(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
 
     async fn block_number(&self, url: Url) -> Result<u64, RpcError>;
 
     async fn chain_id(&self, url: Url) -> Result<Felt, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn call(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Vec<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn estimate_message_fee(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<FeeEstimate<Felt>, RpcError>;
 
     async fn get_block_transaction_count(&self, url: Url) -> Result<u64, RpcError>;
@@ -103,60 +161,134 @@ pub trait RpcEndpoints {
 
     async fn get_state_update(&self, url: Url) -> Result<StateUpdate<Felt>, RpcError>;
 
-    async fn get_storage_at(&self, url: Url) -> Result<Felt, RpcError>;
+    async fn get_storage_at(
+        &self,
+        url: Url,
+        erc20_eth_contract_address: Option<Felt>,
+    ) -> Result<Felt, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_status_succeeded(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<TxnStatus, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_by_hash_invoke(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<InvokeTxnV1<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_by_hash_deploy_acc(
         &self,
         url: Url,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<DeployAccountTxnV3<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_by_block_id_and_index(
         &self,
         url: Url,
-    ) -> Result<InvokeTxnV1<Felt>, RpcError>;
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> Result<Txn<Felt>, RpcError>;
 
     async fn get_transaction_by_hash_non_existent_tx(&self, url: Url) -> Result<(), RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_transaction_receipt(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
-    ) -> Result<DeployTxnReceipt<Felt>, RpcError>;
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> Result<InvokeTxnReceipt<Felt>, RpcError>;
 
+    // TODO: fix that
+    // async fn get_transaction_receipt_revert(
+    //     &self,
+    //     url: Url,
+    //     sierra_path: &str,
+    //     casm_path: &str,
+    //     account_class_hash: Option<Felt>,
+    //     account_address: Option<Felt>,
+    //     private_key: Option<Felt>,
+    //     erc20_strk_contract_address: Option<Felt>,
+    //     erc20_eth_contract_address: Option<Felt>,
+    //     amount_per_test: Option<Felt>,
+    // ) -> Result<(), RpcError>;
+
+    #[allow(clippy::too_many_arguments)]
     async fn get_class(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_class_hash_at(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError>;
 
+    #[allow(clippy::too_many_arguments)]
     async fn get_class_at(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError>;
 }
 
@@ -165,32 +297,100 @@ impl RpcEndpoints for Rpc {
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError> {
-        add_declare_transaction_v2(self.url.clone(), sierra_path, casm_path).await
+        add_declare_transaction_v2(
+            self.url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn add_declare_transaction_v3(
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError> {
-        add_declare_transaction_v3(self.url.clone(), sierra_path, casm_path).await
+        add_declare_transaction_v3(
+            self.url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn add_invoke_transaction_v1(
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
-        add_invoke_transaction_v1(self.url.clone(), sierra_path, casm_path).await
+        add_invoke_transaction_v1(
+            self.url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn add_invoke_transaction_v3(
         &self,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
-        add_invoke_transaction_v3(self.url.clone(), sierra_path, casm_path).await
+        add_invoke_transaction_v3(
+            self.url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn invoke_contract_v1(
@@ -198,8 +398,25 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
-        invoke_contract_v1(url.clone(), sierra_path, casm_path).await
+        invoke_contract_v1(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn invoke_contract_v3(
@@ -207,8 +424,25 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
-        invoke_contract_v3(url.clone(), sierra_path, casm_path).await
+        invoke_contract_v3(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn block_number(&self, url: Url) -> Result<u64, RpcError> {
@@ -224,8 +458,25 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Vec<Felt>, RpcError> {
-        call(url.clone(), sierra_path, casm_path).await
+        call(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn estimate_message_fee(
@@ -233,8 +484,25 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<FeeEstimate<Felt>, RpcError> {
-        estimate_message_fee(url.clone(), sierra_path, casm_path).await
+        estimate_message_fee(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_block_transaction_count(&self, url: Url) -> Result<u64, RpcError> {
@@ -256,8 +524,12 @@ impl RpcEndpoints for Rpc {
         get_state_update(url.clone()).await
     }
 
-    async fn get_storage_at(&self, url: Url) -> Result<Felt, RpcError> {
-        get_storage_at(url.clone()).await
+    async fn get_storage_at(
+        &self,
+        url: Url,
+        erc20_eth_contract_address: Option<Felt>,
+    ) -> Result<Felt, RpcError> {
+        get_storage_at(url.clone(), erc20_eth_contract_address).await
     }
 
     async fn get_transaction_status_succeeded(
@@ -265,8 +537,25 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<TxnStatus, RpcError> {
-        get_transaction_status_succeeded(url.clone(), sierra_path, casm_path).await
+        get_transaction_status_succeeded(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_transaction_by_hash_invoke(
@@ -274,22 +563,69 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<InvokeTxnV1<Felt>, RpcError> {
-        get_transaction_by_hash_invoke(url.clone(), sierra_path, casm_path).await
+        get_transaction_by_hash_invoke(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_transaction_by_hash_deploy_acc(
         &self,
         url: Url,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
-        get_transaction_by_hash_deploy_acc(url.clone()).await
+        get_transaction_by_hash_deploy_acc(
+            url.clone(),
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_transaction_by_block_id_and_index(
         &self,
         url: Url,
-    ) -> Result<InvokeTxnV1<Felt>, RpcError> {
-        get_transaction_by_block_id_and_index(url.clone()).await
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> Result<Txn<Felt>, RpcError> {
+        get_transaction_by_block_id_and_index(
+            url.clone(),
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_transaction_by_hash_non_existent_tx(&self, url: Url) -> Result<(), RpcError> {
@@ -301,17 +637,77 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
-    ) -> Result<DeployTxnReceipt<Felt>, RpcError> {
-        get_transaction_receipt(url.clone(), sierra_path, casm_path).await
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> Result<InvokeTxnReceipt<Felt>, RpcError> {
+        get_transaction_receipt(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
+    // TODO: fix that
+    // async fn get_transaction_receipt_revert(
+    //     &self,
+    //     url: Url,
+    //     sierra_path: &str,
+    //     casm_path: &str,
+    //     account_class_hash: Option<Felt>,
+    //     account_address: Option<Felt>,
+    //     private_key: Option<Felt>,
+    //     erc20_strk_contract_address: Option<Felt>,
+    //     erc20_eth_contract_address: Option<Felt>,
+    //     amount_per_test: Option<Felt>,
+    // ) -> Result<(), RpcError> {
+    //     get_transaction_receipt_revert(
+    //         url.clone(),
+    //         sierra_path,
+    //         casm_path,
+    //         account_class_hash,
+    //         account_address,
+    //         private_key,
+    //         erc20_strk_contract_address,
+    //         erc20_eth_contract_address,
+    //         amount_per_test,
+    //     )
+    //     .await
+    // }
 
     async fn get_class(
         &self,
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError> {
-        get_class(url.clone(), sierra_path, casm_path).await
+        get_class(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_class_hash_at(
@@ -319,8 +715,25 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError> {
-        get_class_hash_at(url.clone(), sierra_path, casm_path).await
+        get_class_hash_at(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 
     async fn get_class_at(
@@ -328,22 +741,58 @@ impl RpcEndpoints for Rpc {
         url: Url,
         sierra_path: &str,
         casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError> {
-        get_class_at(url.clone(), sierra_path, casm_path).await
+        get_class_at(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            account_class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn test_rpc_endpoints_v0_0_7(
     url: Url,
     sierra_path: &str,
     casm_path: &str,
+    sierra_path_2: &str,
+    casm_path_2: &str,
+    class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
 ) -> Result<(), RpcError> {
     info!("{}", "⌛ Testing Rpc V7 endpoints -- START ⌛".yellow());
 
     let rpc = Rpc::new(url.clone())?;
-    restart_devnet(url.clone()).await?;
-
-    match rpc.add_declare_transaction_v2(sierra_path, casm_path).await {
+    match rpc
+        .add_declare_transaction_v2(
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -358,9 +807,20 @@ pub async fn test_rpc_endpoints_v0_0_7(
             "✗".red()
         ),
     }
-    restart_devnet(url.clone()).await?;
 
-    match rpc.add_declare_transaction_v3(sierra_path, casm_path).await {
+    match rpc
+        .add_declare_transaction_v3(
+            sierra_path_2,
+            casm_path_2,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -375,9 +835,20 @@ pub async fn test_rpc_endpoints_v0_0_7(
             "✗".red()
         ),
     }
-    restart_devnet(url.clone()).await?;
 
-    match rpc.add_invoke_transaction_v1(sierra_path, casm_path).await {
+    match rpc
+        .add_invoke_transaction_v1(
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -392,9 +863,20 @@ pub async fn test_rpc_endpoints_v0_0_7(
             "✗".red()
         ),
     }
-    restart_devnet(url.clone()).await?;
 
-    match rpc.add_invoke_transaction_v3(sierra_path, casm_path).await {
+    match rpc
+        .add_invoke_transaction_v3(
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -410,10 +892,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
-
     match rpc
-        .invoke_contract_v1(url.clone(), sierra_path, casm_path)
+        .invoke_contract_v1(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
         .await
     {
         Ok(_) => {
@@ -431,10 +921,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
-
     match rpc
-        .invoke_contract_v3(url.clone(), sierra_path, casm_path)
+        .invoke_contract_v3(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
         .await
     {
         Ok(_) => {
@@ -480,8 +978,20 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
-    match rpc.call(url.clone(), sierra_path, casm_path).await {
+    match rpc
+        .call(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!("{} {}", "✓ Rpc call COMPATIBLE".green(), "✓".green())
         }
@@ -493,10 +1003,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
-
     match rpc
-        .estimate_message_fee(url.clone(), sierra_path, casm_path)
+        .estimate_message_fee(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
         .await
     {
         Ok(_) => {
@@ -576,7 +1094,10 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc.get_storage_at(url.clone()).await {
+    match rpc
+        .get_storage_at(url.clone(), erc20_eth_contract_address)
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -592,9 +1113,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
     match rpc
-        .get_transaction_status_succeeded(url.clone(), sierra_path, casm_path)
+        .get_transaction_status_succeeded(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
         .await
     {
         Ok(_) => {
@@ -612,9 +1142,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
     match rpc
-        .get_transaction_by_hash_invoke(url.clone(), sierra_path, casm_path)
+        .get_transaction_by_hash_invoke(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
         .await
     {
         Ok(_) => {
@@ -632,7 +1171,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc.get_transaction_by_hash_deploy_acc(url.clone()).await {
+    match rpc
+        .get_transaction_by_hash_deploy_acc(
+            url.clone(),
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -648,7 +1198,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc.get_transaction_by_block_id_and_index(url.clone()).await {
+    match rpc
+        .get_transaction_by_block_id_and_index(
+            url.clone(),
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -664,7 +1225,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
     match rpc
         .get_transaction_by_hash_non_existent_tx(url.clone())
         .await
@@ -684,9 +1244,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
     match rpc
-        .get_transaction_receipt(url.clone(), sierra_path, casm_path)
+        .get_transaction_receipt(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
         .await
     {
         Ok(_) => {
@@ -704,8 +1273,49 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
-    match rpc.get_class(url.clone(), sierra_path, casm_path).await {
+    // match rpc
+    //     .get_transaction_receipt_revert(
+    //         url.clone(),
+    //         sierra_path,
+    //         casm_path,
+    //         class_hash,
+    //         account_address,
+    //         private_key,
+    //         erc20_strk_contract_address,
+    //         erc20_eth_contract_address,
+    //         amount_per_test,
+    //     )
+    //     .await
+    // {
+    //     Ok(_) => {
+    //         info!(
+    //             "{} {}",
+    //             "✓ Rpc get_transaction_receipt_revert COMPATIBLE".green(),
+    //             "✓".green()
+    //         )
+    //     }
+    //     Err(e) => error!(
+    //         "{} {} {}",
+    //         "✗ Rpc get_transaction_receipt_revert INCOMPATIBLE:".red(),
+    //         e.to_string().red(),
+    //         "✗".red()
+    //     ),
+    // }
+
+    match rpc
+        .get_class(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!("{} {}", "✓ Rpc get_class COMPATIBLE".green(), "✓".green())
         }
@@ -717,9 +1327,18 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    restart_devnet(url.clone()).await?;
     match rpc
-        .get_class_hash_at(url.clone(), sierra_path, casm_path)
+        .get_class_hash_at(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
         .await
     {
         Ok(_) => {
@@ -736,9 +1355,21 @@ pub async fn test_rpc_endpoints_v0_0_7(
             "✗".red()
         ),
     }
-    restart_devnet(url.clone()).await?;
 
-    match rpc.get_class_at(url.clone(), sierra_path, casm_path).await {
+    match rpc
+        .get_class_at(
+            url.clone(),
+            sierra_path,
+            casm_path,
+            class_hash,
+            account_address,
+            private_key,
+            erc20_strk_contract_address,
+            erc20_eth_contract_address,
+            amount_per_test,
+        )
+        .await
+    {
         Ok(_) => {
             info!(
                 "{} {}",

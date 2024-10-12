@@ -54,6 +54,8 @@ pub enum CreationError {
     RpcError(String),
     #[error("Provider error: {0:?}")]
     ProviderError(ProviderError),
+    #[error("Invalid acc type {0}")]
+    InvalidAccountType(String),
 }
 
 impl From<ProviderError> for CreationError {
