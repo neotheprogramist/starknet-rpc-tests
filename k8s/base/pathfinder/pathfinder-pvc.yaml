@@ -4,7 +4,7 @@ metadata:
   name: pathfinder-pvc
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 16Gi
@@ -16,7 +16,7 @@ metadata:
   name: pathfinder-pvc-2
 spec:
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 16Gi
