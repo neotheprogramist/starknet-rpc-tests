@@ -70,5 +70,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 24Gi
-  storageClassName: topolvm-provisioner
+      storage: 40Gi
+  storageClassName: hdd

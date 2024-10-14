@@ -8,7 +8,7 @@ spec:
   resources:
     requests:
       storage: 16Gi
-  storageClassName: manual
+  storageClassName: hdd
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -20,4 +20,4 @@ spec:
   resources:
     requests:
       storage: 16Gi
-  storageClassName: topolvm-provisioner
+  storageClassName: hdd
