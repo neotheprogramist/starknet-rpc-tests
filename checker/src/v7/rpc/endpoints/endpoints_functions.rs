@@ -61,7 +61,7 @@ pub async fn add_declare_transaction_v2(
     amount_per_test: Option<Felt>,
 ) -> Result<Felt, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -87,7 +87,7 @@ pub async fn add_declare_transaction_v2(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -96,6 +96,7 @@ pub async fn add_declare_transaction_v2(
         chain_id,
         ExecutionEncoding::New,
     );
+
     setup_generated_account(
         user_passed_account.clone(),
         erc20_eth_contract_address,
@@ -140,7 +141,7 @@ pub async fn add_declare_transaction_v2(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -151,7 +152,7 @@ pub async fn add_declare_transaction_v2(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -208,7 +209,7 @@ pub async fn add_declare_transaction_v3(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -263,7 +264,7 @@ pub async fn add_declare_transaction_v3(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -274,7 +275,7 @@ pub async fn add_declare_transaction_v3(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -355,8 +356,6 @@ pub async fn add_invoke_transaction_v1(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -388,7 +387,7 @@ pub async fn add_invoke_transaction_v1(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -399,7 +398,7 @@ pub async fn add_invoke_transaction_v1(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -496,8 +495,6 @@ pub async fn add_invoke_transaction_v3(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -529,7 +526,7 @@ pub async fn add_invoke_transaction_v3(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -540,7 +537,7 @@ pub async fn add_invoke_transaction_v3(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -637,8 +634,6 @@ pub async fn invoke_contract_v1(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -670,7 +665,7 @@ pub async fn invoke_contract_v1(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -681,7 +676,7 @@ pub async fn invoke_contract_v1(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -814,8 +809,6 @@ pub async fn invoke_contract_v3(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -847,7 +840,7 @@ pub async fn invoke_contract_v3(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -858,7 +851,7 @@ pub async fn invoke_contract_v3(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1010,8 +1003,6 @@ pub async fn call(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -1043,7 +1034,7 @@ pub async fn call(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1054,7 +1045,7 @@ pub async fn call(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1191,8 +1182,6 @@ pub async fn estimate_message_fee(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -1224,7 +1213,7 @@ pub async fn estimate_message_fee(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1235,7 +1224,7 @@ pub async fn estimate_message_fee(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1447,8 +1436,6 @@ pub async fn get_transaction_status_succeeded(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -1480,7 +1467,7 @@ pub async fn get_transaction_status_succeeded(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1491,7 +1478,7 @@ pub async fn get_transaction_status_succeeded(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1621,8 +1608,6 @@ pub async fn get_transaction_by_hash_invoke(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -1654,7 +1639,7 @@ pub async fn get_transaction_by_hash_invoke(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1665,7 +1650,7 @@ pub async fn get_transaction_by_hash_invoke(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1773,8 +1758,6 @@ pub async fn get_transaction_by_hash_deploy_acc(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -1851,8 +1834,6 @@ pub async fn get_transaction_by_block_id_and_index(
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
-
-    let chain_id = get_chain_id(&provider).await.unwrap();
 
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
@@ -1935,7 +1916,7 @@ pub async fn get_transaction_receipt(
     amount_per_test: Option<Felt>,
 ) -> Result<InvokeTxnReceipt<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -1961,7 +1942,7 @@ pub async fn get_transaction_receipt(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -2016,7 +1997,7 @@ pub async fn get_transaction_receipt(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2027,7 +2008,7 @@ pub async fn get_transaction_receipt(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2290,8 +2271,6 @@ pub async fn get_class(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -2323,7 +2302,7 @@ pub async fn get_class(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2334,7 +2313,7 @@ pub async fn get_class(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2420,8 +2399,6 @@ pub async fn get_class_hash_at(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -2453,7 +2430,7 @@ pub async fn get_class_hash_at(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2464,7 +2441,7 @@ pub async fn get_class_hash_at(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2595,8 +2572,6 @@ pub async fn get_class_at(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
-
     let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
         Ok(value) => value,
         Err(e) => {
@@ -2628,7 +2603,7 @@ pub async fn get_class_at(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2639,7 +2614,7 @@ pub async fn get_class_at(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",

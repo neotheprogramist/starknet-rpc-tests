@@ -127,7 +127,7 @@ pub async fn prepare_postman_send_message_to_l2(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -138,7 +138,7 @@ pub async fn prepare_postman_send_message_to_l2(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",

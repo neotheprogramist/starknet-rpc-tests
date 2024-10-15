@@ -2,7 +2,10 @@ use starknet_types_core::felt::FromStrError;
 use thiserror::Error;
 
 use crate::v7::rpc::{
-    endpoints::errors::{NonAsciiNameError, RpcError},
+    endpoints::{
+        declare_contract::{ClassHashParseError, RunnerError},
+        errors::{NonAsciiNameError, RpcError},
+    },
     providers::provider::ProviderError,
 };
 #[derive(Error, Debug)]
@@ -21,4 +24,14 @@ pub enum DevnetError {
     NonAsciiName(#[from] NonAsciiNameError),
     #[error(transparent)]
     FromStr(#[from] FromStrError),
+    #[error(transparent)]
+    ClassHash(#[from] ClassHashParseError),
+    #[error(transparent)]
+    Regex(#[from] regex::Error),
+}
+
+impl From<RunnerError> for DevnetError {
+    fn from(err: RunnerError) -> Self {
+        DevnetError::Rpc(RpcError::RunnerError(err))
+    }
 }
