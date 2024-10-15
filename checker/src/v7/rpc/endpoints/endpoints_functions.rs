@@ -1483,9 +1483,7 @@ pub async fn get_transaction_status_succeeded(
                 "Execution status is None".to_string(),
             )),
         },
-        _ => {
-            return Err(RpcError::Other("unexpected transaction status".to_string()));
-        }
+        _ => Err(RpcError::Other("unexpected transaction status".to_string())),
     }
 }
 
