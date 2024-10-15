@@ -13,7 +13,7 @@ use starknet_types_rpc::{
     DeclareTxn, DeployTxn, InvokeTxnReceipt, MsgFromL1,
 };
 
-use tracing::{info, warn};
+use tracing::warn;
 use url::Url;
 
 use crate::v7::rpc::{
@@ -155,13 +155,10 @@ pub async fn add_declare_transaction_v2(
                 ))))
             }
         }
-        Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
-        }
+        Err(e) => Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+            "Account error: {}",
+            e
+        )))),
     }
 }
 
@@ -273,13 +270,10 @@ pub async fn add_declare_transaction_v3(
                 ))))
             }
         }
-        Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
-        }
+        Err(e) => Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+            "Account error: {}",
+            e
+        )))),
     }
 }
 
@@ -403,10 +397,7 @@ pub async fn add_invoke_transaction_v1(
                 .await?;
             Ok(result)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     }
 }
 
@@ -530,10 +521,7 @@ pub async fn add_invoke_transaction_v3(
                 .await?;
             Ok(result)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     }
 }
 
@@ -660,16 +648,12 @@ pub async fn invoke_contract_v1(
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result.transaction_hash)
         }
-        Err(e) => {
-            info!("Could not deploy the contract: {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     };
 
     let deployment_receipt = match deployment_hash {
         Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Failed to get transaction hash for txn receipt: {}", e);
             return Err(e);
         }
     };
@@ -685,16 +669,11 @@ pub async fn invoke_contract_v1(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!(
-                "Unexpected response type TxnReceipt {:?}",
-                deployment_receipt
-            );
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
@@ -830,16 +809,12 @@ pub async fn invoke_contract_v3(
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result.transaction_hash)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     };
 
     let deployment_receipt = match deployment_hash {
         Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Failed to get transaction hash for txn receipt: {}", e);
             return Err(e);
         }
     };
@@ -855,16 +830,11 @@ pub async fn invoke_contract_v3(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!(
-                "Unexpected response type TxnReceipt {:?}",
-                deployment_receipt
-            );
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
@@ -1017,16 +987,12 @@ pub async fn call(
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result.transaction_hash)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     };
 
     let deployment_receipt = match deployment_hash {
         Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Failed to get transaction hash for txn receipt: {}", e);
             return Err(e);
         }
     };
@@ -1042,16 +1008,11 @@ pub async fn call(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!(
-                "Unexpected response type TxnReceipt {:?}",
-                deployment_receipt
-            );
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
@@ -1190,16 +1151,12 @@ pub async fn estimate_message_fee(
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result.transaction_hash)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     };
 
     let deployment_receipt = match deployment_hash {
         Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Failed to get transaction hash for txn receipt: {}", e);
             return Err(e);
         }
     };
@@ -1215,16 +1172,11 @@ pub async fn estimate_message_fee(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!(
-                "Unexpected response type TxnReceipt {:?}",
-                deployment_receipt
-            );
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
@@ -1446,16 +1398,12 @@ pub async fn get_transaction_status_succeeded(
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result.transaction_hash)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     };
 
     let deployment_receipt = match deployment_hash {
         Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Failed to get transaction hash for txn receipt: {}", e);
             return Err(e);
         }
     };
@@ -1464,11 +1412,7 @@ pub async fn get_transaction_status_succeeded(
         TxnReceipt::Deploy(receipt) => receipt.common_receipt_properties.transaction_hash,
         TxnReceipt::Invoke(receipt) => receipt.common_receipt_properties.transaction_hash,
         _ => {
-            info!(
-                "Unexpected response type TxnReceipt {:?}",
-                deployment_receipt
-            );
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
@@ -1612,7 +1556,6 @@ pub async fn get_transaction_by_hash_invoke(
             result.transaction_hash
         }
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
             return Err(e);
         }
     };
@@ -1944,16 +1887,12 @@ pub async fn get_transaction_receipt(
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result.transaction_hash)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     };
 
     let deployment_receipt = match deployment_hash {
         Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Failed to get transaction hash for txn receipt: {}", e);
             return Err(e);
         }
     };
@@ -1969,16 +1908,11 @@ pub async fn get_transaction_receipt(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!(
-                "Unexpected response type TxnReceipt {:?}",
-                deployment_receipt
-            );
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
@@ -2357,16 +2291,12 @@ pub async fn get_class_hash_at(
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result.transaction_hash)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     };
 
     let deployment_receipt = match deployment_hash {
         Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Failed to get transaction hash for txn receipt: {}", e);
             return Err(e);
         }
     };
@@ -2382,16 +2312,11 @@ pub async fn get_class_hash_at(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!(
-                "Unexpected response type TxnReceipt {:?}",
-                deployment_receipt
-            );
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
     let contract_class_hash = account
@@ -2523,16 +2448,12 @@ pub async fn get_class_at(
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result.transaction_hash)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     };
 
     let deployment_receipt = match deployment_hash {
         Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Failed to get transaction hash for txn receipt: {}", e);
             return Err(e);
         }
     };
@@ -2548,16 +2469,11 @@ pub async fn get_class_at(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!(
-                "Unexpected response type TxnReceipt {:?}",
-                deployment_receipt
-            );
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
