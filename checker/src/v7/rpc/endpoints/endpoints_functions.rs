@@ -332,7 +332,7 @@ pub async fn add_invoke_transaction_v1(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -471,7 +471,7 @@ pub async fn add_invoke_transaction_v3(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -610,7 +610,7 @@ pub async fn invoke_contract_v1(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -785,7 +785,7 @@ pub async fn invoke_contract_v3(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -979,7 +979,7 @@ pub async fn call(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1158,7 +1158,7 @@ pub async fn estimate_message_fee(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1412,7 +1412,7 @@ pub async fn get_transaction_status_succeeded(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1584,7 +1584,7 @@ pub async fn get_transaction_by_hash_invoke(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1734,7 +1734,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1811,7 +1811,7 @@ pub async fn get_transaction_by_block_id_and_index(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -2125,7 +2125,7 @@ pub async fn get_transaction_receipt(
 //         amount_per_test,
 //     )?;
 
-//     let chain_id = get_chain_id(&provider).await.unwrap();
+//     let chain_id = get_chain_id(&provider).await?;
 
 //     let user_passed_account = SingleOwnerAccount::new(
 //         provider.clone(),
@@ -2247,7 +2247,7 @@ pub async fn get_class(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -2375,7 +2375,7 @@ pub async fn get_class_hash_at(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -2548,7 +2548,7 @@ pub async fn get_class_at(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
