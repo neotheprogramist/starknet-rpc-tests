@@ -183,7 +183,7 @@ pub async fn add_declare_transaction_v3(
     amount_per_test: Option<Felt>,
 ) -> Result<Felt, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -306,7 +306,7 @@ pub async fn add_invoke_transaction_v1(
     amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -445,7 +445,7 @@ pub async fn add_invoke_transaction_v3(
     amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -584,7 +584,7 @@ pub async fn invoke_contract_v1(
     amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -759,7 +759,7 @@ pub async fn invoke_contract_v3(
     amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -953,7 +953,7 @@ pub async fn call(
     amount_per_test: Option<Felt>,
 ) -> Result<Vec<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -1132,7 +1132,7 @@ pub async fn estimate_message_fee(
     amount_per_test: Option<Felt>,
 ) -> Result<FeeEstimate<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -1386,7 +1386,7 @@ pub async fn get_transaction_status_succeeded(
     amount_per_test: Option<Felt>,
 ) -> Result<TxnStatus, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -1558,7 +1558,7 @@ pub async fn get_transaction_by_hash_invoke(
     amount_per_test: Option<Felt>,
 ) -> Result<InvokeTxnV1<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -2221,7 +2221,7 @@ pub async fn get_class(
     amount_per_test: Option<Felt>,
 ) -> Result<ContractClass<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -2349,7 +2349,7 @@ pub async fn get_class_hash_at(
     amount_per_test: Option<Felt>,
 ) -> Result<Felt, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -2522,7 +2522,7 @@ pub async fn get_class_at(
     amount_per_test: Option<Felt>,
 ) -> Result<ContractClass<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
