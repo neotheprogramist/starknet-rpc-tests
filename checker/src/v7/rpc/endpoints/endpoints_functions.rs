@@ -112,13 +112,7 @@ pub async fn add_declare_transaction_v2(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
     let sender_address = create_acc_data.address;
@@ -235,13 +229,7 @@ pub async fn add_declare_transaction_v3(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -312,13 +300,7 @@ pub async fn add_invoke_transaction_v1(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -359,13 +341,7 @@ pub async fn add_invoke_transaction_v1(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -451,13 +427,7 @@ pub async fn add_invoke_transaction_v3(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -498,13 +468,7 @@ pub async fn add_invoke_transaction_v3(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -590,13 +554,7 @@ pub async fn invoke_contract_v1(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -637,13 +595,7 @@ pub async fn invoke_contract_v1(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -773,13 +725,7 @@ pub async fn invoke_contract_v3(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -820,13 +766,7 @@ pub async fn invoke_contract_v3(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -973,13 +913,7 @@ pub async fn call(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1020,13 +954,7 @@ pub async fn call(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1158,13 +1086,7 @@ pub async fn estimate_message_fee(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1205,13 +1127,7 @@ pub async fn estimate_message_fee(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1345,7 +1261,9 @@ pub async fn get_block_with_tx_hashes(url: Url) -> Result<BlockWithTxHashes<Felt
     let response = match block {
         MaybePendingBlockWithTxHashes::Block(block) => block,
         _ => {
-            panic!("unexpected block response type")
+            return Err(RpcError::Other(
+                "unexpected block response type".to_string(),
+            ));
         }
     };
     Ok(response)
@@ -1360,7 +1278,11 @@ pub async fn get_block_with_txs(url: Url) -> Result<BlockWithTxs<Felt>, RpcError
 
     let block = match block {
         MaybePendingBlockWithTxs::Block(block) => block,
-        _ => panic!("unexpected block response type"),
+        _ => {
+            return Err(RpcError::Other(
+                "unexpected block response type".to_string(),
+            ));
+        }
     };
 
     Ok(block)
@@ -1375,7 +1297,11 @@ pub async fn get_state_update(url: Url) -> Result<StateUpdate<Felt>, RpcError> {
 
     let state = match state {
         MaybePendingStateUpdate::Block(state) => state,
-        _ => panic!("unexpected block response type"),
+        _ => {
+            return Err(RpcError::Other(
+                "unexpected block response type".to_string(),
+            ));
+        }
     };
 
     Ok(state)
@@ -1416,13 +1342,7 @@ pub async fn get_transaction_status_succeeded(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1463,13 +1383,7 @@ pub async fn get_transaction_status_succeeded(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1569,7 +1483,9 @@ pub async fn get_transaction_status_succeeded(
                 "Execution status is None".to_string(),
             )),
         },
-        _ => panic!("unexpected transaction status"),
+        _ => {
+            return Err(RpcError::Other("unexpected transaction status".to_string()));
+        }
     }
 }
 
@@ -1590,13 +1506,7 @@ pub async fn get_transaction_by_hash_invoke(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1637,13 +1547,7 @@ pub async fn get_transaction_by_hash_invoke(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1722,7 +1626,11 @@ pub async fn get_transaction_by_hash_invoke(
 
     let txn = match txn {
         Txn::Invoke(InvokeTxn::V1(tx)) => tx,
-        _ => panic!("unexpected tx response type"),
+        _ => {
+            return Err(RpcError::UnexpectedTxnType(
+                "Unexpected txn type".to_string(),
+            ));
+        }
     };
 
     Ok(txn)
@@ -1739,13 +1647,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
 ) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1786,13 +1688,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1802,7 +1698,11 @@ pub async fn get_transaction_by_hash_deploy_acc(
 
     let txn = match txn {
         Txn::DeployAccount(DeployAccountTxn::V3(tx)) => tx,
-        _ => panic!("unexpected tx response type"),
+        _ => {
+            return Err(RpcError::UnexpectedTxnType(
+                "Unexpected txn type".to_string(),
+            ));
+        }
     };
 
     Ok(txn)
@@ -1819,13 +1719,7 @@ pub async fn get_transaction_by_block_id_and_index(
 ) -> Result<Txn<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1866,13 +1760,7 @@ pub async fn get_transaction_by_block_id_and_index(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1925,12 +1813,14 @@ pub async fn get_transaction_by_hash_non_existent_tx(url: Url) -> Result<(), Rpc
 
     let err = provider
         .get_transaction_by_hash(Felt::from_hex("0xdeafbeefdeadbeef")?)
-        .await
-        .unwrap_err();
+        .await;
 
     match err {
-        ProviderError::StarknetError(StarknetError::TransactionHashNotFound) => Ok(()),
-        _ => panic!("Unexpected error"),
+        Err(ProviderError::StarknetError(StarknetError::TransactionHashNotFound)) => Ok(()),
+        Err(e) => Err(RpcError::ProviderError(e)),
+        Ok(_) => Err(RpcError::Other(
+            "Transaction unexpectedly found".to_string(),
+        )),
     }
 }
 
@@ -1951,13 +1841,7 @@ pub async fn get_transaction_receipt(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1998,13 +1882,7 @@ pub async fn get_transaction_receipt(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2121,7 +1999,7 @@ pub async fn get_transaction_receipt(
 
     match receipt {
         TxnReceipt::Invoke(receipt) => Ok(receipt),
-        _ => Err(RpcError::CallError(CallError::UnexpectedReceiptType))?,
+        _ => Err(RpcError::CallError(CallError::UnexpectedReceiptType)),
     }
 }
 
@@ -2261,13 +2139,7 @@ pub async fn get_class(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -2308,13 +2180,7 @@ pub async fn get_class(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2389,13 +2255,7 @@ pub async fn get_class_hash_at(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -2436,13 +2296,7 @@ pub async fn get_class_hash_at(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2567,13 +2421,7 @@ pub async fn get_class_at(
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -2614,13 +2462,7 @@ pub async fn get_class_at(
     };
 
     let deploy_account_txn_hash =
-        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not deploy an account");
-                return Err(e.into());
-            }
-        };
+        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 

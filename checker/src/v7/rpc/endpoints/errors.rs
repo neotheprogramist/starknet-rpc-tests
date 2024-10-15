@@ -52,6 +52,8 @@ pub enum RpcError {
     TransactionRejected(String),
     #[error("Txn failed {0}")]
     TransactionFailed(String),
+    #[error("Failed {0}")]
+    Other(String),
 }
 
 #[derive(Error, Debug)]
