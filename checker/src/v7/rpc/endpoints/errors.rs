@@ -25,6 +25,10 @@ pub enum RpcError {
     #[error(transparent)]
     SignError(#[from] SignError),
     #[error(transparent)]
+    AccountError_(
+        #[from] AccountError<crate::v7::rpc::accounts::single_owner::SignError<SignError>>,
+    ),
+    #[error(transparent)]
     AccountError(#[from] AccountError<SignError>),
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
