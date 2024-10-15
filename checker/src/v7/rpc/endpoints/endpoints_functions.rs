@@ -106,13 +106,13 @@ pub async fn add_declare_transaction_v2(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
     let sender_address = create_acc_data.address;
@@ -220,13 +220,13 @@ pub async fn add_declare_transaction_v3(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -329,13 +329,13 @@ pub async fn add_invoke_transaction_v1(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -453,13 +453,13 @@ pub async fn add_invoke_transaction_v3(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -577,13 +577,13 @@ pub async fn invoke_contract_v1(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -739,13 +739,13 @@ pub async fn invoke_contract_v3(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -918,13 +918,13 @@ pub async fn call(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1082,13 +1082,13 @@ pub async fn estimate_message_fee(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1329,13 +1329,13 @@ pub async fn get_transaction_status_succeeded(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1483,13 +1483,13 @@ pub async fn get_transaction_by_hash_invoke(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1623,13 +1623,13 @@ pub async fn get_transaction_by_hash_deploy_acc(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1695,13 +1695,13 @@ pub async fn get_transaction_by_block_id_and_index(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1817,13 +1817,13 @@ pub async fn get_transaction_receipt(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1990,12 +1990,12 @@ pub async fn get_transaction_receipt(
 //     )
 //     .await?;
 
-//     let wait_conifg = WaitForTx {
+//     let wait_config = WaitForTx {
 //         wait: true,
 //         wait_params: ValidatedWaitParams::default(),
 //     };
 
-//     match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+//     match deploy_account(&provider, chain_id, wait_config, create_acc_data).await {
 //         Ok(value) => Some(value),
 //         Err(e) => {
 //             info!("{}", "Could not deploy an account");
@@ -2106,13 +2106,13 @@ pub async fn get_class(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2222,13 +2222,13 @@ pub async fn get_class_hash_at(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2379,13 +2379,13 @@ pub async fn get_class_at(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
     let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await?;
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
