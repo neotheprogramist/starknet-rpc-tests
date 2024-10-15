@@ -421,8 +421,7 @@ pub async fn add_invoke_transaction_v1(
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             Ok(result)
         }
         Err(e) => {
@@ -699,8 +698,7 @@ pub async fn invoke_contract_v1(
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result)
         }
@@ -1068,8 +1066,7 @@ pub async fn call(
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result)
         }
@@ -1247,8 +1244,7 @@ pub async fn estimate_message_fee(
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result)
         }
@@ -1501,8 +1497,7 @@ pub async fn get_transaction_status_succeeded(
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result)
         }
@@ -1675,8 +1670,7 @@ pub async fn get_transaction_by_hash_invoke(
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
 
             result.transaction_hash
@@ -2464,8 +2458,7 @@ pub async fn get_class_hash_at(
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result)
         }
@@ -2637,8 +2630,7 @@ pub async fn get_class_at(
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result)
         }
