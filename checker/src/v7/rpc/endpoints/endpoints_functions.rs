@@ -13,7 +13,7 @@ use starknet_types_rpc::{
     DeclareTxn, DeployTxn, InvokeTxnReceipt, MsgFromL1,
 };
 
-use tracing::{info, warn};
+use tracing::warn;
 use url::Url;
 
 use crate::v7::rpc::{
@@ -61,7 +61,7 @@ pub async fn add_declare_transaction_v2(
     amount_per_test: Option<Felt>,
 ) -> Result<Felt, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -87,7 +87,7 @@ pub async fn add_declare_transaction_v2(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -96,6 +96,7 @@ pub async fn add_declare_transaction_v2(
         chain_id,
         ExecutionEncoding::New,
     );
+
     setup_generated_account(
         user_passed_account.clone(),
         erc20_eth_contract_address,
@@ -105,20 +106,15 @@ pub async fn add_declare_transaction_v2(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
@@ -140,7 +136,7 @@ pub async fn add_declare_transaction_v2(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -151,7 +147,7 @@ pub async fn add_declare_transaction_v2(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -159,13 +155,10 @@ pub async fn add_declare_transaction_v2(
                 ))))
             }
         }
-        Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
-        }
+        Err(e) => Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+            "Account error: {}",
+            e
+        )))),
     }
 }
 
@@ -182,7 +175,7 @@ pub async fn add_declare_transaction_v3(
     amount_per_test: Option<Felt>,
 ) -> Result<Felt, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
@@ -208,7 +201,7 @@ pub async fn add_declare_transaction_v3(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -227,20 +220,15 @@ pub async fn add_declare_transaction_v3(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -263,7 +251,7 @@ pub async fn add_declare_transaction_v3(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -274,7 +262,7 @@ pub async fn add_declare_transaction_v3(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -282,13 +270,10 @@ pub async fn add_declare_transaction_v3(
                 ))))
             }
         }
-        Err(e) => {
-            info!("General account error encountered: {:?}, possible cause - incorrect address or public_key in environment variables!", e);
-            Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                "Account error: {}",
-                e
-            ))))
-        }
+        Err(e) => Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+            "Account error: {}",
+            e
+        )))),
     }
 }
 
@@ -305,17 +290,11 @@ pub async fn add_invoke_transaction_v1(
     amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -331,7 +310,7 @@ pub async fn add_invoke_transaction_v1(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -350,22 +329,15 @@ pub async fn add_invoke_transaction_v1(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -380,7 +352,7 @@ pub async fn add_invoke_transaction_v1(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -388,7 +360,7 @@ pub async fn add_invoke_transaction_v1(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -399,7 +371,7 @@ pub async fn add_invoke_transaction_v1(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -409,10 +381,10 @@ pub async fn add_invoke_transaction_v1(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    match hash {
+    match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account);
             let mut salt_buffer = [0u8; 32];
@@ -420,16 +392,12 @@ pub async fn add_invoke_transaction_v1(
             rng.fill_bytes(&mut salt_buffer[1..]);
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             Ok(result)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     }
 }
 
@@ -446,17 +414,11 @@ pub async fn add_invoke_transaction_v3(
     amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -472,7 +434,7 @@ pub async fn add_invoke_transaction_v3(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -491,22 +453,15 @@ pub async fn add_invoke_transaction_v3(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -521,7 +476,7 @@ pub async fn add_invoke_transaction_v3(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
         .send()
         .await
@@ -529,7 +484,7 @@ pub async fn add_invoke_transaction_v3(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -540,7 +495,7 @@ pub async fn add_invoke_transaction_v3(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -551,10 +506,10 @@ pub async fn add_invoke_transaction_v3(
 
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    match hash {
+    match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account);
             let mut salt_buffer = [0u8; 32];
@@ -563,14 +518,10 @@ pub async fn add_invoke_transaction_v3(
             let result = factory
                 .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             Ok(result)
         }
-        Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     }
 }
 
@@ -587,17 +538,11 @@ pub async fn invoke_contract_v1(
     amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -613,7 +558,7 @@ pub async fn invoke_contract_v1(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -632,22 +577,15 @@ pub async fn invoke_contract_v1(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -662,7 +600,7 @@ pub async fn invoke_contract_v1(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declaration_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -670,7 +608,7 @@ pub async fn invoke_contract_v1(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -681,7 +619,7 @@ pub async fn invoke_contract_v1(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -691,36 +629,36 @@ pub async fn invoke_contract_v1(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deployment_hash = match declaration_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
+
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
+
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
+            return Err(e);
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
-
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -731,24 +669,22 @@ pub async fn invoke_contract_v1(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
     let call = Call {
         to: contract_address,
-        selector: get_selector_from_name("increase_balance").unwrap(),
-        calldata: vec![Felt::from_hex_unchecked("0x50")],
+        selector: get_selector_from_name("increase_balance")?,
+        calldata: vec![Felt::from_hex("0x50")?],
     };
 
-    let result = account.execute_v1(vec![call]).send().await.unwrap();
-    Ok(result)
+    let invoke_contract_fn_result = account.execute_v1(vec![call]).send().await?;
+    Ok(invoke_contract_fn_result)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -764,17 +700,11 @@ pub async fn invoke_contract_v3(
     amount_per_test: Option<Felt>,
 ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -790,7 +720,7 @@ pub async fn invoke_contract_v3(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -809,22 +739,15 @@ pub async fn invoke_contract_v3(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -839,7 +762,7 @@ pub async fn invoke_contract_v3(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
         .send()
         .await
@@ -847,7 +770,7 @@ pub async fn invoke_contract_v3(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -858,7 +781,7 @@ pub async fn invoke_contract_v3(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -868,11 +791,11 @@ pub async fn invoke_contract_v3(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
-    let txhash: Result<AddInvokeTransactionResult<Felt>, RpcError> = match hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -882,23 +805,21 @@ pub async fn invoke_contract_v3(
             let result = factory
                 .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
+            return Err(e);
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
-
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -909,24 +830,22 @@ pub async fn invoke_contract_v3(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
     let call = Call {
         to: contract_address,
-        selector: get_selector_from_name("increase_balance").unwrap(),
-        calldata: vec![Felt::from_hex_unchecked("0x50")],
+        selector: get_selector_from_name("increase_balance")?,
+        calldata: vec![Felt::from_hex("0x50")?],
     };
 
-    let result = account.execute_v3(vec![call]).send().await.unwrap();
-    Ok(result)
+    let call_contract_fn_result = account.execute_v3(vec![call]).send().await?;
+    Ok(call_contract_fn_result)
 }
 
 pub async fn block_number(url: Url) -> Result<u64, RpcError> {
@@ -960,17 +879,11 @@ pub async fn call(
     amount_per_test: Option<Felt>,
 ) -> Result<Vec<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -986,7 +899,7 @@ pub async fn call(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1005,22 +918,15 @@ pub async fn call(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1035,7 +941,7 @@ pub async fn call(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -1043,7 +949,7 @@ pub async fn call(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1054,7 +960,7 @@ pub async fn call(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1064,10 +970,10 @@ pub async fn call(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1075,25 +981,23 @@ pub async fn call(
             rng.fill_bytes(&mut salt_buffer[1..]);
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
+            return Err(e);
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
-
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -1104,13 +1008,11 @@ pub async fn call(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
@@ -1119,7 +1021,7 @@ pub async fn call(
             FunctionCall {
                 calldata: vec![],
                 contract_address,
-                entry_point_selector: get_selector_from_name("get_balance").unwrap(),
+                entry_point_selector: get_selector_from_name("get_balance")?,
             },
             BlockId::Tag(BlockTag::Pending),
         )
@@ -1141,17 +1043,11 @@ pub async fn estimate_message_fee(
     amount_per_test: Option<Felt>,
 ) -> Result<FeeEstimate<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1167,7 +1063,7 @@ pub async fn estimate_message_fee(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1186,22 +1082,15 @@ pub async fn estimate_message_fee(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1216,7 +1105,7 @@ pub async fn estimate_message_fee(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -1224,7 +1113,7 @@ pub async fn estimate_message_fee(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1235,7 +1124,7 @@ pub async fn estimate_message_fee(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1245,10 +1134,10 @@ pub async fn estimate_message_fee(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1256,25 +1145,23 @@ pub async fn estimate_message_fee(
             rng.fill_bytes(&mut salt_buffer[1..]);
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
+            return Err(e);
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
-
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -1285,13 +1172,11 @@ pub async fn estimate_message_fee(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
@@ -1300,7 +1185,7 @@ pub async fn estimate_message_fee(
             MsgFromL1 {
                 from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
                 to_address: contract_address,
-                entry_point_selector: get_selector_from_name("deposit").unwrap(),
+                entry_point_selector: get_selector_from_name("deposit")?,
                 payload: vec![(1_u32).into(), (10_u32).into()],
             },
             BlockId::Tag(BlockTag::Pending),
@@ -1328,7 +1213,9 @@ pub async fn get_block_with_tx_hashes(url: Url) -> Result<BlockWithTxHashes<Felt
     let response = match block {
         MaybePendingBlockWithTxHashes::Block(block) => block,
         _ => {
-            panic!("unexpected block response type")
+            return Err(RpcError::Other(
+                "unexpected block response type".to_string(),
+            ));
         }
     };
     Ok(response)
@@ -1339,12 +1226,15 @@ pub async fn get_block_with_txs(url: Url) -> Result<BlockWithTxs<Felt>, RpcError
 
     let block = client
         .get_block_with_txs(BlockId::Tag(BlockTag::Latest))
-        .await
-        .unwrap();
+        .await?;
 
     let block = match block {
         MaybePendingBlockWithTxs::Block(block) => block,
-        _ => panic!("unexpected block response type"),
+        _ => {
+            return Err(RpcError::Other(
+                "unexpected block response type".to_string(),
+            ));
+        }
     };
 
     Ok(block)
@@ -1355,12 +1245,15 @@ pub async fn get_state_update(url: Url) -> Result<StateUpdate<Felt>, RpcError> {
 
     let state: MaybePendingStateUpdate<Felt> = client
         .get_state_update(BlockId::Tag(BlockTag::Latest))
-        .await
-        .unwrap();
+        .await?;
 
     let state = match state {
         MaybePendingStateUpdate::Block(state) => state,
-        _ => panic!("unexpected block response type"),
+        _ => {
+            return Err(RpcError::Other(
+                "unexpected block response type".to_string(),
+            ));
+        }
     };
 
     Ok(state)
@@ -1397,17 +1290,11 @@ pub async fn get_transaction_status_succeeded(
     amount_per_test: Option<Felt>,
 ) -> Result<TxnStatus, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1423,7 +1310,7 @@ pub async fn get_transaction_status_succeeded(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1442,22 +1329,15 @@ pub async fn get_transaction_status_succeeded(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1472,7 +1352,7 @@ pub async fn get_transaction_status_succeeded(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -1480,7 +1360,7 @@ pub async fn get_transaction_status_succeeded(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1491,7 +1371,7 @@ pub async fn get_transaction_status_succeeded(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1501,10 +1381,10 @@ pub async fn get_transaction_status_succeeded(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1512,38 +1392,31 @@ pub async fn get_transaction_status_succeeded(
             rng.fill_bytes(&mut salt_buffer[1..]);
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
+            return Err(e);
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
-
-    let tx_hash = match receipt {
+    let tx_hash = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.common_receipt_properties.transaction_hash,
         TxnReceipt::Invoke(receipt) => receipt.common_receipt_properties.transaction_hash,
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
-    let status = account
-        .provider()
-        .get_transaction_status(tx_hash)
-        .await
-        .unwrap();
+    let status = account.provider().get_transaction_status(tx_hash).await?;
     match status.finality_status {
         TxnStatus::AcceptedOnL2 => match status.execution_status {
             Some(TxnExecutionStatus::Succeeded) => Ok(TxnStatus::AcceptedOnL2),
@@ -1554,7 +1427,7 @@ pub async fn get_transaction_status_succeeded(
                 "Execution status is None".to_string(),
             )),
         },
-        _ => panic!("unexpected transaction status"),
+        _ => Err(RpcError::Other("unexpected transaction status".to_string())),
     }
 }
 
@@ -1571,17 +1444,11 @@ pub async fn get_transaction_by_hash_invoke(
     amount_per_test: Option<Felt>,
 ) -> Result<InvokeTxnV1<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1597,7 +1464,7 @@ pub async fn get_transaction_by_hash_invoke(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1616,22 +1483,15 @@ pub async fn get_transaction_by_hash_invoke(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1646,7 +1506,7 @@ pub async fn get_transaction_by_hash_invoke(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -1654,7 +1514,7 @@ pub async fn get_transaction_by_hash_invoke(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1665,7 +1525,7 @@ pub async fn get_transaction_by_hash_invoke(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -1675,11 +1535,11 @@ pub async fn get_transaction_by_hash_invoke(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
-    let transaction_hash = match hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1688,29 +1548,30 @@ pub async fn get_transaction_by_hash_invoke(
 
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
 
             result.transaction_hash
         }
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
             return Err(e);
         }
     };
 
     let txn = account
         .provider()
-        .get_transaction_by_hash(transaction_hash)
-        .await
-        .unwrap();
+        .get_transaction_by_hash(deployment_hash)
+        .await?;
 
     let txn = match txn {
         Txn::Invoke(InvokeTxn::V1(tx)) => tx,
-        _ => panic!("unexpected tx response type"),
+        _ => {
+            return Err(RpcError::UnexpectedTxnType(
+                "Unexpected txn type".to_string(),
+            ));
+        }
     };
 
     Ok(txn)
@@ -1727,13 +1588,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
 ) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1749,7 +1604,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1768,28 +1623,27 @@ pub async fn get_transaction_by_hash_deploy_acc(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
-
-    let txn = provider.get_transaction_by_hash(result).await.unwrap();
+    let txn = provider
+        .get_transaction_by_hash(deploy_account_txn_hash)
+        .await?;
 
     let txn = match txn {
         Txn::DeployAccount(DeployAccountTxn::V3(tx)) => tx,
-        _ => panic!("unexpected tx response type"),
+        _ => {
+            return Err(RpcError::UnexpectedTxnType(
+                "Unexpected txn type".to_string(),
+            ));
+        }
     };
 
     Ok(txn)
@@ -1806,13 +1660,7 @@ pub async fn get_transaction_by_block_id_and_index(
 ) -> Result<Txn<Felt>, RpcError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1828,7 +1676,7 @@ pub async fn get_transaction_by_block_id_and_index(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1847,22 +1695,15 @@ pub async fn get_transaction_by_block_id_and_index(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let block = provider.block_hash_and_number().await?;
 
@@ -1912,13 +1753,15 @@ pub async fn get_transaction_by_hash_non_existent_tx(url: Url) -> Result<(), Rpc
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let err = provider
-        .get_transaction_by_hash(Felt::from_hex("0xdeafbeefdeadbeef").unwrap())
-        .await
-        .unwrap_err();
+        .get_transaction_by_hash(Felt::from_hex("0xdeafbeefdeadbeef")?)
+        .await;
 
     match err {
-        ProviderError::StarknetError(StarknetError::TransactionHashNotFound) => Ok(()),
-        _ => panic!("Unexpected error"),
+        Err(ProviderError::StarknetError(StarknetError::TransactionHashNotFound)) => Ok(()),
+        Err(e) => Err(RpcError::ProviderError(e)),
+        Ok(_) => Err(RpcError::Other(
+            "Transaction unexpectedly found".to_string(),
+        )),
     }
 }
 
@@ -1935,17 +1778,11 @@ pub async fn get_transaction_receipt(
     amount_per_test: Option<Felt>,
 ) -> Result<InvokeTxnReceipt<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -1961,7 +1798,7 @@ pub async fn get_transaction_receipt(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -1980,20 +1817,15 @@ pub async fn get_transaction_receipt(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -2008,7 +1840,7 @@ pub async fn get_transaction_receipt(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
         .send()
         .await
@@ -2016,7 +1848,7 @@ pub async fn get_transaction_receipt(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2027,7 +1859,7 @@ pub async fn get_transaction_receipt(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2037,11 +1869,11 @@ pub async fn get_transaction_receipt(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
-    let txhash: Result<AddInvokeTransactionResult<Felt>, RpcError> = match hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2051,23 +1883,21 @@ pub async fn get_transaction_receipt(
             let result = factory
                 .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
+            return Err(e);
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
-
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -2078,33 +1908,30 @@ pub async fn get_transaction_receipt(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 
     let call = Call {
         to: contract_address,
-        selector: get_selector_from_name("increase_balance").unwrap(),
-        calldata: vec![Felt::from_hex_unchecked("0x50")],
+        selector: get_selector_from_name("increase_balance")?,
+        calldata: vec![Felt::from_hex("0x50")?],
     };
 
-    let result = account.execute_v3(vec![call]).send().await.unwrap();
+    let result = account.execute_v3(vec![call]).send().await?;
     wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
 
     let receipt = provider
         .get_transaction_receipt(result.transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     match receipt {
         TxnReceipt::Invoke(receipt) => Ok(receipt),
-        _ => Err(RpcError::CallError(CallError::UnexpectedReceiptType))?,
+        _ => Err(RpcError::CallError(CallError::UnexpectedReceiptType)),
     }
 }
 
@@ -2144,7 +1971,7 @@ pub async fn get_transaction_receipt(
 //         amount_per_test,
 //     )?;
 
-//     let chain_id = get_chain_id(&provider).await.unwrap();
+//     let chain_id = get_chain_id(&provider).await?;
 
 //     let user_passed_account = SingleOwnerAccount::new(
 //         provider.clone(),
@@ -2163,12 +1990,12 @@ pub async fn get_transaction_receipt(
 //     )
 //     .await?;
 
-//     let wait_conifg = WaitForTx {
+//     let wait_config = WaitForTx {
 //         wait: true,
 //         wait_params: ValidatedWaitParams::default(),
 //     };
 
-//     match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+//     match deploy_account(&provider, chain_id, wait_config, create_acc_data).await {
 //         Ok(value) => Some(value),
 //         Err(e) => {
 //             info!("{}", "Could not deploy an account");
@@ -2240,17 +2067,11 @@ pub async fn get_class(
     amount_per_test: Option<Felt>,
 ) -> Result<ContractClass<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -2266,7 +2087,7 @@ pub async fn get_class(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -2285,22 +2106,15 @@ pub async fn get_class(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -2315,7 +2129,7 @@ pub async fn get_class(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -2323,7 +2137,7 @@ pub async fn get_class(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2334,7 +2148,7 @@ pub async fn get_class(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2344,15 +2158,14 @@ pub async fn get_class(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
     let contract_class = account
         .provider()
-        .get_class(BlockId::Tag(BlockTag::Latest), hash.unwrap())
-        .await
-        .unwrap();
+        .get_class(BlockId::Tag(BlockTag::Latest), declare_contract_hash?)
+        .await?;
 
     Ok(contract_class)
 }
@@ -2370,17 +2183,11 @@ pub async fn get_class_hash_at(
     amount_per_test: Option<Felt>,
 ) -> Result<Felt, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -2396,7 +2203,7 @@ pub async fn get_class_hash_at(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -2415,22 +2222,15 @@ pub async fn get_class_hash_at(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -2445,7 +2245,7 @@ pub async fn get_class_hash_at(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -2453,7 +2253,7 @@ pub async fn get_class_hash_at(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2464,7 +2264,7 @@ pub async fn get_class_hash_at(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2474,10 +2274,10 @@ pub async fn get_class_hash_at(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2485,25 +2285,23 @@ pub async fn get_class_hash_at(
             rng.fill_bytes(&mut salt_buffer[1..]);
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
+            return Err(e);
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
-
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -2514,20 +2312,17 @@ pub async fn get_class_hash_at(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
     let contract_class_hash = account
         .provider()
         .get_class_hash_at(BlockId::Tag(BlockTag::Pending), contract_address)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(contract_class_hash)
 }
@@ -2545,17 +2340,11 @@ pub async fn get_class_at(
     amount_per_test: Option<Felt>,
 ) -> Result<ContractClass<Felt>, RpcError> {
     let (flattened_sierra_class, compiled_class_hash) =
-        get_compiled_contract(sierra_path, casm_path).await.unwrap();
+        get_compiled_contract(sierra_path, casm_path).await?;
 
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
-        match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
-            Ok(value) => value,
-            Err(e) => {
-                info!("{}", "Could not create an account");
-                return Err(e.into());
-            }
-        };
+        create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
 
     let (
         account_address,
@@ -2571,7 +2360,7 @@ pub async fn get_class_at(
         amount_per_test,
     )?;
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let chain_id = get_chain_id(&provider).await?;
 
     let user_passed_account = SingleOwnerAccount::new(
         provider.clone(),
@@ -2590,22 +2379,15 @@ pub async fn get_class_at(
     )
     .await?;
 
-    let wait_conifg = WaitForTx {
+    let wait_config = WaitForTx {
         wait: true,
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let chain_id = get_chain_id(&provider).await.unwrap();
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
-
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -2620,7 +2402,7 @@ pub async fn get_class_at(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -2628,7 +2410,7 @@ pub async fn get_class_at(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2639,7 +2421,7 @@ pub async fn get_class_at(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -2649,10 +2431,10 @@ pub async fn get_class_at(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2660,25 +2442,23 @@ pub async fn get_class_at(
             rng.fill_bytes(&mut salt_buffer[1..]);
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
-                .max_fee(Felt::from_dec_str("100000000000000000").unwrap())
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
-            Err(e)
+            return Err(e);
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
-
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -2689,13 +2469,11 @@ pub async fn get_class_at(
             {
                 *contract_address
             } else {
-                info!("No contract address in Event");
-                Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
-            Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
         }
     };
 

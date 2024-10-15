@@ -292,8 +292,7 @@ pub async fn setup_generated_account(
             },
         ])
         .send()
-        .await
-        .unwrap();
+        .await?;
 
     wait_for_sent_transaction(transfer_execution.transaction_hash, &user_passed_account).await?;
     Ok(())

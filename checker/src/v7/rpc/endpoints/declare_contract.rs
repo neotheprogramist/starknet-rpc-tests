@@ -16,7 +16,7 @@ use starknet_types_rpc::v0_7_1::{ContractClass, TxnHash};
 
 use thiserror::Error;
 use tokio::io::AsyncReadExt;
-use tracing::info;
+use tracing::{debug, info};
 use url::ParseError;
 
 #[allow(dead_code)]
@@ -36,7 +36,7 @@ pub async fn declare_contract<P: Provider + Send + Sync>(
         Ok(result) => Ok(result.class_hash),
         Err(AccountError::Signing(sign_error)) => {
             if sign_error.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&sign_error.to_string()))
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
                 Err(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -47,7 +47,7 @@ pub async fn declare_contract<P: Provider + Send + Sync>(
 
         Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
             if starkneterror.to_string().contains("is already declared") {
-                Ok(parse_class_hash_from_error(&starkneterror.to_string()))
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
                 Err(RunnerError::AccountFailure(format!(
                     "Transaction execution error: {}",
@@ -62,28 +62,45 @@ pub async fn declare_contract<P: Provider + Send + Sync>(
     }
 }
 
-pub fn parse_class_hash_from_error(error_msg: &str) -> Felt {
-    info!("Error message: {}", error_msg);
-    let re = Regex::new(r#"StarkFelt\("(0x[a-fA-F0-9]+)"\)"#).unwrap();
+pub fn parse_class_hash_from_error(error_msg: &str) -> Result<Felt, RunnerError> {
+    debug!("Error message: {}", error_msg);
+    let re = Regex::new(r#"StarkFelt\("(0x[a-fA-F0-9]+)"\)"#)?;
 
-    // Attempt to capture the class hash
     if let Some(captures) = re.captures(error_msg) {
         if let Some(contract_address) = captures.get(1) {
-            return Felt::from_hex(contract_address.as_str()).expect("Failed to parse class hash");
+            match Felt::from_hex(contract_address.as_str()) {
+                Ok(felt) => Ok(felt),
+                Err(_) => Err(RunnerError::ClassHash(
+                    ClassHashParseError::InvalidClassHash,
+                )),
+            }
+        } else {
+            Err(RunnerError::ClassHash(
+                ClassHashParseError::NoClassHashFound,
+            ))
         }
+    } else {
+        Err(RunnerError::ClassHash(
+            ClassHashParseError::NoClassHashFound,
+        ))
     }
-
-    panic!("Failed to extract class hash from error message");
 }
 
-pub fn extract_class_hash_from_error(error_msg: &str) -> Option<Felt> {
-    let re = Regex::new(r#"0x[a-fA-F0-9]{64}"#).unwrap();
+pub fn extract_class_hash_from_error(error_msg: &str) -> Result<Felt, RunnerError> {
+    let re = Regex::new(r#"0x[a-fA-F0-9]{64}"#)?;
 
     if let Some(capture) = re.find(error_msg) {
-        return Some(Felt::from_hex_unchecked(capture.as_str()));
+        match Felt::from_hex(capture.as_str()) {
+            Ok(felt) => Ok(felt),
+            Err(_) => Err(RunnerError::ClassHash(
+                ClassHashParseError::InvalidClassHash,
+            )),
+        }
+    } else {
+        Err(RunnerError::ClassHash(
+            ClassHashParseError::NoClassHashFound,
+        ))
     }
-
-    None
 }
 
 #[allow(dead_code)]
@@ -156,4 +173,19 @@ pub enum RunnerError {
 
     #[error(transparent)]
     ReqwestError(#[from] reqwest::Error),
+
+    #[error(transparent)]
+    ClassHash(#[from] ClassHashParseError),
+
+    #[error(transparent)]
+    Regex(#[from] regex::Error),
+}
+
+#[derive(Debug, Error)]
+pub enum ClassHashParseError {
+    #[error("Failed to parse class hash from error message")]
+    InvalidClassHash,
+
+    #[error("No class hash found in error message")]
+    NoClassHashFound,
 }
