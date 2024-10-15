@@ -559,8 +559,7 @@ pub async fn add_invoke_transaction_v3(
             let result = factory
                 .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             Ok(result)
         }
         Err(e) => {
@@ -710,8 +709,7 @@ pub async fn invoke_contract_v1(
 
     let receipt = provider
         .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let contract_address = match receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
@@ -873,8 +871,7 @@ pub async fn invoke_contract_v3(
             let result = factory
                 .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result)
         }
@@ -886,8 +883,7 @@ pub async fn invoke_contract_v3(
 
     let receipt = provider
         .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let contract_address = match receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
@@ -1078,8 +1074,7 @@ pub async fn call(
 
     let receipt = provider
         .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let contract_address = match receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
@@ -1256,8 +1251,7 @@ pub async fn estimate_message_fee(
 
     let receipt = provider
         .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let contract_address = match receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
@@ -1509,8 +1503,7 @@ pub async fn get_transaction_status_succeeded(
 
     let receipt = provider
         .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let tx_hash = match receipt {
         TxnReceipt::Deploy(receipt) => receipt.common_receipt_properties.transaction_hash,
@@ -2026,8 +2019,7 @@ pub async fn get_transaction_receipt(
             let result = factory
                 .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .send()
-                .await
-                .unwrap();
+                .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
             Ok(result)
         }
@@ -2039,8 +2031,7 @@ pub async fn get_transaction_receipt(
 
     let receipt = provider
         .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let contract_address = match receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
@@ -2470,8 +2461,7 @@ pub async fn get_class_hash_at(
 
     let receipt = provider
         .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let contract_address = match receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
@@ -2642,8 +2632,7 @@ pub async fn get_class_at(
 
     let receipt = provider
         .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let contract_address = match receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
