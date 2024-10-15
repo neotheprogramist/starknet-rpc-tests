@@ -748,11 +748,11 @@ pub async fn invoke_contract_v1(
 
     let call = Call {
         to: contract_address,
-        selector: get_selector_from_name("increase_balance").unwrap(),
+        selector: get_selector_from_name("increase_balance")?,
         calldata: vec![Felt::from_hex_unchecked("0x50")],
     };
 
-    let invoke_contract_fn_result = account.execute_v1(vec![call]).send().await.unwrap();
+    let invoke_contract_fn_result = account.execute_v1(vec![call]).send().await?;
     Ok(invoke_contract_fn_result)
 }
 
@@ -876,7 +876,7 @@ pub async fn invoke_contract_v3(
         }
     };
 
-    let txhash: Result<AddInvokeTransactionResult<Felt>, RpcError> = match declare_contract_hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -888,7 +888,7 @@ pub async fn invoke_contract_v3(
                 .send()
                 .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
         Err(e) => {
             info!("Could not deploy the contract {}", e);
@@ -896,11 +896,15 @@ pub async fn invoke_contract_v3(
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await?;
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            info!("Failed to get transaction hash for txn receipt: {}", e);
+            return Err(e);
+        }
+    };
 
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -916,18 +920,21 @@ pub async fn invoke_contract_v3(
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
+            info!(
+                "Unexpected response type TxnReceipt {:?}",
+                deployment_receipt
+            );
             Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
         }
     };
 
     let call = Call {
         to: contract_address,
-        selector: get_selector_from_name("increase_balance").unwrap(),
+        selector: get_selector_from_name("increase_balance")?,
         calldata: vec![Felt::from_hex_unchecked("0x50")],
     };
 
-    let call_contract_fn_result = account.execute_v3(vec![call]).send().await.unwrap();
+    let call_contract_fn_result = account.execute_v3(vec![call]).send().await?;
     Ok(call_contract_fn_result)
 }
 
@@ -1068,7 +1075,7 @@ pub async fn call(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let deply_contract_hash = match declare_contract_hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1080,7 +1087,7 @@ pub async fn call(
                 .send()
                 .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
         Err(e) => {
             info!("Could not deploy the contract {}", e);
@@ -1088,11 +1095,15 @@ pub async fn call(
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
-        .await?;
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            info!("Failed to get transaction hash for txn receipt: {}", e);
+            return Err(e);
+        }
+    };
 
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -1108,7 +1119,10 @@ pub async fn call(
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
+            info!(
+                "Unexpected response type TxnReceipt {:?}",
+                deployment_receipt
+            );
             Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
         }
     };
@@ -1118,7 +1132,7 @@ pub async fn call(
             FunctionCall {
                 calldata: vec![],
                 contract_address,
-                entry_point_selector: get_selector_from_name("get_balance").unwrap(),
+                entry_point_selector: get_selector_from_name("get_balance")?,
             },
             BlockId::Tag(BlockTag::Pending),
         )
@@ -1246,7 +1260,7 @@ pub async fn estimate_message_fee(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let deply_contract_hash = match declare_contract_hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1258,7 +1272,7 @@ pub async fn estimate_message_fee(
                 .send()
                 .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
         Err(e) => {
             info!("Could not deploy the contract {}", e);
@@ -1266,11 +1280,15 @@ pub async fn estimate_message_fee(
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
-        .await?;
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            info!("Failed to get transaction hash for txn receipt: {}", e);
+            return Err(e);
+        }
+    };
 
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -1286,7 +1304,10 @@ pub async fn estimate_message_fee(
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
+            info!(
+                "Unexpected response type TxnReceipt {:?}",
+                deployment_receipt
+            );
             Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
         }
     };
@@ -1296,7 +1317,7 @@ pub async fn estimate_message_fee(
             MsgFromL1 {
                 from_address: String::from("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"),
                 to_address: contract_address,
-                entry_point_selector: get_selector_from_name("deposit").unwrap(),
+                entry_point_selector: get_selector_from_name("deposit")?,
                 payload: vec![(1_u32).into(), (10_u32).into()],
             },
             BlockId::Tag(BlockTag::Pending),
@@ -1335,8 +1356,7 @@ pub async fn get_block_with_txs(url: Url) -> Result<BlockWithTxs<Felt>, RpcError
 
     let block = client
         .get_block_with_txs(BlockId::Tag(BlockTag::Latest))
-        .await
-        .unwrap();
+        .await?;
 
     let block = match block {
         MaybePendingBlockWithTxs::Block(block) => block,
@@ -1351,8 +1371,7 @@ pub async fn get_state_update(url: Url) -> Result<StateUpdate<Felt>, RpcError> {
 
     let state: MaybePendingStateUpdate<Felt> = client
         .get_state_update(BlockId::Tag(BlockTag::Latest))
-        .await
-        .unwrap();
+        .await?;
 
     let state = match state {
         MaybePendingStateUpdate::Block(state) => state,
@@ -1499,7 +1518,7 @@ pub async fn get_transaction_status_succeeded(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let deply_contract_hash = match declare_contract_hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1511,7 +1530,7 @@ pub async fn get_transaction_status_succeeded(
                 .send()
                 .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
         Err(e) => {
             info!("Could not deploy the contract {}", e);
@@ -1519,24 +1538,27 @@ pub async fn get_transaction_status_succeeded(
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
-        .await?;
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            info!("Failed to get transaction hash for txn receipt: {}", e);
+            return Err(e);
+        }
+    };
 
-    let tx_hash = match receipt {
+    let tx_hash = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.common_receipt_properties.transaction_hash,
         TxnReceipt::Invoke(receipt) => receipt.common_receipt_properties.transaction_hash,
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
+            info!(
+                "Unexpected response type TxnReceipt {:?}",
+                deployment_receipt
+            );
             Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
         }
     };
 
-    let status = account
-        .provider()
-        .get_transaction_status(tx_hash)
-        .await
-        .unwrap();
+    let status = account.provider().get_transaction_status(tx_hash).await?;
     match status.finality_status {
         TxnStatus::AcceptedOnL2 => match status.execution_status {
             Some(TxnExecutionStatus::Succeeded) => Ok(TxnStatus::AcceptedOnL2),
@@ -1671,7 +1693,7 @@ pub async fn get_transaction_by_hash_invoke(
         }
     };
 
-    let transaction_hash = match declare_contract_hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1695,9 +1717,8 @@ pub async fn get_transaction_by_hash_invoke(
 
     let txn = account
         .provider()
-        .get_transaction_by_hash(transaction_hash)
-        .await
-        .unwrap();
+        .get_transaction_by_hash(deployment_hash)
+        .await?;
 
     let txn = match txn {
         Txn::Invoke(InvokeTxn::V1(tx)) => tx,
@@ -1777,8 +1798,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
 
     let txn = provider
         .get_transaction_by_hash(deploy_account_txn_hash)
-        .await
-        .unwrap();
+        .await?;
 
     let txn = match txn {
         Txn::DeployAccount(DeployAccountTxn::V3(tx)) => tx,
@@ -1904,7 +1924,7 @@ pub async fn get_transaction_by_hash_non_existent_tx(url: Url) -> Result<(), Rpc
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let err = provider
-        .get_transaction_by_hash(Felt::from_hex("0xdeafbeefdeadbeef").unwrap())
+        .get_transaction_by_hash(Felt::from_hex("0xdeafbeefdeadbeef")?)
         .await
         .unwrap_err();
 
@@ -2034,7 +2054,7 @@ pub async fn get_transaction_receipt(
         }
     };
 
-    let txhash: Result<AddInvokeTransactionResult<Felt>, RpcError> = match declare_contract_hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2046,7 +2066,7 @@ pub async fn get_transaction_receipt(
                 .send()
                 .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
         Err(e) => {
             info!("Could not deploy the contract {}", e);
@@ -2054,11 +2074,15 @@ pub async fn get_transaction_receipt(
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await?;
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            info!("Failed to get transaction hash for txn receipt: {}", e);
+            return Err(e);
+        }
+    };
 
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -2074,24 +2098,26 @@ pub async fn get_transaction_receipt(
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
+            info!(
+                "Unexpected response type TxnReceipt {:?}",
+                deployment_receipt
+            );
             Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
         }
     };
 
     let call = Call {
         to: contract_address,
-        selector: get_selector_from_name("increase_balance").unwrap(),
+        selector: get_selector_from_name("increase_balance")?,
         calldata: vec![Felt::from_hex_unchecked("0x50")],
     };
 
-    let result = account.execute_v3(vec![call]).send().await.unwrap();
+    let result = account.execute_v3(vec![call]).send().await?;
     wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
 
     let receipt = provider
         .get_transaction_receipt(result.transaction_hash)
-        .await
-        .unwrap();
+        .await?;
 
     match receipt {
         TxnReceipt::Invoke(receipt) => Ok(receipt),
@@ -2341,8 +2367,7 @@ pub async fn get_class(
     let contract_class = account
         .provider()
         .get_class(BlockId::Tag(BlockTag::Latest), declare_contract_hash?)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(contract_class)
 }
@@ -2466,7 +2491,7 @@ pub async fn get_class_hash_at(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let deply_contract_hash = match declare_contract_hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2478,7 +2503,7 @@ pub async fn get_class_hash_at(
                 .send()
                 .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
         Err(e) => {
             info!("Could not deploy the contract {}", e);
@@ -2486,11 +2511,15 @@ pub async fn get_class_hash_at(
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
-        .await?;
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            info!("Failed to get transaction hash for txn receipt: {}", e);
+            return Err(e);
+        }
+    };
 
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -2506,15 +2535,17 @@ pub async fn get_class_hash_at(
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
+            info!(
+                "Unexpected response type TxnReceipt {:?}",
+                deployment_receipt
+            );
             Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
         }
     };
     let contract_class_hash = account
         .provider()
         .get_class_hash_at(BlockId::Tag(BlockTag::Pending), contract_address)
-        .await
-        .unwrap();
+        .await?;
 
     Ok(contract_class_hash)
 }
@@ -2638,7 +2669,7 @@ pub async fn get_class_at(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let deply_contract_hash = match declare_contract_hash {
+    let deployment_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2650,7 +2681,7 @@ pub async fn get_class_at(
                 .send()
                 .await?;
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
         Err(e) => {
             info!("Could not deploy the contract {}", e);
@@ -2658,11 +2689,15 @@ pub async fn get_class_at(
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
-        .await?;
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            info!("Failed to get transaction hash for txn receipt: {}", e);
+            return Err(e);
+        }
+    };
 
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -2678,7 +2713,10 @@ pub async fn get_class_at(
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
+            info!(
+                "Unexpected response type TxnReceipt {:?}",
+                deployment_receipt
+            );
             Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
         }
     };
