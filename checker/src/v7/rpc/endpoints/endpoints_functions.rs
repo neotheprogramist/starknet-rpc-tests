@@ -680,7 +680,7 @@ pub async fn invoke_contract_v1(
     let call = Call {
         to: contract_address,
         selector: get_selector_from_name("increase_balance")?,
-        calldata: vec![Felt::from_hex_unchecked("0x50")],
+        calldata: vec![Felt::from_hex("0x50")?],
     };
 
     let invoke_contract_fn_result = account.execute_v1(vec![call]).send().await?;
@@ -841,7 +841,7 @@ pub async fn invoke_contract_v3(
     let call = Call {
         to: contract_address,
         selector: get_selector_from_name("increase_balance")?,
-        calldata: vec![Felt::from_hex_unchecked("0x50")],
+        calldata: vec![Felt::from_hex("0x50")?],
     };
 
     let call_contract_fn_result = account.execute_v3(vec![call]).send().await?;
@@ -1919,7 +1919,7 @@ pub async fn get_transaction_receipt(
     let call = Call {
         to: contract_address,
         selector: get_selector_from_name("increase_balance")?,
-        calldata: vec![Felt::from_hex_unchecked("0x50")],
+        calldata: vec![Felt::from_hex("0x50")?],
     };
 
     let result = account.execute_v3(vec![call]).send().await?;
