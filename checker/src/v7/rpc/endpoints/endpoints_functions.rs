@@ -408,7 +408,7 @@ pub async fn add_invoke_transaction_v1(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
     match hash {
@@ -548,7 +548,7 @@ pub async fn add_invoke_transaction_v3(
 
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
     match hash {
@@ -686,7 +686,7 @@ pub async fn invoke_contract_v1(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
     let txhash = match hash {
@@ -861,7 +861,7 @@ pub async fn invoke_contract_v3(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
@@ -1055,7 +1055,7 @@ pub async fn call(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
     let txhash = match hash {
@@ -1234,7 +1234,7 @@ pub async fn estimate_message_fee(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
     let txhash = match hash {
@@ -1488,7 +1488,7 @@ pub async fn get_transaction_status_succeeded(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
     let txhash = match hash {
@@ -1660,7 +1660,7 @@ pub async fn get_transaction_by_hash_invoke(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
@@ -2018,7 +2018,7 @@ pub async fn get_transaction_receipt(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
@@ -2323,7 +2323,7 @@ pub async fn get_class(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
@@ -2451,7 +2451,7 @@ pub async fn get_class_hash_at(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
     let txhash = match hash {
@@ -2624,7 +2624,7 @@ pub async fn get_class_at(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
-            Ok(extract_class_hash_from_error(&full_error_message).unwrap())
+            Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
     let txhash = match hash {
