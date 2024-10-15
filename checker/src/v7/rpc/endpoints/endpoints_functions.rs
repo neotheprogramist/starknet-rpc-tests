@@ -111,15 +111,16 @@ pub async fn add_declare_transaction_v2(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
 
@@ -233,15 +234,16 @@ pub async fn add_declare_transaction_v3(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -356,15 +358,16 @@ pub async fn add_invoke_transaction_v1(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -379,7 +382,7 @@ pub async fn add_invoke_transaction_v1(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -411,7 +414,7 @@ pub async fn add_invoke_transaction_v1(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    match hash {
+    match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account);
             let mut salt_buffer = [0u8; 32];
@@ -494,15 +497,16 @@ pub async fn add_invoke_transaction_v3(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -517,7 +521,7 @@ pub async fn add_invoke_transaction_v3(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
         .send()
         .await
@@ -550,7 +554,7 @@ pub async fn add_invoke_transaction_v3(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    match hash {
+    match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account);
             let mut salt_buffer = [0u8; 32];
@@ -632,15 +636,16 @@ pub async fn invoke_contract_v1(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -655,7 +660,7 @@ pub async fn invoke_contract_v1(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declaration_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -687,31 +692,37 @@ pub async fn invoke_contract_v1(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deployment_hash = match declaration_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
             let mut rng = StdRng::from_entropy();
             rng.fill_bytes(&mut salt_buffer[1..]);
+
             let result = factory
                 .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
                 .max_fee(Felt::from_dec_str("100000000000000000")?)
                 .send()
                 .await?;
+
             wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
-            Ok(result)
+            Ok(result.transaction_hash)
         }
         Err(e) => {
-            info!("Could not deploy the contract {}", e);
+            info!("Could not deploy the contract: {}", e);
             Err(e)
         }
     };
 
-    let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
-        .await?;
+    let deployment_receipt = match deployment_hash {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            info!("Failed to get transaction hash for txn receipt: {}", e);
+            return Err(e);
+        }
+    };
 
-    let contract_address = match receipt {
+    let contract_address = match deployment_receipt {
         TxnReceipt::Deploy(receipt) => receipt.contract_address,
         TxnReceipt::Invoke(receipt) => {
             if let Some(contract_address) = receipt
@@ -727,7 +738,10 @@ pub async fn invoke_contract_v1(
             }
         }
         _ => {
-            info!("Unexpected response type TxnReceipt {:?}", receipt);
+            info!(
+                "Unexpected response type TxnReceipt {:?}",
+                deployment_receipt
+            );
             Err(RpcError::CallError(CallError::UnexpectedReceiptType))?
         }
     };
@@ -738,8 +752,8 @@ pub async fn invoke_contract_v1(
         calldata: vec![Felt::from_hex_unchecked("0x50")],
     };
 
-    let result = account.execute_v1(vec![call]).send().await.unwrap();
-    Ok(result)
+    let invoke_contract_fn_result = account.execute_v1(vec![call]).send().await.unwrap();
+    Ok(invoke_contract_fn_result)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -805,15 +819,16 @@ pub async fn invoke_contract_v3(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -828,7 +843,7 @@ pub async fn invoke_contract_v3(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
         .send()
         .await
@@ -861,7 +876,7 @@ pub async fn invoke_contract_v3(
         }
     };
 
-    let txhash: Result<AddInvokeTransactionResult<Felt>, RpcError> = match hash {
+    let txhash: Result<AddInvokeTransactionResult<Felt>, RpcError> = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -912,8 +927,8 @@ pub async fn invoke_contract_v3(
         calldata: vec![Felt::from_hex_unchecked("0x50")],
     };
 
-    let result = account.execute_v3(vec![call]).send().await.unwrap();
-    Ok(result)
+    let call_contract_fn_result = account.execute_v3(vec![call]).send().await.unwrap();
+    Ok(call_contract_fn_result)
 }
 
 pub async fn block_number(url: Url) -> Result<u64, RpcError> {
@@ -997,15 +1012,16 @@ pub async fn call(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1020,7 +1036,7 @@ pub async fn call(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -1052,7 +1068,7 @@ pub async fn call(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deply_contract_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1073,7 +1089,7 @@ pub async fn call(
     };
 
     let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
+        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
         .await?;
 
     let contract_address = match receipt {
@@ -1174,15 +1190,16 @@ pub async fn estimate_message_fee(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1197,7 +1214,7 @@ pub async fn estimate_message_fee(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -1229,7 +1246,7 @@ pub async fn estimate_message_fee(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deply_contract_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1250,7 +1267,7 @@ pub async fn estimate_message_fee(
     };
 
     let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
+        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
         .await?;
 
     let contract_address = match receipt {
@@ -1426,15 +1443,16 @@ pub async fn get_transaction_status_succeeded(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1449,7 +1467,7 @@ pub async fn get_transaction_status_succeeded(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -1481,7 +1499,7 @@ pub async fn get_transaction_status_succeeded(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deply_contract_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1502,7 +1520,7 @@ pub async fn get_transaction_status_succeeded(
     };
 
     let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
+        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
         .await?;
 
     let tx_hash = match receipt {
@@ -1596,15 +1614,16 @@ pub async fn get_transaction_by_hash_invoke(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1619,7 +1638,7 @@ pub async fn get_transaction_by_hash_invoke(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -1652,7 +1671,7 @@ pub async fn get_transaction_by_hash_invoke(
         }
     };
 
-    let transaction_hash = match hash {
+    let transaction_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -1745,17 +1764,21 @@ pub async fn get_transaction_by_hash_deploy_acc(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
-    let txn = provider.get_transaction_by_hash(result).await.unwrap();
+    let txn = provider
+        .get_transaction_by_hash(deploy_account_txn_hash)
+        .await
+        .unwrap();
 
     let txn = match txn {
         Txn::DeployAccount(DeployAccountTxn::V3(tx)) => tx,
@@ -1822,15 +1845,16 @@ pub async fn get_transaction_by_block_id_and_index(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let block = provider.block_hash_and_number().await?;
 
@@ -1953,15 +1977,16 @@ pub async fn get_transaction_receipt(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -1976,7 +2001,7 @@ pub async fn get_transaction_receipt(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v3(flattened_sierra_class, compiled_class_hash)
         .send()
         .await
@@ -2009,7 +2034,7 @@ pub async fn get_transaction_receipt(
         }
     };
 
-    let txhash: Result<AddInvokeTransactionResult<Felt>, RpcError> = match hash {
+    let txhash: Result<AddInvokeTransactionResult<Felt>, RpcError> = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2256,15 +2281,16 @@ pub async fn get_class(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -2279,7 +2305,7 @@ pub async fn get_class(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -2314,7 +2340,7 @@ pub async fn get_class(
 
     let contract_class = account
         .provider()
-        .get_class(BlockId::Tag(BlockTag::Latest), hash.unwrap())
+        .get_class(BlockId::Tag(BlockTag::Latest), declare_contract_hash?)
         .await
         .unwrap();
 
@@ -2384,15 +2410,16 @@ pub async fn get_class_hash_at(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -2407,7 +2434,7 @@ pub async fn get_class_hash_at(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -2439,7 +2466,7 @@ pub async fn get_class_hash_at(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deply_contract_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2460,7 +2487,7 @@ pub async fn get_class_hash_at(
     };
 
     let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
+        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
         .await?;
 
     let contract_address = match receipt {
@@ -2555,15 +2582,16 @@ pub async fn get_class_at(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let result = match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
-        Ok(value) => value,
-        Err(e) => {
-            info!("{}", "Could not deploy an account");
-            return Err(e.into());
-        }
-    };
+    let deploy_account_txn_hash =
+        match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+            Ok(value) => value,
+            Err(e) => {
+                info!("{}", "Could not deploy an account");
+                return Err(e.into());
+            }
+        };
 
-    wait_for_sent_transaction(result, &user_passed_account).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
     let sender_address = create_acc_data.address;
     let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -2578,7 +2606,7 @@ pub async fn get_class_at(
 
     account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
-    let hash = match account
+    let declare_contract_hash = match account
         .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
         .send()
         .await
@@ -2610,7 +2638,7 @@ pub async fn get_class_at(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    let txhash = match hash {
+    let deply_contract_hash = match declare_contract_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, account.clone());
             let mut salt_buffer = [0u8; 32];
@@ -2631,7 +2659,7 @@ pub async fn get_class_at(
     };
 
     let receipt = provider
-        .get_transaction_receipt(txhash.unwrap().transaction_hash)
+        .get_transaction_receipt(deply_contract_hash.unwrap().transaction_hash)
         .await?;
 
     let contract_address = match receipt {
