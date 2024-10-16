@@ -87,7 +87,7 @@ pub fn parse_class_hash_from_error(error_msg: &str) -> Result<Felt, RunnerError>
 }
 
 pub fn extract_class_hash_from_error(error_msg: &str) -> Result<Felt, RunnerError> {
-    let re = Regex::new(r#"0x[a-fA-F0-9]{64}"#)?;
+    let re = Regex::new(r#"0x[a-fA-F0-9]{63,64}"#)?;
 
     if let Some(capture) = re.find(error_msg) {
         match Felt::from_hex(capture.as_str()) {

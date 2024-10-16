@@ -21,7 +21,6 @@ async fn main() -> Result<(), String> {
     match args.version {
         Version::V5 => {
             if args.run_devnet_tests {
-                // Sprawdzenie argumentu
                 if let Err(e) = V5::devnet::test_devnet_endpoints(
                     args.url.clone(),
                     args.l1_network_url.clone(),
@@ -46,7 +45,6 @@ async fn main() -> Result<(), String> {
         }
         Version::V6 => {
             if args.run_devnet_tests {
-                // Sprawdzenie argumentu
                 if let Err(e) = V6::devnet::test_devnet_endpoints(
                     args.url.clone(),
                     args.l1_network_url.clone(),
