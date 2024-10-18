@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-data-juno
+spec:
+  template:
+    spec:
+      containers:
+        - name: setup-data-juno
+          image: docker.io/piotr439/juno-dbs:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Copying data for juno instances..." && \
+              cp -r /snapshots/juno-sepolia /tmp/data/juno
+          volumeMounts:
+            - name: juno-setup-data
+              mountPath: /tmp/data/juno
+      volumes:
+        - name: juno-setup-data
+          persistentVolumeClaim:
+            claimName: juno-setup-data-pvc
+      restartPolicy: Never
+  backoffLimit: 4
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: juno-setup-data-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: "/tmp/data/juno"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: juno-setup-data-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard

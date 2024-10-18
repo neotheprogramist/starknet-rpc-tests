@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pathfinder
+spec:
+  serviceName: pathfinder-service
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pathfinder
+  template:
+    metadata:
+      labels:
+        app: pathfinder
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 0
+      initContainers:
+        - name: init-pathfinder
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Copying data for pathfinder instance $(hostname)..." && \
+              cp /tmp/data/pathfinder/testnet-sepolia.sqlite /usr/share/pathfinder/data/testnet-sepolia.sqlite
+          volumeMounts:
+            - name: pathfinder-setup-data
+              mountPath: /tmp/data/pathfinder
+            - name: pathfinder-data
+              mountPath: /usr/share/pathfinder/data
+      containers:
+        - name: pathfinder
+          image: eqlabs/pathfinder:v0.14.4
+          ports:
+            - containerPort: 80
+            - containerPort: 9090
+            - containerPort: 9545
+          env:
+            - name: PATHFINDER_MONITOR_ADDRESS
+              value: "0.0.0.0:9090"
+            - name: PATHFINDER_HTTP_RPC_ADDRESS
+              value: "0.0.0.0:9545"
+            - name: PATHFINDER_ETHEREUM_API_URL
+              value: "http://anvil-service:8545"
+            - name: PATHFINDER_NETWORK
+              value: "sepolia-testnet"
+          volumeMounts:
+            - name: pathfinder-data
+              mountPath: /usr/share/pathfinder/data
+      volumes:
+        - name: pathfinder-setup-data
+          persistentVolumeClaim:
+            claimName: pathfinder-setup-data-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: pathfinder-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pathfinder-service
+spec:
+  clusterIP: None
+  selector:
+    app: pathfinder
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+    - name: monitor
+      protocol: TCP
+      port: 9090
+      targetPort: 9090
+    - name: rpc
+      protocol: TCP
+      port: 9545
+      targetPort: 9545

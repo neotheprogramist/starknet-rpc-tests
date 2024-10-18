@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: setup-data-pathfinder
+spec:
+  template:
+    spec:
+      containers:
+        - name: setup-data-pathfinder
+          image: docker.io/uacias/patfinder-dbs:latest
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Copying data for pathfinder instances..." && \
+              cp /mnt/data/original/testnet-sepolia.sqlite /tmp/data/pathfinder/testnet-sepolia.sqlite
+          volumeMounts:
+            - name: pathfinder-setup-data
+              mountPath: /tmp/data/pathfinder
+      volumes:
+        - name: pathfinder-setup-data
+          persistentVolumeClaim:
+            claimName: pathfinder-setup-data-pvc
+      restartPolicy: Never
+  backoffLimit: 4
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pathfinder-setup-data-pv
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: standard
+  hostPath:
+    path: "/tmp/data/pathfinder"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pathfinder-setup-data-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
