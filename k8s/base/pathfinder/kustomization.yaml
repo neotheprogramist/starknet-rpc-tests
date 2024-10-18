@@ -4,3 +4,7 @@ kind: Kustomization
 resources:
   - statefulset.yaml
   - job.yaml
+
+configMapGenerator:
+  - name: pathfinder-config
+    env: .env.local

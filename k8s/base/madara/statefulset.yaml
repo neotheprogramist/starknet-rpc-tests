@@ -13,10 +13,6 @@ spec:
       labels:
         app: madara
     spec:
-      # securityContext:
-      #   runAsUser: 0
-      #   runAsGroup: 0
-      #   fsGroup: 0
       containers:
         - name: madara
           image: docker.io/uacias/madara:latest
