@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: anvil-1
+  name: anvil
   labels:
     app.kubernetes.io/name: anvil
 spec:
   containers:
-    - name: anvil-1
+    - name: anvil
       image: ghcr.io/foundry-rs/foundry:master
       securityContext:
         allowPrivilegeEscalation: false
@@ -32,5 +32,3 @@ spec:
     - protocol: TCP
       port: 8545
       targetPort: 8545
-      nodePort: 30000
-  type: NodePort
