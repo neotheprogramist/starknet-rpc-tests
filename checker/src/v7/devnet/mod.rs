@@ -93,8 +93,7 @@ impl DevnetEndpoints for Devnet {
             AccountBalanceParams {
                 address: Felt::from_hex(
                     "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-                )
-                .unwrap(),
+                )?,
                 unit: Some(PriceUnit::Wei),
             },
         )
@@ -266,8 +265,7 @@ pub async fn test_devnet_endpoints(
         .mint(MintTokensParams {
             address: Felt::from_hex(
                 "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
-            )
-            .unwrap(),
+            )?,
             amount: 244837814099629,
             unit: Some(PriceUnit::Wei),
         })
@@ -299,25 +297,39 @@ pub async fn test_devnet_endpoints(
         ),
     }
 
-    match devnet
-        .abort_blocks(AbortBlocksParams {
-            starting_block_hash: devnet.create_block().await.unwrap().block_hash,
-        })
-        .await
-    {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Devnet abort_block COMPATIBLE".green(),
-                "✓".green()
-            )
+    match devnet.create_block().await {
+        Ok(create_block_response) => {
+            let block_hash = create_block_response.block_hash;
+
+            match devnet
+                .abort_blocks(AbortBlocksParams {
+                    starting_block_hash: block_hash,
+                })
+                .await
+            {
+                Ok(_) => {
+                    info!(
+                        "{} {}",
+                        "✓ Devnet abort_block COMPATIBLE".green(),
+                        "✓".green()
+                    );
+                }
+                Err(e) => error!(
+                    "{} {} {}",
+                    "✗ Devnet abort_block INCOMPATIBLE:".red(),
+                    e.to_string().red(),
+                    "✗".red()
+                ),
+            }
         }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Devnet abort_block INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
+        Err(e) => {
+            error!(
+                "{} {} {}",
+                "✗ Devnet abort_block INCOMPATIBLE - can't create block:".red(),
+                e.to_string().red(),
+                "✗".red()
+            );
+        }
     }
 
     match devnet.restart().await {
@@ -404,7 +416,7 @@ pub async fn test_devnet_endpoints(
         ),
     }
 
-    let msg_to_l2 = prepare_postman_send_message_to_l2(
+    match prepare_postman_send_message_to_l2(
         url.clone(),
         sierra_path,
         casm_path,
@@ -417,22 +429,30 @@ pub async fn test_devnet_endpoints(
         amount_per_test,
     )
     .await
-    .unwrap();
-
-    match devnet.postman_send_message_to_l2(msg_to_l2.clone()).await {
-        Ok(_) => {
-            info!(
-                "{} {}",
-                "✓ Devnet postman_send_message_to_l2 COMPATIBLE".green(),
-                "✓".green()
+    {
+        Ok(msg_to_l2) => match devnet.postman_send_message_to_l2(msg_to_l2).await {
+            Ok(_) => {
+                info!(
+                    "{} {}",
+                    "✓ Devnet postman_send_message_to_l2 COMPATIBLE".green(),
+                    "✓".green()
+                );
+            }
+            Err(e) => error!(
+                "{} {} {}",
+                "✗ Devnet postman_send_message_to_l2 INCOMPATIBLE:".red(),
+                e.to_string().red(),
+                "✗".red()
+            ),
+        },
+        Err(e) => {
+            error!(
+                "{} {} {}",
+                "✗ Devnet postman_send_message_to_l2 INCOMPATIBLE - can't prepare message:".red(),
+                e.to_string().red(),
+                "✗".red()
             );
         }
-        Err(e) => error!(
-            "{} {} {}",
-            "✗ Devnet postman_send_message_to_l2 INCOMPATIBLE:".red(),
-            e.to_string().red(),
-            "✗".red()
-        ),
     }
 
     match devnet.devnet_config().await {

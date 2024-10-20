@@ -72,8 +72,8 @@ async fn main() -> Result<(), String> {
                 if let Err(e) = V7::devnet::test_devnet_endpoints(
                     args.url.clone(),
                     args.l1_network_url.clone(),
-                    &args.sierra_path,
-                    &args.casm_path,
+                    &args.sierra_path_3,
+                    &args.casm_path_3,
                     args.account_class_hash,
                     args.account_address,
                     args.private_key,

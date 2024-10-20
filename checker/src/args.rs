@@ -23,6 +23,12 @@ pub struct Args {
     #[arg(long, env, help = "Second CASM path")]
     pub casm_path_2: String,
 
+    #[arg(long, env, help = "Third Sierra path")]
+    pub sierra_path_3: String,
+
+    #[arg(long, env, help = "Third CASM path")]
+    pub casm_path_3: String,
+
     #[arg(long, short = 'v', env, help = "Version to check")]
     pub version: Version,
 
