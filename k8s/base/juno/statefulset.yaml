@@ -34,15 +34,18 @@ spec:
           args:
             - "--http"
             - "--http-port"
-            - "6060"
+            - "$(PORT)"
             - "--http-host"
-            - "0.0.0.0"
+            - "$(HOST)"
             - "--db-path"
-            - "/var/lib/juno/juno-sepolia"
+            - "$(DB_PATH)"
             - "--eth-node"
-            - "ws://anvil-service:8545"
+            - "$(ETH_NODE)"
             - "--network"
-            - "sepolia"
+            - "$(NETWORK)"
+          envFrom:
+            - configMapRef:
+                name: juno-config
           volumeMounts:
             - name: juno-data
               mountPath: /var/lib/juno

@@ -4,3 +4,7 @@ kind: Kustomization
 resources:
   - statefulset.yaml
   - job.yaml
+
+configMapGenerator:
+  - name: juno-config
+    env: .env.local

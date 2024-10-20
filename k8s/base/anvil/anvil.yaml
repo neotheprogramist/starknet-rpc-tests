@@ -13,13 +13,12 @@ spec:
       ports:
         - containerPort: 8545
       command: ["anvil"]
-      args: ["--port", "8545", "--fork-url", "$(FORK_URL)"]
-      env:
-        - name: ANVIL_IP_ADDR
-          value: "0.0.0.0"
+      args: ["--port", "$(ANVIL_PORT)", "--fork-url", "$(FORK_URL)"]
       envFrom:
         - secretRef:
             name: secret
+        - configMapRef:
+            name: anvil-config
 ---
 apiVersion: v1
 kind: Service
