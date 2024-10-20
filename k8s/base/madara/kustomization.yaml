@@ -3,3 +3,7 @@ kind: Kustomization
 
 resources:
   - statefulset.yaml
+
+configMapGenerator:
+  - name: madara-config
+    env: .env.local

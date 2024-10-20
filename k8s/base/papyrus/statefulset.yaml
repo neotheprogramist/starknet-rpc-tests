@@ -18,7 +18,10 @@ spec:
           image: ghcr.io/starkware-libs/papyrus:dev
           args:
             - "--base_layer.node_url"
-            - "http://anvil-service:8545"
+            - "$(BASE_LAYER_NODE_URL)"
+          envFrom:
+            - configMapRef:
+                name: papyrus-config
           ports:
             - containerPort: 8080
           volumeMounts:

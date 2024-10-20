@@ -3,3 +3,7 @@ kind: Kustomization
 
 resources:
   - statefulset.yaml
+
+configMapGenerator:
+  - name: papyrus-config
+    env: .env.local

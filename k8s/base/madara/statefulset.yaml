@@ -16,21 +16,14 @@ spec:
       containers:
         - name: madara
           image: docker.io/uacias/madara:latest
-          args:
-            - "--name"
-            - "madara"
-            - "--base-path"
-            - "/madara/data"
-            - "--network"
-            - "test"
-            - "--l1-endpoint"
-            - "http://anvil-service:8545"
-            - "--full"
-            - "--gateway-key"
-            - "$(GATEWAY_KEY)"
+          # args:
+          #   - "--gateway-key"
+          #   - "$(GATEWAY_KEY)"
           envFrom:
             - secretRef:
                 name: secret
+            - configMapRef:
+                name: madara-config
           ports:
             - containerPort: 9944
           volumeMounts:
