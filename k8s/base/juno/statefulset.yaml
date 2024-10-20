@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: juno
+spec:
+  serviceName: juno-service
+  replicas: 2
+  selector:
+    matchLabels:
+      app: juno
+  template:
+    metadata:
+      labels:
+        app: juno
+    spec:
+      initContainers:
+        - name: init-juno
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Copying data for juno instance $(hostname)..." && \
+              cp -r /tmp/data/juno/juno-sepolia /var/lib/juno
+          volumeMounts:
+            - name: juno-setup-data
+              mountPath: /tmp/data/juno
+            - name: juno-data
+              mountPath: /var/lib/juno
+      containers:
+        - name: juno
+          image: docker.io/nethermind/juno:latest
+          ports:
+            - containerPort: 6060
+          args:
+            - "--http"
+            - "--http-port"
+            - "$(PORT)"
+            - "--http-host"
+            - "$(HOST)"
+            - "--db-path"
+            - "$(DB_PATH)"
+            - "--eth-node"
+            - "$(ETH_NODE)"
+            - "--network"
+            - "$(NETWORK)"
+          envFrom:
+            - configMapRef:
+                name: juno-config
+          volumeMounts:
+            - name: juno-data
+              mountPath: /var/lib/juno
+      volumes:
+        - name: juno-setup-data
+          persistentVolumeClaim:
+            claimName: juno-setup-data-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: juno-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: juno-service
+spec:
+  clusterIP: None
+  selector:
+    app: juno
+  ports:
+    - name: rpc
+      protocol: TCP
+      port: 6060
+      targetPort: 6060

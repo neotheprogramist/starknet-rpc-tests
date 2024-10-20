@@ -5,5 +5,5 @@ resources:
   - statefulset.yaml
 
 configMapGenerator:
-  - name: madara-config
+  - name: papyrus-config
     env: .env.local

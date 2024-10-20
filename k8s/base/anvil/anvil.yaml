@@ -1,25 +1,24 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: anvil-1
+  name: anvil
   labels:
     app.kubernetes.io/name: anvil
 spec:
   containers:
-    - name: anvil-1
+    - name: anvil
       image: ghcr.io/foundry-rs/foundry:master
       securityContext:
         allowPrivilegeEscalation: false
       ports:
         - containerPort: 8545
       command: ["anvil"]
-      args: ["--port", "8545", "--fork-url", "$(FORK_URL)"]
-      env:
-        - name: ANVIL_IP_ADDR
-          value: "0.0.0.0"
+      args: ["--port", "$(ANVIL_PORT)", "--fork-url", "$(FORK_URL)"]
       envFrom:
         - secretRef:
             name: secret
+        - configMapRef:
+            name: anvil-config
 ---
 apiVersion: v1
 kind: Service
@@ -32,5 +31,3 @@ spec:
     - protocol: TCP
       port: 8545
       targetPort: 8545
-      nodePort: 30000
-  type: NodePort

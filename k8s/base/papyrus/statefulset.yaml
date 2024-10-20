@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: papyrus
+spec:
+  serviceName: papyrus-service
+  replicas: 2
+  selector:
+    matchLabels:
+      app: papyrus
+  template:
+    metadata:
+      labels:
+        app: papyrus
+    spec:
+      containers:
+        - name: papyrus
+          image: ghcr.io/starkware-libs/papyrus:dev
+          args:
+            - "--base_layer.node_url"
+            - "$(BASE_LAYER_NODE_URL)"
+          envFrom:
+            - configMapRef:
+                name: papyrus-config
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: papyrus-data
+              mountPath: /app/data
+  volumeClaimTemplates:
+    - metadata:
+        name: papyrus-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: papyrus-service
+spec:
+  clusterIP: None
+  selector:
+    app: papyrus
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8080
+      targetPort: 8080

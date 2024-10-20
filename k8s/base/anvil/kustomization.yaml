@@ -3,3 +3,7 @@ kind: Kustomization
 
 resources:
   - anvil.yaml
+
+configMapGenerator:
+  - name: anvil-config
+    env: .env.local

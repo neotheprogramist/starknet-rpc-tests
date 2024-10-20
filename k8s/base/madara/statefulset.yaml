@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: madara
+spec:
+  serviceName: madara-service
+  replicas: 2
+  selector:
+    matchLabels:
+      app: madara
+  template:
+    metadata:
+      labels:
+        app: madara
+    spec:
+      containers:
+        - name: madara
+          image: docker.io/uacias/madara:latest
+          envFrom:
+            - secretRef:
+                name: secret
+            - configMapRef:
+                name: madara-config
+          ports:
+            - containerPort: 9944
+          volumeMounts:
+            - name: madara-data
+              mountPath: /madara/data
+  volumeClaimTemplates:
+    - metadata:
+        name: madara-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: madara-service
+spec:
+  clusterIP: None
+  selector:
+    app: madara
+  ports:
+    - name: http
+      protocol: TCP
+      port: 9944
+      targetPort: 9944
