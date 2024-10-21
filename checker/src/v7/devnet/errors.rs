@@ -1,13 +1,13 @@
-use starknet_types_core::felt::FromStrError;
-use thiserror::Error;
-
-use crate::v7::rpc::{
+use openrpc_checker::v7::{
     endpoints::{
         declare_contract::{ClassHashParseError, RunnerError},
         errors::{NonAsciiNameError, RpcError},
     },
     providers::provider::ProviderError,
 };
+use starknet_types_core::felt::FromStrError;
+use thiserror::Error;
+
 #[derive(Error, Debug)]
 pub enum DevnetError {
     #[error(transparent)]

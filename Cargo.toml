@@ -14,6 +14,7 @@ colored = "2.1.0"
 crypto-bigint = "0.5.5"
 lambdaworks-math = { version = "0.7.0", default-features = false }
 num-bigint = { version = "0.4", features = ["serde"], default-features = false }
+openrpc-checker = { git = "https://github.com/neotheprogramist/starknet-rpc-tests.git", rev = "6ece9c34188d7f85500d5cef319646e8d78223cf" }
 pathfinder-types = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "db8788d1ab136846995038744445c50e5580f7ad" }
 rand = "0.8.5"
 regex = "1.10.6"

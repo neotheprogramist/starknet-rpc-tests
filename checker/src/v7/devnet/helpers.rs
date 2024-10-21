@@ -1,26 +1,27 @@
 use super::endpoints::postman_load_l1_messaging_contract;
+use super::errors::DevnetError;
 use super::models::PostmanLoadL1MessagingContractParams;
-use crate::v7::devnet::errors::DevnetError;
 use crate::v7::devnet::models::MsgToL2;
-use crate::v7::rpc::accounts::account::{Account, AccountError};
-use crate::v7::rpc::accounts::creation::create::{create_account, AccountType};
-use crate::v7::rpc::accounts::creation::helpers::get_chain_id;
-use crate::v7::rpc::accounts::deployment::deploy::deploy_account;
-use crate::v7::rpc::accounts::deployment::structs::{ValidatedWaitParams, WaitForTx};
-use crate::v7::rpc::accounts::single_owner::{ExecutionEncoding, SingleOwnerAccount};
-use crate::v7::rpc::contract::factory::ContractFactory;
-use crate::v7::rpc::endpoints::declare_contract::{
+
+use openrpc_checker::v7::accounts::account::{Account, AccountError};
+use openrpc_checker::v7::accounts::creation::create::{create_account, AccountType};
+use openrpc_checker::v7::accounts::creation::helpers::get_chain_id;
+use openrpc_checker::v7::accounts::deployment::deploy::deploy_account;
+use openrpc_checker::v7::accounts::deployment::structs::{ValidatedWaitParams, WaitForTx};
+use openrpc_checker::v7::accounts::single_owner::{ExecutionEncoding, SingleOwnerAccount};
+use openrpc_checker::v7::contract::factory::ContractFactory;
+use openrpc_checker::v7::endpoints::declare_contract::{
     extract_class_hash_from_error, parse_class_hash_from_error, RunnerError,
 };
-use crate::v7::rpc::endpoints::errors::{CallError, RpcError};
-use crate::v7::rpc::endpoints::utils::{
+use openrpc_checker::v7::endpoints::errors::{CallError, RpcError};
+use openrpc_checker::v7::endpoints::utils::{
     get_compiled_contract, get_selector_from_name, setup_generated_account, validate_inputs,
     wait_for_sent_transaction,
 };
-use crate::v7::rpc::providers::jsonrpc::{HttpTransport, JsonRpcClient};
-use crate::v7::rpc::providers::provider::{Provider, ProviderError};
-use crate::v7::rpc::signers::key_pair::SigningKey;
-use crate::v7::rpc::signers::local_wallet::LocalWallet;
+use openrpc_checker::v7::providers::jsonrpc::{HttpTransport, JsonRpcClient};
+use openrpc_checker::v7::providers::provider::{Provider, ProviderError};
+use openrpc_checker::v7::signers::key_pair::SigningKey;
+use openrpc_checker::v7::signers::local_wallet::LocalWallet;
 use rand::rngs::StdRng;
 use rand::RngCore;
 use rand::SeedableRng;
