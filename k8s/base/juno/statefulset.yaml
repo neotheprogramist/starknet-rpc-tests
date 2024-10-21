@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: juno
 spec:
-  serviceName: juno-service
+  serviceName: juno
   replicas: 2
   selector:
     matchLabels:
@@ -20,10 +20,10 @@ spec:
           args:
             - |
               echo "Copying data for juno instance $(hostname)..." && \
-              cp -r /tmp/data/juno/juno-sepolia /var/lib/juno
+              cp -r /mnt/data/juno/juno-sepolia /var/lib/juno
           volumeMounts:
-            - name: juno-setup-data
-              mountPath: /tmp/data/juno
+            - name: juno-setup
+              mountPath: /mnt/data/juno
             - name: juno-data
               mountPath: /var/lib/juno
       containers:
@@ -47,25 +47,25 @@ spec:
             - configMapRef:
                 name: juno-config
           volumeMounts:
-            - name: juno-data
+            - name: juno
               mountPath: /var/lib/juno
       volumes:
-        - name: juno-setup-data
+        - name: juno-setup
           persistentVolumeClaim:
-            claimName: juno-setup-data-pvc
+            claimName: juno-setup
   volumeClaimTemplates:
     - metadata:
-        name: juno-data
+        name: juno
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 10Gi
+            storage: 24Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: juno-service
+  name: juno
 spec:
   clusterIP: None
   selector:

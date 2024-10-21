@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: pathfinder
 spec:
-  serviceName: pathfinder-service
+  serviceName: pathfinder
   replicas: 2
   selector:
     matchLabels:
@@ -24,11 +24,11 @@ spec:
           args:
             - |
               echo "Copying data for pathfinder instance $(hostname)..." && \
-              cp /tmp/data/pathfinder/testnet-sepolia.sqlite /usr/share/pathfinder/data/testnet-sepolia.sqlite
+              cp /mnt/data/pathfinder/testnet-sepolia.sqlite /usr/share/pathfinder/data/testnet-sepolia.sqlite
           volumeMounts:
-            - name: pathfinder-setup-data
-              mountPath: /tmp/data/pathfinder
-            - name: pathfinder-data
+            - name: pathfinder-setup
+              mountPath: /mnt/data/pathfinder
+            - name: pathfinder
               mountPath: /usr/share/pathfinder/data
       containers:
         - name: pathfinder
@@ -41,25 +41,25 @@ spec:
             - configMapRef:
                 name: pathfinder-config
           volumeMounts:
-            - name: pathfinder-data
+            - name: pathfinder
               mountPath: /usr/share/pathfinder/data
       volumes:
-        - name: pathfinder-setup-data
+        - name: pathfinder-setup
           persistentVolumeClaim:
-            claimName: pathfinder-setup-data-pvc
+            claimName: pathfinder-setup
   volumeClaimTemplates:
     - metadata:
-        name: pathfinder-data
+        name: pathfinder
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 10Gi
+            storage: 24Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: pathfinder-service
+  name: pathfinder
 spec:
   clusterIP: None
   selector:

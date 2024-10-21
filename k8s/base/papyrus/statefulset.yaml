@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: papyrus
 spec:
-  serviceName: papyrus-service
+  serviceName: papyrus
   replicas: 2
   selector:
     matchLabels:
@@ -25,21 +25,21 @@ spec:
           ports:
             - containerPort: 8080
           volumeMounts:
-            - name: papyrus-data
+            - name: papyrus
               mountPath: /app/data
   volumeClaimTemplates:
     - metadata:
-        name: papyrus-data
+        name: papyrus
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 10Gi
+            storage: 24Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: papyrus-service
+  name: papyrus
 spec:
   clusterIP: None
   selector:
