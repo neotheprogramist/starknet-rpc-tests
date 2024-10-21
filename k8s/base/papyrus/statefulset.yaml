@@ -4,7 +4,7 @@ metadata:
   name: papyrus
 spec:
   serviceName: papyrus
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: papyrus

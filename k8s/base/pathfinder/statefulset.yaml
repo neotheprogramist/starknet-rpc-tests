@@ -4,7 +4,7 @@ metadata:
   name: pathfinder
 spec:
   serviceName: pathfinder
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: pathfinder

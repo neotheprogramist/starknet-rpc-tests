@@ -4,7 +4,7 @@ metadata:
   name: madara
 spec:
   serviceName: madara
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: madara
@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: madara
-          image: docker.io/uacias/madara:latest
+          image: docker.io/uacias/madara:v1.0.0
           envFrom:
             - secretRef:
                 name: secret

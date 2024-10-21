@@ -15,6 +15,9 @@ WORKDIR /usr/src/
 RUN git clone https://github.com/madara-alliance/madara.git
 WORKDIR /usr/src/madara/
 
+# Checkout the specific commit
+RUN git checkout 166ec294d91e46d34419d224a94cadcfdfc5926e
+
 # Installing scarb
 ENV SCARB_VERSION="v2.8.2"
 ENV SCARB_REPO="https://github.com/software-mansion/scarb/releases/download"
@@ -45,7 +48,7 @@ WORKDIR /usr/local/bin
 # Copy the compiled binary from the builder stage
 COPY --from=builder /usr/src/madara/target/release/madara .
 
-# chain presets to be monted at startup
+# chain presets to be mounted at startup
 VOLUME /usr/local/bin/crates/primitives/chain_config/presets
 VOLUME /usr/local/bin/crates/primitives/chain_config/resources
 
