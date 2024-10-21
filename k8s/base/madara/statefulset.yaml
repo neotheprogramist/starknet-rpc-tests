@@ -3,7 +3,7 @@ kind: StatefulSet
 metadata:
   name: madara
 spec:
-  serviceName: madara-service
+  serviceName: madara
   replicas: 2
   selector:
     matchLabels:
@@ -24,21 +24,21 @@ spec:
           ports:
             - containerPort: 9944
           volumeMounts:
-            - name: madara-data
+            - name: madara
               mountPath: /madara/data
   volumeClaimTemplates:
     - metadata:
-        name: madara-data
+        name: madara
       spec:
         accessModes: ["ReadWriteOnce"]
         resources:
           requests:
-            storage: 10Gi
+            storage: 24Gi
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: madara-service
+  name: madara
 spec:
   clusterIP: None
   selector:

@@ -66,7 +66,6 @@ impl From<ProviderError> for CreationError {
 
 impl From<String> for CreationError {
     fn from(err: String) -> Self {
-        // Assuming you want to treat String errors as RpcError variants of CreationError
         CreationError::RpcError(err)
     }
 }
