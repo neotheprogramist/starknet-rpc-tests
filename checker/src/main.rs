@@ -5,6 +5,7 @@ mod v7;
 use args::{Args, Version};
 use clap::Parser;
 use colored::*;
+use openrpc_checker::v6::endpoints::test_rpc_endpoints_v0_0_6;
 use openrpc_checker::v7::endpoints::test_rpc_endpoints_v0_0_7;
 use tracing::error;
 use v5 as V5;
@@ -58,12 +59,9 @@ async fn main() -> Result<(), String> {
                 }
             }
 
-            if let Err(e) = V6::rpc::endpoints::test_rpc_endpoints_v0_0_6(
-                args.url.clone(),
-                &args.sierra_path,
-                &args.casm_path,
-            )
-            .await
+            if let Err(e) =
+                test_rpc_endpoints_v0_0_6(args.url.clone(), &args.sierra_path, &args.casm_path)
+                    .await
             {
                 error!("Failure: {}", e.to_string().red());
             }
