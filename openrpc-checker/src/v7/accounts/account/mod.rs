@@ -69,11 +69,11 @@ pub trait Account: ExecutionEncoder + Sized {
         query_only: bool,
     ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>> + Send;
 
-    async fn sign_execution_v3(
+    fn sign_execution_v3(
         &self,
         execution: &RawExecutionV3,
         query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError>;
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>>;
 
     fn sign_declaration_v2(
         &self,
@@ -81,11 +81,11 @@ pub trait Account: ExecutionEncoder + Sized {
         query_only: bool,
     ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>> + Send;
 
-    async fn sign_declaration_v3(
+    fn sign_declaration_v3(
         &self,
         declaration: &RawDeclarationV3,
         query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError>;
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>>;
 
     // async fn sign_legacy_declaration(
     //     &self,
@@ -170,10 +170,12 @@ pub trait ConnectedAccount: Account {
         BlockId::Tag(BlockTag::Latest)
     }
 
-    async fn get_nonce(&self) -> Result<Felt, ProviderError> {
-        self.provider()
-            .get_nonce(self.block_id(), self.address())
-            .await
+    fn get_nonce(&self) -> impl std::future::Future<Output = Result<Felt, ProviderError>> {
+        async move {
+            self.provider()
+                .get_nonce(self.block_id(), self.address())
+                .await
+        }
     }
 }
 

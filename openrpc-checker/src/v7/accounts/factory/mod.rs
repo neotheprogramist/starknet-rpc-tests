@@ -108,11 +108,11 @@ pub trait AccountFactory: Sized {
         query_only: bool,
     ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>> + Send;
 
-    async fn sign_deployment_v3(
+    fn sign_deployment_v3(
         &self,
         deployment: &RawAccountDeploymentV3,
         query_only: bool,
-    ) -> Result<Vec<Felt>, Self::SignError>;
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, Self::SignError>>;
 
     fn deploy_v1(&self, salt: Felt) -> AccountDeploymentV1<Self> {
         AccountDeploymentV1::new(salt, self)
