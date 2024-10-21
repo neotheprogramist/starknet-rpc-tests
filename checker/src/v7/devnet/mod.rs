@@ -21,7 +21,7 @@ use std::future::Future;
 use tracing::{error, info};
 use url::Url;
 
-use crate::v7::rpc::endpoints::utils::restart_devnet;
+use openrpc_checker::v7::endpoints::utils::restart_devnet;
 
 pub struct Devnet {
     pub url: Url,

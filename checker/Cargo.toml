@@ -9,8 +9,10 @@ clap_derive.workspace = true
 clap.workspace = true
 colored.workspace = true
 crypto-bigint.workspace = true
+crypto-utils.workspace = true
 lambdaworks-math.workspace = true
 num-bigint.workspace = true
+openrpc-checker.workspace = true
 rand.workspace = true
 regex.workspace = true
 reqwest.workspace = true
@@ -26,7 +28,6 @@ tokio.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true
 url.workspace = true
-crypto-utils.workspace = true
 
 [features]
 no_unknown_fields = []
