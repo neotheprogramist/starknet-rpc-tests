@@ -119,21 +119,23 @@ pub trait Provider {
     ) -> impl std::future::Future<Output = Result<Vec<FeeEstimate<Felt>>, ProviderError>>;
 
     /// Same as [estimate_fee], but only with one estimate.
-    async fn estimate_fee_single(
+    fn estimate_fee_single(
         &self,
         request: BroadcastedTxn<Felt>,
         simulation_flags: Vec<String>,
         block_id: BlockId<Felt>,
-    ) -> Result<FeeEstimate<Felt>, ProviderError> {
-        let mut result = self
-            .estimate_fee(vec![request], simulation_flags, block_id)
-            .await?;
+    ) -> impl std::future::Future<Output = Result<FeeEstimate<Felt>, ProviderError>> {
+        async move {
+            let mut result = self
+                .estimate_fee(vec![request], simulation_flags, block_id)
+                .await?;
 
-        if result.len() == 1 {
-            // Unwrapping here is safe becuase we already checked length
-            Ok(result.pop().unwrap())
-        } else {
-            Err(ProviderError::ArrayLengthMismatch)
+            if result.len() == 1 {
+                // Unwrapping here is safe because we already checked the length
+                Ok(result.pop().unwrap())
+            } else {
+                Err(ProviderError::ArrayLengthMismatch)
+            }
         }
     }
 
@@ -217,21 +219,24 @@ pub trait Provider {
     ) -> impl std::future::Future<Output = Result<Vec<TraceBlockTransactionsResult<Felt>>, ProviderError>>;
 
     /// Same as [simulate_transactions], but only with one simulation.
-    async fn simulate_transaction(
+    fn simulate_transaction(
         &self,
         block_id: BlockId<Felt>,
         transaction: BroadcastedTxn<Felt>,
         simulation_flags: Vec<SimulationFlag>,
-    ) -> Result<SimulateTransactionsResult<Felt>, ProviderError> {
-        let mut result = self
-            .simulate_transactions(block_id, vec![transaction], simulation_flags)
-            .await?;
+    ) -> impl std::future::Future<Output = Result<SimulateTransactionsResult<Felt>, ProviderError>>
+    {
+        async move {
+            let mut result = self
+                .simulate_transactions(block_id, vec![transaction], simulation_flags)
+                .await?;
 
-        if result.len() == 1 {
-            // Unwrapping here is safe becuase we already checked length
-            Ok(result.pop().unwrap())
-        } else {
-            Err(ProviderError::ArrayLengthMismatch)
+            if result.len() == 1 {
+                // Unwrapping here is safe becuase we already checked length
+                Ok(result.pop().unwrap())
+            } else {
+                Err(ProviderError::ArrayLengthMismatch)
+            }
         }
     }
 }

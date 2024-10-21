@@ -67,7 +67,7 @@ pub trait RpcEndpoints {
     ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
 
     #[allow(clippy::too_many_arguments)]
-    async fn add_invoke_transaction_v1(
+    fn add_invoke_transaction_v1(
         &self,
         sierra_path: &str,
         casm_path: &str,
@@ -77,10 +77,10 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn add_invoke_transaction_v3(
+    fn add_invoke_transaction_v3(
         &self,
         sierra_path: &str,
         casm_path: &str,
@@ -90,24 +90,10 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn invoke_contract_v1(
-        &self,
-        url: Url,
-        sierra_path: &str,
-        casm_path: &str,
-        account_class_hash: Option<Felt>,
-        account_address: Option<Felt>,
-        private_key: Option<Felt>,
-        erc20_strk_contract_address: Option<Felt>,
-        erc20_eth_contract_address: Option<Felt>,
-        amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
-
-    #[allow(clippy::too_many_arguments)]
-    async fn invoke_contract_v3(
+    fn invoke_contract_v1(
         &self,
         url: Url,
         sierra_path: &str,
@@ -118,14 +104,10 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError>;
-
-    async fn block_number(&self, url: Url) -> Result<u64, RpcError>;
-
-    async fn chain_id(&self, url: Url) -> Result<Felt, RpcError>;
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn call(
+    fn invoke_contract_v3(
         &self,
         url: Url,
         sierra_path: &str,
@@ -136,10 +118,14 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Vec<Felt>, RpcError>;
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
+
+    fn block_number(&self, url: Url) -> impl std::future::Future<Output = Result<u64, RpcError>>;
+
+    fn chain_id(&self, url: Url) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn estimate_message_fee(
+    fn call(
         &self,
         url: Url,
         sierra_path: &str,
@@ -150,25 +136,10 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<FeeEstimate<Felt>, RpcError>;
-
-    async fn get_block_transaction_count(&self, url: Url) -> Result<u64, RpcError>;
-
-    async fn get_block_with_tx_hashes(&self, url: Url)
-        -> Result<BlockWithTxHashes<Felt>, RpcError>;
-
-    async fn get_block_with_txs(&self, url: Url) -> Result<BlockWithTxs<Felt>, RpcError>;
-
-    async fn get_state_update(&self, url: Url) -> Result<StateUpdate<Felt>, RpcError>;
-
-    async fn get_storage_at(
-        &self,
-        url: Url,
-        erc20_eth_contract_address: Option<Felt>,
-    ) -> Result<Felt, RpcError>;
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn get_transaction_status_succeeded(
+    fn estimate_message_fee(
         &self,
         url: Url,
         sierra_path: &str,
@@ -179,10 +150,36 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<TxnStatus, RpcError>;
+    ) -> impl std::future::Future<Output = Result<FeeEstimate<Felt>, RpcError>>;
+
+    fn get_block_transaction_count(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<u64, RpcError>>;
+
+    fn get_block_with_tx_hashes(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<BlockWithTxHashes<Felt>, RpcError>>;
+
+    fn get_block_with_txs(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<BlockWithTxs<Felt>, RpcError>>;
+
+    fn get_state_update(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<StateUpdate<Felt>, RpcError>>;
+
+    fn get_storage_at(
+        &self,
+        url: Url,
+        erc20_eth_contract_address: Option<Felt>,
+    ) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn get_transaction_by_hash_invoke(
+    fn get_transaction_status_succeeded(
         &self,
         url: Url,
         sierra_path: &str,
@@ -193,36 +190,10 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<InvokeTxnV1<Felt>, RpcError>;
+    ) -> impl std::future::Future<Output = Result<TxnStatus, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn get_transaction_by_hash_deploy_acc(
-        &self,
-        url: Url,
-        account_class_hash: Option<Felt>,
-        account_address: Option<Felt>,
-        private_key: Option<Felt>,
-        erc20_strk_contract_address: Option<Felt>,
-        erc20_eth_contract_address: Option<Felt>,
-        amount_per_test: Option<Felt>,
-    ) -> Result<DeployAccountTxnV3<Felt>, RpcError>;
-
-    #[allow(clippy::too_many_arguments)]
-    async fn get_transaction_by_block_id_and_index(
-        &self,
-        url: Url,
-        account_class_hash: Option<Felt>,
-        account_address: Option<Felt>,
-        private_key: Option<Felt>,
-        erc20_strk_contract_address: Option<Felt>,
-        erc20_eth_contract_address: Option<Felt>,
-        amount_per_test: Option<Felt>,
-    ) -> Result<Txn<Felt>, RpcError>;
-
-    async fn get_transaction_by_hash_non_existent_tx(&self, url: Url) -> Result<(), RpcError>;
-
-    #[allow(clippy::too_many_arguments)]
-    async fn get_transaction_receipt(
+    fn get_transaction_by_hash_invoke(
         &self,
         url: Url,
         sierra_path: &str,
@@ -233,7 +204,50 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<InvokeTxnReceipt<Felt>, RpcError>;
+    ) -> impl std::future::Future<Output = Result<InvokeTxnV1<Felt>, RpcError>>;
+
+    #[allow(clippy::too_many_arguments)]
+    fn get_transaction_by_hash_deploy_acc(
+        &self,
+        url: Url,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> impl std::future::Future<Output = Result<DeployAccountTxnV3<Felt>, RpcError>>;
+
+    #[allow(clippy::too_many_arguments)]
+    fn get_transaction_by_block_id_and_index(
+        &self,
+        url: Url,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> impl std::future::Future<Output = Result<Txn<Felt>, RpcError>>;
+
+    fn get_transaction_by_hash_non_existent_tx(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<(), RpcError>>;
+
+    #[allow(clippy::too_many_arguments)]
+    fn get_transaction_receipt(
+        &self,
+        url: Url,
+        sierra_path: &str,
+        casm_path: &str,
+        account_class_hash: Option<Felt>,
+        account_address: Option<Felt>,
+        private_key: Option<Felt>,
+        erc20_strk_contract_address: Option<Felt>,
+        erc20_eth_contract_address: Option<Felt>,
+        amount_per_test: Option<Felt>,
+    ) -> impl std::future::Future<Output = Result<InvokeTxnReceipt<Felt>, RpcError>>;
 
     // TODO: fix that
     // async fn get_transaction_receipt_revert(
@@ -250,7 +264,7 @@ pub trait RpcEndpoints {
     // ) -> Result<(), RpcError>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn get_class(
+    fn get_class(
         &self,
         url: Url,
         sierra_path: &str,
@@ -261,10 +275,10 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<ContractClass<Felt>, RpcError>;
+    ) -> impl std::future::Future<Output = Result<ContractClass<Felt>, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn get_class_hash_at(
+    fn get_class_hash_at(
         &self,
         url: Url,
         sierra_path: &str,
@@ -275,10 +289,10 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Felt, RpcError>;
+    ) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
-    async fn get_class_at(
+    fn get_class_at(
         &self,
         url: Url,
         sierra_path: &str,
@@ -289,11 +303,11 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<ContractClass<Felt>, RpcError>;
+    ) -> impl std::future::Future<Output = Result<ContractClass<Felt>, RpcError>>;
 }
 
 impl RpcEndpoints for Rpc {
-    async fn add_declare_transaction_v2(
+    fn add_declare_transaction_v2(
         &self,
         sierra_path: &str,
         casm_path: &str,
@@ -303,22 +317,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Felt, RpcError> {
-        add_declare_transaction_v2(
-            self.url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send {
+        async move {
+            add_declare_transaction_v2(
+                self.url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn add_declare_transaction_v3(
+    fn add_declare_transaction_v3(
         &self,
         sierra_path: &str,
         casm_path: &str,
@@ -328,22 +344,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Felt, RpcError> {
-        add_declare_transaction_v3(
-            self.url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<Felt, RpcError>> {
+        async move {
+            add_declare_transaction_v3(
+                self.url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn add_invoke_transaction_v1(
+    fn add_invoke_transaction_v1(
         &self,
         sierra_path: &str,
         casm_path: &str,
@@ -353,22 +371,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
-        add_invoke_transaction_v1(
-            self.url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>> {
+        async move {
+            add_invoke_transaction_v1(
+                self.url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn add_invoke_transaction_v3(
+    fn add_invoke_transaction_v3(
         &self,
         sierra_path: &str,
         casm_path: &str,
@@ -378,22 +398,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
-        add_invoke_transaction_v3(
-            self.url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>> {
+        async move {
+            add_invoke_transaction_v3(
+                self.url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn invoke_contract_v1(
+    fn invoke_contract_v1(
         &self,
         url: Url,
         sierra_path: &str,
@@ -404,22 +426,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
-        invoke_contract_v1(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>> {
+        async move {
+            invoke_contract_v1(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn invoke_contract_v3(
+    fn invoke_contract_v3(
         &self,
         url: Url,
         sierra_path: &str,
@@ -430,30 +454,32 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
-        invoke_contract_v3(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>> {
+        async move {
+            invoke_contract_v3(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn block_number(&self, url: Url) -> Result<u64, RpcError> {
-        block_number(url.clone()).await
+    fn block_number(&self, url: Url) -> impl std::future::Future<Output = Result<u64, RpcError>> {
+        async move { block_number(url.clone()).await }
     }
 
-    async fn chain_id(&self, url: Url) -> Result<Felt, RpcError> {
-        chain_id(url.clone()).await
+    fn chain_id(&self, url: Url) -> impl std::future::Future<Output = Result<Felt, RpcError>> {
+        async move { chain_id(url.clone()).await }
     }
 
-    async fn call(
+    fn call(
         &self,
         url: Url,
         sierra_path: &str,
@@ -464,22 +490,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Vec<Felt>, RpcError> {
-        call(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, RpcError>> {
+        async move {
+            call(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn estimate_message_fee(
+    fn estimate_message_fee(
         &self,
         url: Url,
         sierra_path: &str,
@@ -490,49 +518,60 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<FeeEstimate<Felt>, RpcError> {
-        estimate_message_fee(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<FeeEstimate<Felt>, RpcError>> {
+        async move {
+            estimate_message_fee(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn get_block_transaction_count(&self, url: Url) -> Result<u64, RpcError> {
-        get_block_transaction_count(url.clone()).await
-    }
-
-    async fn get_block_with_tx_hashes(
+    fn get_block_transaction_count(
         &self,
         url: Url,
-    ) -> Result<BlockWithTxHashes<Felt>, RpcError> {
-        get_block_with_tx_hashes(url.clone()).await
+    ) -> impl std::future::Future<Output = Result<u64, RpcError>> {
+        async move { get_block_transaction_count(url.clone()).await }
     }
 
-    async fn get_block_with_txs(&self, url: Url) -> Result<BlockWithTxs<Felt>, RpcError> {
-        get_block_with_txs(url.clone()).await
+    fn get_block_with_tx_hashes(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<BlockWithTxHashes<Felt>, RpcError>> {
+        async move { get_block_with_tx_hashes(url.clone()).await }
     }
 
-    async fn get_state_update(&self, url: Url) -> Result<StateUpdate<Felt>, RpcError> {
-        get_state_update(url.clone()).await
+    fn get_block_with_txs(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<BlockWithTxs<Felt>, RpcError>> {
+        async move { get_block_with_txs(url.clone()).await }
     }
 
-    async fn get_storage_at(
+    fn get_state_update(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<StateUpdate<Felt>, RpcError>> {
+        async move { get_state_update(url.clone()).await }
+    }
+
+    fn get_storage_at(
         &self,
         url: Url,
         erc20_eth_contract_address: Option<Felt>,
-    ) -> Result<Felt, RpcError> {
-        get_storage_at(url.clone(), erc20_eth_contract_address).await
+    ) -> impl std::future::Future<Output = Result<starknet_types_core::felt::Felt, RpcError>> {
+        async move { get_storage_at(url.clone(), erc20_eth_contract_address).await }
     }
 
-    async fn get_transaction_status_succeeded(
+    fn get_transaction_status_succeeded(
         &self,
         url: Url,
         sierra_path: &str,
@@ -543,22 +582,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<TxnStatus, RpcError> {
-        get_transaction_status_succeeded(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<TxnStatus, RpcError>> {
+        async move {
+            get_transaction_status_succeeded(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn get_transaction_by_hash_invoke(
+    fn get_transaction_by_hash_invoke(
         &self,
         url: Url,
         sierra_path: &str,
@@ -569,22 +610,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<InvokeTxnV1<Felt>, RpcError> {
-        get_transaction_by_hash_invoke(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<InvokeTxnV1<Felt>, RpcError>> {
+        async move {
+            get_transaction_by_hash_invoke(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn get_transaction_by_hash_deploy_acc(
+    fn get_transaction_by_hash_deploy_acc(
         &self,
         url: Url,
         account_class_hash: Option<Felt>,
@@ -593,20 +636,22 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
-        get_transaction_by_hash_deploy_acc(
-            url.clone(),
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<DeployAccountTxnV3<Felt>, RpcError>> {
+        async move {
+            get_transaction_by_hash_deploy_acc(
+                url.clone(),
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn get_transaction_by_block_id_and_index(
+    fn get_transaction_by_block_id_and_index(
         &self,
         url: Url,
         account_class_hash: Option<Felt>,
@@ -615,24 +660,29 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Txn<Felt>, RpcError> {
-        get_transaction_by_block_id_and_index(
-            url.clone(),
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<Txn<Felt>, RpcError>> {
+        async move {
+            get_transaction_by_block_id_and_index(
+                url.clone(),
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn get_transaction_by_hash_non_existent_tx(&self, url: Url) -> Result<(), RpcError> {
-        get_transaction_by_hash_non_existent_tx(url.clone()).await
+    fn get_transaction_by_hash_non_existent_tx(
+        &self,
+        url: Url,
+    ) -> impl std::future::Future<Output = Result<(), RpcError>> {
+        async move { get_transaction_by_hash_non_existent_tx(url.clone()).await }
     }
 
-    async fn get_transaction_receipt(
+    fn get_transaction_receipt(
         &self,
         url: Url,
         sierra_path: &str,
@@ -643,19 +693,21 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<InvokeTxnReceipt<Felt>, RpcError> {
-        get_transaction_receipt(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<InvokeTxnReceipt<Felt>, RpcError>> {
+        async move {
+            get_transaction_receipt(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
     // TODO: fix that
     // async fn get_transaction_receipt_revert(
@@ -684,7 +736,7 @@ impl RpcEndpoints for Rpc {
     //     .await
     // }
 
-    async fn get_class(
+    fn get_class(
         &self,
         url: Url,
         sierra_path: &str,
@@ -695,22 +747,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<ContractClass<Felt>, RpcError> {
-        get_class(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<ContractClass<Felt>, RpcError>> {
+        async move {
+            get_class(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn get_class_hash_at(
+    fn get_class_hash_at(
         &self,
         url: Url,
         sierra_path: &str,
@@ -721,22 +775,24 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Felt, RpcError> {
-        get_class_hash_at(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<Felt, RpcError>> {
+        async move {
+            get_class_hash_at(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 
-    async fn get_class_at(
+    fn get_class_at(
         &self,
         url: Url,
         sierra_path: &str,
@@ -747,19 +803,21 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<ContractClass<Felt>, RpcError> {
-        get_class_at(
-            url.clone(),
-            sierra_path,
-            casm_path,
-            account_class_hash,
-            account_address,
-            private_key,
-            erc20_strk_contract_address,
-            erc20_eth_contract_address,
-            amount_per_test,
-        )
-        .await
+    ) -> impl std::future::Future<Output = Result<ContractClass<Felt>, RpcError>> {
+        async move {
+            get_class_at(
+                url.clone(),
+                sierra_path,
+                casm_path,
+                account_class_hash,
+                account_address,
+                private_key,
+                erc20_strk_contract_address,
+                erc20_eth_contract_address,
+                amount_per_test,
+            )
+            .await
+        }
     }
 }
 
