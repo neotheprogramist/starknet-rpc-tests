@@ -24,7 +24,7 @@ spec:
           volumeMounts:
             - name: juno-setup
               mountPath: /mnt/data/juno
-            - name: juno-data
+            - name: juno
               mountPath: /var/lib/juno
       containers:
         - name: juno
@@ -53,6 +53,9 @@ spec:
         - name: juno-setup
           persistentVolumeClaim:
             claimName: juno-setup
+        - name: juno
+          persistentVolumeClaim:
+            claimName: juno
   volumeClaimTemplates:
     - metadata:
         name: juno
@@ -61,6 +64,7 @@ spec:
         resources:
           requests:
             storage: 24Gi
+
 ---
 apiVersion: v1
 kind: Service
