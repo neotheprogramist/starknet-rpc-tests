@@ -1,7 +1,7 @@
 use starknet_types_core::felt::FromStrError;
 use thiserror::Error;
 
-use crate::v5::rpc::{
+use openrpc_checker::v5::{
     endpoints::errors::{NonAsciiNameError, RpcError},
     providers::provider::ProviderError,
 };
