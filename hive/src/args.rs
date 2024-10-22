@@ -5,8 +5,12 @@ use url::Url;
 #[derive(Parser, Debug, Clone)]
 #[command(version, about, long_about = None, disable_version_flag = true)]
 pub struct Args {
-    #[arg(long, short = 'u', env, help = "URL of the L2 node")]
-    pub url: Url,
+    #[arg(
+        long,
+        env,
+        help = "A list of URLs for the service. A random URL from this list will be selected to send each test case."
+    )]
+    pub url_list: Vec<Url>,
 
     #[arg(long, short = 'l', env, help = "L1 network URL")]
     pub l1_network_url: Url,
@@ -92,15 +96,6 @@ pub struct Args {
         help = "ERC20 ETH contract address"
     )]
     pub erc20_eth_contract_address: Option<Felt>,
-
-    #[arg(
-        long,
-        short = 'd',
-        env,
-        default_value = "false",
-        help = "Run tests for StarkNet Devnet Endpoints"
-    )]
-    pub run_devnet_tests: bool,
 
     #[arg(
         long,
