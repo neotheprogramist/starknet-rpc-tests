@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["checker", "t8n", "t9n", "b11r", "crypto-utils", "openrpc-checker"]
+members = ["checker", "t8n", "t9n", "b11r", "crypto-utils", "openrpc-checker", "hive"]
 
 [workspace.package]
 edition = "2021"
