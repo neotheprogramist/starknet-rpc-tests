@@ -19,7 +19,12 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             - |
-              echo "Copying data for juno instance $(hostname)..." && \
+              echo "Waiting for data to be copied by juno-setup job..." && \
+              while [ ! -d /mnt/data/juno/juno-sepolia ]; do \
+                echo "Waiting for /mnt/data/juno/juno-sepolia to be available..."; \
+                sleep 5; \
+              done; \
+              echo "Data is available, starting copying..." && \
               cp -r /mnt/data/juno/juno-sepolia /var/lib/juno
           volumeMounts:
             - name: juno-setup
