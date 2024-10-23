@@ -50,6 +50,8 @@ pub enum RpcError {
     TransactionRejected(String),
     #[error("Txn failed {0}")]
     TransactionFailed(String),
+    #[error("Empty url error {0}")]
+    EmptyUrlList(String),
     #[error("Unexpected error occured: {0}")]
     Other(String),
 }
