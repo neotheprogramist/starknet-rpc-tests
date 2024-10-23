@@ -36,6 +36,9 @@ impl Rpc {
     pub fn new(url: Url) -> Result<Self, RpcError> {
         Ok(Self { url })
     }
+    pub fn set_url(&mut self, new_url: Url) {
+        self.url = new_url;
+    }
 }
 
 #[allow(dead_code)]
@@ -95,7 +98,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn invoke_contract_v1(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -109,7 +111,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn invoke_contract_v3(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -120,14 +121,13 @@ pub trait RpcEndpoints {
         amount_per_test: Option<Felt>,
     ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
 
-    fn block_number(&self, url: Url) -> impl std::future::Future<Output = Result<u64, RpcError>>;
+    fn block_number(&self) -> impl std::future::Future<Output = Result<u64, RpcError>>;
 
-    fn chain_id(&self, url: Url) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
+    fn chain_id(&self) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn call(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -141,7 +141,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn estimate_message_fee(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -154,34 +153,28 @@ pub trait RpcEndpoints {
 
     fn get_block_transaction_count(
         &self,
-        url: Url,
     ) -> impl std::future::Future<Output = Result<u64, RpcError>>;
 
     fn get_block_with_tx_hashes(
         &self,
-        url: Url,
     ) -> impl std::future::Future<Output = Result<BlockWithTxHashes<Felt>, RpcError>>;
 
     fn get_block_with_txs(
         &self,
-        url: Url,
     ) -> impl std::future::Future<Output = Result<BlockWithTxs<Felt>, RpcError>>;
 
     fn get_state_update(
         &self,
-        url: Url,
     ) -> impl std::future::Future<Output = Result<StateUpdate<Felt>, RpcError>>;
 
     fn get_storage_at(
         &self,
-        url: Url,
         erc20_eth_contract_address: Option<Felt>,
     ) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_status_succeeded(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -195,7 +188,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_by_hash_invoke(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -209,7 +201,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_by_hash_deploy_acc(
         &self,
-        url: Url,
         account_class_hash: Option<Felt>,
         account_address: Option<Felt>,
         private_key: Option<Felt>,
@@ -221,7 +212,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_by_block_id_and_index(
         &self,
-        url: Url,
         account_class_hash: Option<Felt>,
         account_address: Option<Felt>,
         private_key: Option<Felt>,
@@ -232,13 +222,11 @@ pub trait RpcEndpoints {
 
     fn get_transaction_by_hash_non_existent_tx(
         &self,
-        url: Url,
     ) -> impl std::future::Future<Output = Result<(), RpcError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_receipt(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -266,7 +254,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn get_class(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -280,7 +267,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn get_class_hash_at(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -294,7 +280,6 @@ pub trait RpcEndpoints {
     #[allow(clippy::too_many_arguments)]
     fn get_class_at(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -409,7 +394,6 @@ impl RpcEndpoints for Rpc {
 
     async fn invoke_contract_v1(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -420,7 +404,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
         invoke_contract_v1(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -435,7 +419,6 @@ impl RpcEndpoints for Rpc {
 
     async fn invoke_contract_v3(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -446,7 +429,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
         invoke_contract_v3(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -459,17 +442,16 @@ impl RpcEndpoints for Rpc {
         .await
     }
 
-    async fn block_number(&self, url: Url) -> Result<u64, RpcError> {
-        block_number(url.clone()).await
+    async fn block_number(&self) -> Result<u64, RpcError> {
+        block_number(self.url.clone()).await
     }
 
-    async fn chain_id(&self, url: Url) -> Result<Felt, RpcError> {
-        chain_id(url.clone()).await
+    async fn chain_id(&self) -> Result<Felt, RpcError> {
+        chain_id(self.url.clone()).await
     }
 
     async fn call(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -480,7 +462,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<Vec<Felt>, RpcError> {
         call(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -495,7 +477,6 @@ impl RpcEndpoints for Rpc {
 
     async fn estimate_message_fee(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -506,7 +487,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<FeeEstimate<Felt>, RpcError> {
         estimate_message_fee(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -519,36 +500,33 @@ impl RpcEndpoints for Rpc {
         .await
     }
 
-    async fn get_block_transaction_count(&self, url: Url) -> Result<u64, RpcError> {
-        get_block_transaction_count(url.clone()).await
+    async fn get_block_transaction_count(&self) -> Result<u64, RpcError> {
+        get_block_transaction_count(self.url.clone()).await
     }
 
-    async fn get_block_with_tx_hashes(
-        &self,
-        url: Url,
-    ) -> Result<BlockWithTxHashes<Felt>, RpcError> {
-        get_block_with_tx_hashes(url.clone()).await
+    async fn get_block_with_tx_hashes(&self) -> Result<BlockWithTxHashes<Felt>, RpcError> {
+        get_block_with_tx_hashes(self.url.clone()).await
     }
 
-    async fn get_block_with_txs(&self, url: Url) -> Result<BlockWithTxs<Felt>, RpcError> {
-        get_block_with_txs(url.clone()).await
+    async fn get_block_with_txs(&self) -> Result<BlockWithTxs<Felt>, RpcError> {
+        get_block_with_txs(self.url.clone()).await
     }
 
-    async fn get_state_update(&self, url: Url) -> Result<StateUpdate<Felt>, RpcError> {
-        get_state_update(url.clone()).await
+    async fn get_state_update(&self) -> Result<StateUpdate<Felt>, RpcError> {
+        get_state_update(self.url.clone()).await
     }
 
     async fn get_storage_at(
         &self,
-        url: Url,
+
         erc20_eth_contract_address: Option<Felt>,
     ) -> Result<starknet_types_core::felt::Felt, RpcError> {
-        get_storage_at(url.clone(), erc20_eth_contract_address).await
+        get_storage_at(self.url.clone(), erc20_eth_contract_address).await
     }
 
     async fn get_transaction_status_succeeded(
         &self,
-        url: Url,
+
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -559,7 +537,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<TxnStatus, RpcError> {
         get_transaction_status_succeeded(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -574,7 +552,6 @@ impl RpcEndpoints for Rpc {
 
     async fn get_transaction_by_hash_invoke(
         &self,
-        url: Url,
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -585,7 +562,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<InvokeTxnV1<Felt>, RpcError> {
         get_transaction_by_hash_invoke(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -600,7 +577,6 @@ impl RpcEndpoints for Rpc {
 
     async fn get_transaction_by_hash_deploy_acc(
         &self,
-        url: Url,
         account_class_hash: Option<Felt>,
         account_address: Option<Felt>,
         private_key: Option<Felt>,
@@ -609,7 +585,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
         get_transaction_by_hash_deploy_acc(
-            url.clone(),
+            self.url.clone(),
             account_class_hash,
             account_address,
             private_key,
@@ -622,7 +598,6 @@ impl RpcEndpoints for Rpc {
 
     async fn get_transaction_by_block_id_and_index(
         &self,
-        url: Url,
         account_class_hash: Option<Felt>,
         account_address: Option<Felt>,
         private_key: Option<Felt>,
@@ -631,7 +606,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<Txn<Felt>, RpcError> {
         get_transaction_by_block_id_and_index(
-            url.clone(),
+            self.url.clone(),
             account_class_hash,
             account_address,
             private_key,
@@ -642,13 +617,13 @@ impl RpcEndpoints for Rpc {
         .await
     }
 
-    async fn get_transaction_by_hash_non_existent_tx(&self, url: Url) -> Result<(), RpcError> {
-        get_transaction_by_hash_non_existent_tx(url.clone()).await
+    async fn get_transaction_by_hash_non_existent_tx(&self) -> Result<(), RpcError> {
+        get_transaction_by_hash_non_existent_tx(self.url.clone()).await
     }
 
     async fn get_transaction_receipt(
         &self,
-        url: Url,
+
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -659,7 +634,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<InvokeTxnReceipt<Felt>, RpcError> {
         get_transaction_receipt(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -700,7 +675,7 @@ impl RpcEndpoints for Rpc {
 
     async fn get_class(
         &self,
-        url: Url,
+
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -711,7 +686,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError> {
         get_class(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -726,7 +701,7 @@ impl RpcEndpoints for Rpc {
 
     async fn get_class_hash_at(
         &self,
-        url: Url,
+
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -737,7 +712,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<Felt, RpcError> {
         get_class_hash_at(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -752,7 +727,7 @@ impl RpcEndpoints for Rpc {
 
     async fn get_class_at(
         &self,
-        url: Url,
+
         sierra_path: &str,
         casm_path: &str,
         account_class_hash: Option<Felt>,
@@ -763,7 +738,7 @@ impl RpcEndpoints for Rpc {
         amount_per_test: Option<Felt>,
     ) -> Result<ContractClass<Felt>, RpcError> {
         get_class_at(
-            url.clone(),
+            self.url.clone(),
             sierra_path,
             casm_path,
             account_class_hash,
@@ -908,7 +883,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .invoke_contract_v1(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -937,7 +911,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .invoke_contract_v3(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -964,7 +937,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc.block_number(url.clone()).await {
+    match rpc.block_number().await {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -980,7 +953,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc.chain_id(url.clone()).await {
+    match rpc.chain_id().await {
         Ok(_) => {
             info!("{} {}", "✓ Rpc chain_id COMPATIBLE".green(), "✓".green())
         }
@@ -994,7 +967,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .call(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -1019,7 +991,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .estimate_message_fee(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -1045,7 +1016,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
             "✗".red()
         ),
     }
-    match rpc.get_block_transaction_count(url.clone()).await {
+    match rpc.get_block_transaction_count().await {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -1060,7 +1031,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
             "✗".red()
         ),
     }
-    match rpc.get_block_with_tx_hashes(url.clone()).await {
+    match rpc.get_block_with_tx_hashes().await {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -1076,7 +1047,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc.get_block_with_txs(url.clone()).await {
+    match rpc.get_block_with_txs().await {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -1092,7 +1063,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc.get_state_update(url.clone()).await {
+    match rpc.get_state_update().await {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -1108,10 +1079,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc
-        .get_storage_at(url.clone(), erc20_eth_contract_address)
-        .await
-    {
+    match rpc.get_storage_at(erc20_eth_contract_address).await {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -1129,7 +1097,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .get_transaction_status_succeeded(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -1158,7 +1125,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .get_transaction_by_hash_invoke(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -1187,7 +1153,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .get_transaction_by_hash_deploy_acc(
-            url.clone(),
             class_hash,
             account_address,
             private_key,
@@ -1214,7 +1179,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .get_transaction_by_block_id_and_index(
-            url.clone(),
             class_hash,
             account_address,
             private_key,
@@ -1239,10 +1203,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
         ),
     }
 
-    match rpc
-        .get_transaction_by_hash_non_existent_tx(url.clone())
-        .await
-    {
+    match rpc.get_transaction_by_hash_non_existent_tx().await {
         Ok(_) => {
             info!(
                 "{} {}",
@@ -1260,7 +1221,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .get_transaction_receipt(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -1318,7 +1278,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .get_class(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -1343,7 +1302,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .get_class_hash_at(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
@@ -1372,7 +1330,6 @@ pub async fn test_rpc_endpoints_v0_0_7(
 
     match rpc
         .get_class_at(
-            url.clone(),
             sierra_path,
             casm_path,
             class_hash,
