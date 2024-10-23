@@ -4,9 +4,10 @@ kind: Kustomization
 resources:
   - anvil
   - pathfinder
-  - juno
-  - papyrus
-  - madara
+  # - juno
+  # - papyrus
+  # - madara
+  - proxy
 
 secretGenerator:
   - name: secret
