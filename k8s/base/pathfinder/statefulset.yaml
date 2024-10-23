@@ -26,7 +26,7 @@ spec:
               echo "Waiting for data to be copied by pathfinder-setup job..." && \
               while [ ! -f /mnt/data/pathfinder/testnet-sepolia.sqlite ]; do \
                 echo "Waiting for /mnt/data/pathfinder/testnet-sepolia.sqlite to be available..."; \
-                sleep 10; \
+                sleep 5; \
               done; \
               echo "Data is available, starting copying..." && \
               cp /mnt/data/pathfinder/testnet-sepolia.sqlite /usr/share/pathfinder/data/testnet-sepolia.sqlite
