@@ -8,6 +8,7 @@ pub struct Args {
     #[arg(
         long,
         env,
+        num_args = 1..,
         help = "A list of URLs for the service. A random URL from this list will be selected to send each test case."
     )]
     pub url_list: Vec<Url>,
