@@ -1,0 +1,18 @@
+---
+- name: Manage CoreDNS ConfigMap in Kubernetes
+  hosts: localhost
+  tasks:
+    - name: Get current CoreDNS ConfigMap
+      command: kubectl -n kube-system get configmap coredns -o yaml
+      register: coredns_configmap
+
+    - name: Modify CoreDNS ConfigMap with rewrite rule
+      copy:
+        content: "{{ coredns_configmap.stdout | regex_replace('ready', 'ready\n        rewrite name exact alpha-sepolia.starknet.io server.default.svc.cluster.local') }}"
+        dest: /tmp/coredns-configmap.yaml
+
+    - name: Apply the updated CoreDNS ConfigMap
+      command: kubectl apply -f /tmp/coredns-configmap.yaml
+
+    - name: Rollout restart of CoreDNS deployment
+      command: kubectl -n kube-system rollout restart deployment coredns

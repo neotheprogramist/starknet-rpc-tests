@@ -12,5 +12,10 @@ print_in_blue "Delete cluster if exists"
 print_in_blue "Create new cluster..."
 ./scripts/cluster-create.sh
 
+
+print_in_blue "Updating coredns..."
+./scripts/coredns-update.sh
+
+
 print_in_blue "Deploy the app..."
 ./scripts/deploy.sh
