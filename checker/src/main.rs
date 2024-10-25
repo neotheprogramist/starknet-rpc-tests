@@ -16,7 +16,7 @@ use v7 as V7;
 #[tokio::main]
 async fn main() -> Result<(), String> {
     tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::INFO)
+        .with_max_level(tracing::Level::DEBUG)
         .init();
 
     let args = Args::parse();
