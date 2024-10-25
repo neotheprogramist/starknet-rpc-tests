@@ -24,8 +24,8 @@ spec:
           args:
             - |
               echo "Waiting for data to be copied by pathfinder-setup job..." && \
-              while lsof +D /mnt/data/pathfinder >/dev/null 2>&1; do \
-                echo "Files in //mnt/data/pathfinder are still being copied..."; \
+              while [ ! -f /mnt/data/pathfinder/ready ]; do \
+                echo "Waiting for /mnt/data/pathfinder/ready to be available..."; \
                 sleep 5; \
               done; \
               echo "Data is available, starting copying..." && \

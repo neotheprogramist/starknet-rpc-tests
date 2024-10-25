@@ -12,7 +12,8 @@ spec:
           args:
             - |
               echo "Copying data for pathfinder instances..." && \
-              cp /mnt/data/original/testnet-sepolia.sqlite /mnt/data/pathfinder/testnet-sepolia.sqlite
+              cp /mnt/data/original/testnet-sepolia.sqlite /mnt/data/pathfinder/testnet-sepolia.sqlite && \
+              touch /mnt/data/pathfinder/ready
           volumeMounts:
             - name: pathfinder-setup
               mountPath: /mnt/data/pathfinder
