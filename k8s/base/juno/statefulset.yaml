@@ -20,8 +20,8 @@ spec:
           args:
             - |
               echo "Waiting for data to be copied by juno-setup job..." && \
-              while [ ! -d /mnt/data/juno/juno-sepolia ]; do \
-                echo "Waiting for /mnt/data/juno/juno-sepolia to be available..."; \
+              while [ ! -f /mnt/data/juno/ready ]; do \
+                echo "Waiting for /mnt/data/juno/ready to be available..."; \
                 sleep 5; \
               done; \
               echo "Data is available, starting copying..." && \

@@ -12,7 +12,8 @@ spec:
           args:
             - |
               echo "Copying data for juno instances..." && \
-              cp -r /snapshots/juno-sepolia /mnt/data/juno
+              cp -r /snapshots/juno-sepolia /mnt/data/juno && \
+              touch /mnt/data/juno/ready
           volumeMounts:
             - name: juno-setup
               mountPath: /mnt/data/juno

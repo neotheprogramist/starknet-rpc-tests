@@ -24,8 +24,8 @@ spec:
           args:
             - |
               echo "Waiting for data to be copied by pathfinder-setup job..." && \
-              while [ ! -f /mnt/data/pathfinder/testnet-sepolia.sqlite ]; do \
-                echo "Waiting for /mnt/data/pathfinder/testnet-sepolia.sqlite to be available..."; \
+              while [ ! -f /mnt/data/pathfinder/ready ]; do \
+                echo "Waiting for /mnt/data/pathfinder/ready to be available..."; \
                 sleep 5; \
               done; \
               echo "Data is available, starting copying..." && \
