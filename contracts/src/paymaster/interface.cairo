@@ -54,6 +54,26 @@ struct StarknetDomain {
     revision: felt252,
 }
 
+const STARKNET_DOMAIN_TYPE_HASH_REV_1: felt252 =
+    selector!(
+        "\"StarknetDomain\"(\"name\":\"shortstring\",\"version\":\"shortstring\",\"chainId\":\"shortstring\",\"revision\":\"shortstring\")"
+    );
+
+impl StructHashStarknetDomain of IStructHashRev1<StarknetDomain> {
+    fn get_struct_hash_rev_1(self: @StarknetDomain) -> felt252 {
+        poseidon_hash_span(
+            array![
+                STARKNET_DOMAIN_TYPE_HASH_REV_1,
+                *self.name,
+                *self.version,
+                *self.chain_id,
+                *self.revision
+            ]
+                .span()
+        )
+    }
+}
+
 /// @notice Defines the function to generate the SNIP-12 revision 1 compliant message hash
 trait IOffChainMessageHashRev1<T> {
     fn get_message_hash_rev_1(self: @T) -> felt252;
@@ -62,7 +82,13 @@ trait IOffChainMessageHashRev1<T> {
 impl StructHashCallRev1 of IStructHashRev1<Call> {
     fn get_struct_hash_rev_1(self: @Call) -> felt252 {
         poseidon_hash_span(
-            array![CALL_TYPE_HASH_REV_1, (*self.to).into(), *self.selector, poseidon_hash_span(*self.calldata)].span()
+            array![
+                CALL_TYPE_HASH_REV_1,
+                (*self.to).into(),
+                *self.selector,
+                poseidon_hash_span(*self.calldata)
+            ]
+                .span()
         )
     }
 }
