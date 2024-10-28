@@ -7,3 +7,7 @@ resources:
 configMapGenerator:
   - name: anvil-config
     env: .env.local
+
+secretGenerator:
+  - name: anvil-secret
+    env: .env

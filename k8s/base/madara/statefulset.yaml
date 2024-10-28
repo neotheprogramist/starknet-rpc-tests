@@ -16,10 +16,9 @@ spec:
       containers:
         - name: madara
           image: docker.io/uacias/madara:v1.0.0
-          args: ["--gateway-key", "$(GATEWAY_KEY)"]
           envFrom:
             - secretRef:
-                name: secret
+                name: madara-secret
             - configMapRef:
                 name: madara-config
           ports:

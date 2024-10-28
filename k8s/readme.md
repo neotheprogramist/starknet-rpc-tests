@@ -14,10 +14,16 @@ Ensure that you have the following installed on your system:
 
 ## Usage
 
-1. **Create .env file in k8s/base**
+1. **Create .env file in k8s/base/anvil**
 
    ```sh
    FORK_URL=FORK_URL
+   ```
+
+   **Create .env file in k8s/base/madara**
+
+   ```sh
+   MADARA_GATEWAY_KEY=MADARA_GATEWAY_KEY
    ```
 
    2. **Run the setup script**:
