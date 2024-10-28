@@ -16,7 +16,7 @@ spec:
       args: ["--port", "$(ANVIL_PORT)", "--fork-url", "$(FORK_URL)"]
       envFrom:
         - secretRef:
-            name: secret
+            name: anvil-secret
         - configMapRef:
             name: anvil-config
 ---
