@@ -1,0 +1,19 @@
+[package]
+name = "proxy"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+axum = "0.7.7"
+axum-server = { version = "0.7", features = ["tls-rustls"] }
+clap = { version = "4.0", features = ["derive"] }
+openssl = { version = "0.10.66", features = ["vendored"] }
+reqwest = { version = "0.11", features = ["blocking", "rustls-tls"] }
+rustls = "0.20"
+rustls-pemfile = { version = "2.2.0", features = ["std"] }
+thiserror = "1.0.63"
+tokio = { version = "1", features = ["full"] }
+tokio-rustls = "0.23"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+x509-parser = { version = "0.15.1", features = ["verify"] }
