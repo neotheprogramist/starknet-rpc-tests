@@ -17,8 +17,6 @@ pub trait IExecuteFromOutsideCallback<TContractState> {
 #[starknet::contract(account)]
 mod MyAccount {
     use contracts::paymaster::interface::{OutsideExecution, OffChainMessageOutsideExecutionRev1};
-    use contracts::paymaster::utils::{assert_no_self_call};
-    use contracts::paymaster::signer::{SignerSignature, StarknetSigner, StarknetSignature};
     use core::ecdsa::check_ecdsa_signature;
     use starknet::{get_tx_info, get_caller_address, get_contract_address};
     use super::{IExecuteFromOutsideCallback};
@@ -99,10 +97,11 @@ mod MyAccount {
         }
 
         fn _execute_calls(self: @ContractState, mut calls: Span<Call>) -> Array<Span<felt252>> {
-            let sender = get_caller_address();
+            // TODO: add checks
+            let _sender = get_caller_address();
             // for checks
             let tx_info = get_tx_info().unbox();
-            let tx_version: u256 = tx_info.version.into();
+            let _tx_version: u256 = tx_info.version.into();
             // no checks yet
 
             let mut res = array![];
