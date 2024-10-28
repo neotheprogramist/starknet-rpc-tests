@@ -3,28 +3,20 @@
 use contracts::paymaster::interface::OutsideExecution;
 #[starknet::interface]
 pub trait IExecuteFromOutsideCallback<TContractState> {
-    fn execute_from_outside_callback(
-        self: @TContractState,
-        outside_execution: OutsideExecution,
-        outside_tx_hash: felt252,
-        signature: Array<felt252>,
+    fn execute_from_outside(
+        self: @TContractState, outside_execution: OutsideExecution, signature: Array<felt252>,
     ) -> Array<Span<felt252>>;
+    // fn execute_from_outside_callback(
+//     self: @TContractState,
+//     outside_execution: OutsideExecution,
+//     outside_tx_hash: felt252,
+//     signature: Array<felt252>,
+// ) -> Array<Span<felt252>>;
 }
-
-// #[starknet::interface]
-// pub trait InternalTrait<TContractState> {
-//     fn _is_valid_sign(
-//         ref self: @ComponentState<TContractState>, hash: felt252, signature: Span<felt252>
-//     ) -> bool;
-//     fn _is_valid_stark_sign(
-//         ref self: TContractState, msg_hash: felt252, public_key: felt252, signature:
-//         Span<felt252>
-//     ) -> bool;
-// }
 
 #[starknet::contract(account)]
 mod MyAccount {
-    use contracts::paymaster::interface::{OutsideExecution};
+    use contracts::paymaster::interface::{OutsideExecution, OffChainMessageOutsideExecutionRev1};
     use contracts::paymaster::utils::{assert_no_self_call};
     use contracts::paymaster::signer::{SignerSignature, StarknetSigner, StarknetSignature};
     use core::ecdsa::check_ecdsa_signature;
@@ -84,22 +76,28 @@ mod MyAccount {
 
     #[abi(embed_v0)]
     impl ExecuteFromOutsideCallback of IExecuteFromOutsideCallback<ContractState> {
-        fn execute_from_outside_callback(
-            self: @ContractState,
-            outside_execution: OutsideExecution,
-            outside_tx_hash: felt252,
-            signature: Array<felt252>,
+        fn execute_from_outside(
+            self: @ContractState, outside_execution: OutsideExecution, signature: Array<felt252>,
         ) -> Array<Span<felt252>> {
-            // get hash
-            let validation_result = self._validate_transaction(outside_tx_hash, signature.span());
-            assert(!validation_result, 123);
-            let execution_result = self._execute_calls(outside_execution.calls);
-            execution_result
+            let hash = outside_execution.get_message_hash_rev_1();
+            self._execute_from_outside_callback(outside_execution, hash, signature)
         }
     }
 
     #[generate_trait]
     impl InternalFunctions of InternalFunctionsTrait {
+        fn _execute_from_outside_callback(
+            self: @ContractState,
+            outside_execution: OutsideExecution,
+            outside_tx_hash: felt252,
+            signature: Array<felt252>,
+        ) -> Array<Span<felt252>> {
+            let validation_result = self._validate_transaction(outside_tx_hash, signature.span());
+            assert(!validation_result, 123);
+            let execution_result = self._execute_calls(outside_execution.calls);
+            execution_result
+        }
+
         fn _execute_calls(self: @ContractState, mut calls: Span<Call>) -> Array<Span<felt252>> {
             let sender = get_caller_address();
             // for checks
