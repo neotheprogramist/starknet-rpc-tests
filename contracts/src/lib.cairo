@@ -4,7 +4,5 @@ mod sample_contract_3;
 mod paymaster {
     mod acc;
     mod interface;
-    mod utils;
-    mod signer;
 }
 
