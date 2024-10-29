@@ -4,15 +4,15 @@ use contracts::paymaster::interface::OutsideExecution;
 #[starknet::interface]
 pub trait IExecuteFromOutsideCallback<TContractState> {
     fn execute_from_outside(
-        self: @TContractState, outside_execution: OutsideExecution, signature: Array<felt252>,
-    ) -> Array<Span<felt252>>;
-    // fn execute_from_outside_callback(
-//     self: @TContractState,
-//     outside_execution: OutsideExecution,
-//     outside_tx_hash: felt252,
-//     signature: Array<felt252>,
-// ) -> Array<Span<felt252>>;
+        ref self: TContractState, outside_execution: OutsideExecution, signature: Array<felt252>,
+    );
 }
+
+// pub trait IExecuteFromOutsideCallback<TContractState> {
+//     fn execute_from_outside(
+//         ref self: TContractState, outside_execution: OutsideExecution, signature: Array<felt252>,
+//     ) -> Array<Span<felt252>
+// }
 
 #[starknet::contract(account)]
 mod MyAccount {
@@ -20,7 +20,7 @@ mod MyAccount {
     use core::ecdsa::check_ecdsa_signature;
     use starknet::{get_tx_info, get_caller_address, get_contract_address};
     use super::{IExecuteFromOutsideCallback};
-    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess};
+    use starknet::storage::{StoragePointerReadAccess, StoragePointerWriteAccess, Map};
 
     use openzeppelin::account::AccountComponent;
     use openzeppelin::introspection::src5::SRC5Component;
@@ -46,6 +46,8 @@ mod MyAccount {
         src5: SRC5Component::Storage,
         #[substorage(v0)]
         upgradeable: UpgradeableComponent::Storage,
+        /// Keeps track of used nonces for outside transactions (`execute_from_outside`)
+        outside_nonces: Map<felt252, bool>,
     }
 
     #[event]
@@ -75,10 +77,13 @@ mod MyAccount {
     #[abi(embed_v0)]
     impl ExecuteFromOutsideCallback of IExecuteFromOutsideCallback<ContractState> {
         fn execute_from_outside(
-            self: @ContractState, outside_execution: OutsideExecution, signature: Array<felt252>,
-        ) -> Array<Span<felt252>> {
+            ref self: ContractState, outside_execution: OutsideExecution, signature: Array<felt252>,
+        ) {
+            let nonce = outside_execution.nonce;
+            assert(!self.outside_nonces.read(nonce), 'oz/duplicated-outside-nonce');
+            self.outside_nonces.write(nonce, true);
             let hash = outside_execution.get_message_hash_rev_1();
-            self._execute_from_outside_callback(outside_execution, hash, signature)
+            self._execute_from_outside_callback(outside_execution, hash, signature);
         }
     }
 
@@ -91,7 +96,7 @@ mod MyAccount {
             signature: Array<felt252>,
         ) -> Array<Span<felt252>> {
             let validation_result = self._validate_transaction(outside_tx_hash, signature.span());
-            assert(!validation_result, 123);
+            assert(!validation_result, 'oz/validation-result');
             let execution_result = self._execute_calls(outside_execution.calls);
             execution_result
         }
@@ -99,10 +104,8 @@ mod MyAccount {
         fn _execute_calls(self: @ContractState, mut calls: Span<Call>) -> Array<Span<felt252>> {
             // TODO: add checks
             let _sender = get_caller_address();
-            // for checks
             let tx_info = get_tx_info().unbox();
             let _tx_version: u256 = tx_info.version.into();
-            // no checks yet
 
             let mut res = array![];
             loop {

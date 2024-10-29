@@ -1,5 +1,4 @@
 use starknet::{ContractAddress, account::Call, get_tx_info, get_contract_address};
-// use hash::HashStateTrait;
 use core::hash::{HashStateTrait, HashStateExTrait};
 use core::poseidon::{hades_permutation, HashState, poseidon_hash_span};
 
@@ -35,12 +34,10 @@ const CALL_TYPE_HASH_REV_1: felt252 =
         "\"Call\"(\"To\":\"ContractAddress\",\"Selector\":\"selector\",\"Calldata\":\"felt*\")"
     );
 
-#[derive(Copy, Drop, Serde)]
+#[derive(Copy, Drop, Serde, Debug)]
 struct OutsideExecution {
     caller: ContractAddress,
     nonce: felt252,
-    execute_after: u64,
-    execute_before: u64,
     calls: Span<Call>
 }
 
@@ -107,8 +104,6 @@ impl StructHashOutsideExecutionRev1 of IStructHashRev1<OutsideExecution> {
                 OUTSIDE_EXECUTION_TYPE_HASH_REV_1,
                 self.caller.into(),
                 self.nonce,
-                self.execute_after.into(),
-                self.execute_before.into(),
                 poseidon_hash_span(hashed_calls.span()),
             ]
                 .span()
