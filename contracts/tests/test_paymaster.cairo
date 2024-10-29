@@ -46,20 +46,15 @@ pub struct SetupResult {
 
 pub fn setup() -> SetupResult {
     let paymaster_keys = KeyPairTrait::<felt252, felt252>::generate();
-    println!("pub_key: {}", paymaster_keys.public_key);
-    println!("priv_key: {}", paymaster_keys.secret_key);
-
-    let external_keys = KeyPairTrait::<felt252, felt252>::generate();
-    println!("pub_key: {}", external_keys.public_key);
-    println!("priv_key: {}", external_keys.secret_key);
-
     let account_to_keys = KeyPairTrait::<felt252, felt252>::generate();
-    println!("pub_key: {}", account_to_keys.public_key);
-    println!("priv_key: {}", account_to_keys.secret_key);
+    let executable_account_keys = KeyPairTrait::<felt252, felt252>::generate();
+
 
     let account_paymaster = deploy_contract("OZAccount", array![paymaster_keys.public_key]);
-    let account_to_address = deploy_contract("OZAccount", array![external_keys.public_key]);
-    let executable_account_address = deploy_contract("MyAccount", array![external_keys.public_key]);
+    let account_to_address = deploy_contract("OZAccount", array![account_to_keys.public_key]);
+    let executable_account_address = deploy_contract(
+        "MyAccount", array![executable_account_keys.public_key]
+    );
     let erc_20_address = deploy_contract("TestToken", array![]);
 
     let token = ITestTokenDispatcher { contract_address: erc_20_address };
@@ -83,7 +78,7 @@ pub fn setup() -> SetupResult {
 
 
 #[test]
-fn test1() {
+fn executable_account_erc20() {
     let SetupResult { token,
     erc_20_address,
     paymaster_account,
