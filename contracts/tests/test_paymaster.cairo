@@ -19,15 +19,6 @@ pub fn DEPLOYER() -> ContractAddress {
     contract_address_const::<'DEPLOYER'>()
 }
 
-pub fn SPENDER() -> ContractAddress {
-    let felt: felt252 = 0x1b175fe86400121641d32d47490f76cd1ff973a6f090631496c0a08a530ed18;
-    felt.try_into().expect('Invalid address')
-}
-
-pub fn GENERATED_ACCOUNT() -> ContractAddress {
-    contract_address_const::<'GENERATED'>()
-}
-
 pub fn deploy_contract(name: ByteArray, constructor_calldata: Array<felt252>) -> ContractAddress {
     let contract = declare(name).unwrap().contract_class();
     let (contract_address, _) = contract.deploy(@constructor_calldata).unwrap();
@@ -48,7 +39,6 @@ pub fn setup() -> SetupResult {
     let paymaster_keys = KeyPairTrait::<felt252, felt252>::generate();
     let account_to_keys = KeyPairTrait::<felt252, felt252>::generate();
     let executable_account_keys = KeyPairTrait::<felt252, felt252>::generate();
-
 
     let account_paymaster = deploy_contract("OZAccount", array![paymaster_keys.public_key]);
     let account_to_address = deploy_contract("OZAccount", array![account_to_keys.public_key]);
