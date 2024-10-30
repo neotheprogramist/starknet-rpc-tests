@@ -44,7 +44,6 @@ starknet-types-core = { version = "0.1.6", default-features = false, features = 
   "hash",
   "curve",
 ] }
-# starknet-types-core = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "db8788d1ab136846995038744445c50e5580f7ad" }
 starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "70bd8ad21c702abb51a7598ef4aab8064cf8eec0" }
 thiserror = "1.0.63"
 tokio = { version = "1.39.3", features = ["full"] }
