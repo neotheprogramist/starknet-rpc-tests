@@ -1,4 +1,7 @@
-use starknet_types_core::{felt::Felt, hash::PoseidonHasher};
+use starknet_types_core::{
+    felt::Felt,
+    hash::{Poseidon, StarkHash},
+};
 use starknet_types_rpc::v0_6_0::{
     AddInvokeTransactionResult, BroadcastedInvokeTxn, BroadcastedTxn, DaMode, FeeEstimate,
     InvokeTxnV1, InvokeTxnV3, MaybePendingBlockWithTxHashes, ResourceBounds, ResourceBoundsMapping,
@@ -606,64 +609,57 @@ impl RawExecutionV3 {
     where
         E: ExecutionEncoder,
     {
-        let mut hasher = PoseidonHasher::new();
+        // Collect main transaction hash data
+        let mut data = vec![
+            PREFIX_INVOKE,
+            if query_only {
+                QUERY_VERSION_THREE
+            } else {
+                Felt::THREE
+            },
+            address,
+        ];
 
-        hasher.update(PREFIX_INVOKE);
-        hasher.update(if query_only {
-            QUERY_VERSION_THREE
-        } else {
-            Felt::THREE
-        });
-        hasher.update(address);
+        // Fee data collection
+        let mut fee_data = vec![Felt::ZERO]; // Hard-coded fee market
 
-        hasher.update({
-            let mut fee_hasher = PoseidonHasher::new();
+        // First L1 gas resource buffer
+        let mut resource_buffer = [
+            0, 0, b'L', b'1', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+        resource_buffer[8..(8 + 8)].copy_from_slice(&self.gas.to_be_bytes());
+        resource_buffer[(8 + 8)..].copy_from_slice(&self.gas_price.to_be_bytes());
+        fee_data.push(Felt::from_bytes_be(&resource_buffer));
 
-            // Tip: fee market has not been been activated yet so it's hard-coded to be 0
-            fee_hasher.update(Felt::ZERO);
+        // Second L2 gas resource buffer
+        let resource_buffer = [
+            0, 0, b'L', b'2', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+        fee_data.push(Felt::from_bytes_be(&resource_buffer));
 
-            let mut resource_buffer = [
-                0, 0, b'L', b'1', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            ];
-            resource_buffer[8..(8 + 8)].copy_from_slice(&self.gas.to_be_bytes());
-            resource_buffer[(8 + 8)..].copy_from_slice(&self.gas_price.to_be_bytes());
-            fee_hasher.update(Felt::from_bytes_be(&resource_buffer));
-
-            // L2 resources are hard-coded to 0
-            let resource_buffer = [
-                0, 0, b'L', b'2', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            ];
-            fee_hasher.update(Felt::from_bytes_be(&resource_buffer));
-
-            fee_hasher.finalize()
-        });
+        // Hash the fee data and add it to main data
+        data.push(Poseidon::hash_array(&fee_data));
 
         // Hard-coded empty `paymaster_data`
-        hasher.update(PoseidonHasher::new().finalize());
+        data.push(Poseidon::hash_array(&[]));
 
-        hasher.update(chain_id);
-        hasher.update(self.nonce);
+        // Remaining transaction fields
+        data.push(chain_id);
+        data.push(self.nonce);
+        data.push(Felt::ZERO); // Hard-coded L1 DA mode for nonce and fee
+        data.push(Poseidon::hash_array(&[])); // Empty `account_deployment_data`
 
-        // Hard-coded L1 DA mode for nonce and fee
-        hasher.update(Felt::ZERO);
+        // Encode and hash calldata
+        let calldata_hash = {
+            let calldata_elements: Vec<Felt> = encoder.encode_calls(&self.calls);
+            Poseidon::hash_array(&calldata_elements)
+        };
+        data.push(calldata_hash);
 
-        // Hard-coded empty `account_deployment_data`
-        hasher.update(PoseidonHasher::new().finalize());
-
-        hasher.update({
-            let mut calldata_hasher = PoseidonHasher::new();
-
-            encoder
-                .encode_calls(&self.calls)
-                .into_iter()
-                .for_each(|element| calldata_hasher.update(element));
-
-            calldata_hasher.finalize()
-        });
-
-        hasher.finalize()
+        // Final hash computation
+        Poseidon::hash_array(&data)
     }
 
     pub fn calls(&self) -> &[Call] {
