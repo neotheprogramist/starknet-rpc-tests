@@ -629,7 +629,7 @@ impl RawExecutionV3 {
             0, 0, b'L', b'1', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0,
         ];
-        resource_buffer[8..(8 + 81)].copy_from_slice(&self.gas.to_be_bytes());
+        resource_buffer[8..(8 + 8)].copy_from_slice(&self.gas.to_be_bytes());
         resource_buffer[(8 + 8)..].copy_from_slice(&self.gas_price.to_be_bytes());
         fee_data.push(Felt::from_bytes_be(&resource_buffer));
 

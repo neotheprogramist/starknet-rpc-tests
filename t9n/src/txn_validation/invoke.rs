@@ -2,7 +2,7 @@ use super::constants::{DATA_AVAILABILITY_MODE_BITS, PREFIX_INVOKE};
 use super::errors::Error;
 use crypto_utils::curve::signer::{compute_hash_on_elements, verify};
 use starknet_types_core::felt::Felt;
-use starknet_types_core::hash::poseidon_hash::poseidon_hash_many;
+use starknet_types_core::hash::{Poseidon, StarkHash};
 use starknet_types_rpc::v0_7_1::starknet_api_openrpc::*;
 
 pub fn verify_invoke_v1_signature(
@@ -58,9 +58,9 @@ fn calculate_invoke_v3_transaction_hash(
     txn: &InvokeTxnV3<Felt>,
 ) -> Result<Felt, Error> {
     let common_fields = common_fields_for_hash(PREFIX_INVOKE, *chain_id, txn)?;
-    let account_deployment_data_hash = poseidon_hash_many(&txn.account_deployment_data);
+    let account_deployment_data_hash = Poseidon::hash_array(&txn.account_deployment_data);
 
-    let call_data_hash = poseidon_hash_many(&txn.calldata);
+    let call_data_hash = Poseidon::hash_array(&txn.calldata);
 
     let fields_to_hash = [
         common_fields.as_slice(),
@@ -69,8 +69,7 @@ fn calculate_invoke_v3_transaction_hash(
     ]
     .concat();
 
-    let txn_hash = poseidon_hash_many(fields_to_hash.as_slice());
-    Ok(txn_hash)
+    Ok(Poseidon::hash_array(&fields_to_hash))
 }
 
 /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
@@ -123,13 +122,13 @@ fn common_fields_for_hash(
     txn: &InvokeTxnV3<Felt>,
 ) -> Result<Vec<Felt>, Error> {
     let array: Vec<Felt> = vec![
-        tx_prefix,                                                      // TX_PREFIX
-        Felt::THREE,                                                    // version
-        txn.sender_address,                                             // address
-        poseidon_hash_many(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
-        poseidon_hash_many(&txn.paymaster_data),                        // h(paymaster_data)
-        chain_id,                                                       // chain_id
-        txn.nonce,                                                      // nonce
+        tx_prefix,                                                        // TX_PREFIX
+        Felt::THREE,                                                      // version
+        txn.sender_address,                                               // address
+        Poseidon::hash_array(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
+        Poseidon::hash_array(&txn.paymaster_data),                        // h(paymaster_data)
+        chain_id,                                                         // chain_id
+        txn.nonce,                                                        // nonce
         get_data_availability_modes_field_element(txn), /* nonce_data_availability ||  fee_data_availability_mode */
     ];
 

@@ -3,7 +3,7 @@ use super::errors::Error;
 use crypto_utils::curve::signer::{compute_hash_on_elements, verify};
 use sha3::{Digest, Keccak256};
 use starknet_types_core::felt::{Felt, NonZeroFelt};
-use starknet_types_core::hash::poseidon_hash::{poseidon_hash_many, PoseidonHasher};
+use starknet_types_core::hash::{Poseidon, StarkHash};
 use starknet_types_rpc::v0_7_1::starknet_api_openrpc::*;
 use starknet_types_rpc::v0_7_1::SierraEntryPoint;
 
@@ -65,23 +65,16 @@ pub fn verify_declare_v3_signature(
 }
 
 fn class_hash(contract_class: ContractClass<Felt>) -> Felt {
-    let mut hasher = PoseidonHasher::new();
-    hasher.update(PREFIX_CONTRACT_CLASS_V0_1_0);
-    hasher.update(hash_entrypoints(
-        &contract_class.entry_points_by_type.external,
-    ));
-    hasher.update(hash_entrypoints(
-        &contract_class.entry_points_by_type.l1_handler,
-    ));
-    hasher.update(hash_entrypoints(
-        &contract_class.entry_points_by_type.constructor,
-    ));
-    hasher.update(starknet_keccak(
-        contract_class.abi.clone().expect("abi expected").as_bytes(),
-    ));
-    hasher.update(poseidon_hash_many(&contract_class.sierra_program));
+    let data = vec![
+        PREFIX_CONTRACT_CLASS_V0_1_0,
+        hash_entrypoints(&contract_class.entry_points_by_type.external),
+        hash_entrypoints(&contract_class.entry_points_by_type.l1_handler),
+        hash_entrypoints(&contract_class.entry_points_by_type.constructor),
+        starknet_keccak(contract_class.abi.clone().expect("abi expected").as_bytes()),
+        Poseidon::hash_array(&contract_class.sierra_program),
+    ];
 
-    normalize_address(hasher.finalize())
+    normalize_address(Poseidon::hash_array(&data))
 }
 
 fn normalize_address(address: Felt) -> Felt {
@@ -89,14 +82,14 @@ fn normalize_address(address: Felt) -> Felt {
 }
 
 fn hash_entrypoints(entrypoints: &[SierraEntryPoint<Felt>]) -> Felt {
-    let mut hasher = PoseidonHasher::new();
+    let mut data = Vec::new();
     for entry in entrypoints.iter() {
-        hasher.update(entry.selector);
-        hasher.update(entry.function_idx.into());
+        data.push(entry.selector);
+        data.push(entry.function_idx.into());
     }
-    hasher.finalize()
-}
 
+    Poseidon::hash_array(&data)
+}
 fn starknet_keccak(data: &[u8]) -> Felt {
     let mut hasher = Keccak256::new();
     hasher.update(data);
@@ -114,19 +107,18 @@ fn calculate_transaction_v3_hash(
     txn: &BroadcastedDeclareTxnV3<Felt>,
     class_hash: Felt,
 ) -> Result<Felt, Error> {
-    let common_fields = common_fields_for_hash(PREFIX_DECLARE, *chain_id, txn)?;
-    let account_deployment_data_hash = poseidon_hash_many(&txn.account_deployment_data);
+    let account_deployment_data_hash = Poseidon::hash_array(&txn.account_deployment_data);
 
     let fields_to_hash = [
-        common_fields.as_slice(),
+        common_fields_for_hash(PREFIX_DECLARE, *chain_id, txn)?.as_slice(),
         &[account_deployment_data_hash],
         &[class_hash],
         &[txn.compiled_class_hash],
     ]
     .concat();
 
-    let txn_hash = poseidon_hash_many(fields_to_hash.as_slice());
-    Ok(txn_hash)
+    // Compute the final transaction hash
+    Ok(Poseidon::hash_array(&fields_to_hash))
 }
 
 /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
@@ -179,13 +171,13 @@ fn common_fields_for_hash(
     txn: &BroadcastedDeclareTxnV3<Felt>,
 ) -> Result<Vec<Felt>, Error> {
     let array: Vec<Felt> = vec![
-        tx_prefix,                                                      // TX_PREFIX
-        Felt::THREE,                                                    // version
-        txn.sender_address,                                             // address
-        poseidon_hash_many(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
-        poseidon_hash_many(&txn.paymaster_data),                        // h(paymaster_data)
-        chain_id,                                                       // chain_id
-        txn.nonce,                                                      // nonce
+        tx_prefix,                                                        // TX_PREFIX
+        Felt::THREE,                                                      // version
+        txn.sender_address,                                               // address
+        Poseidon::hash_array(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
+        Poseidon::hash_array(&txn.paymaster_data),                        // h(paymaster_data)
+        chain_id,                                                         // chain_id
+        txn.nonce,                                                        // nonce
         get_data_availability_modes_field_element(txn), /* nonce_data_availability ||
                                                          * fee_data_availability_mode */
     ];
