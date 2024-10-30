@@ -5,7 +5,7 @@ use auto_impl::auto_impl;
 use sha3::{Digest, Keccak256};
 
 use starknet_types_core::felt::{Felt, NonZeroFelt};
-use starknet_types_core::hash::poseidon_hash::{poseidon_hash_many, PoseidonHasher};
+use starknet_types_core::hash::{Poseidon, StarkHash};
 use starknet_types_rpc::v0_6_0::{
     BlockId, BlockTag, ContractClass, DeprecatedContractClass, SierraEntryPoint,
 };
@@ -281,17 +281,16 @@ pub trait ContractClassHasher {
 
 impl ContractClassHasher for ContractClass {
     fn class_hash(&self) -> Felt {
-        let mut hasher = PoseidonHasher::new();
-        hasher.update(PREFIX_CONTRACT_CLASS_V0_1_0);
-        hasher.update(hash_entrypoints(&self.entry_points_by_type.external));
-        hasher.update(hash_entrypoints(&self.entry_points_by_type.l1_handler));
-        hasher.update(hash_entrypoints(&self.entry_points_by_type.constructor));
-        hasher.update(starknet_keccak(
-            self.abi.clone().expect("Abi expected").as_bytes(),
-        ));
-        hasher.update(poseidon_hash_many(&self.sierra_program));
+        let data = vec![
+            PREFIX_CONTRACT_CLASS_V0_1_0,
+            hash_entrypoints(&self.entry_points_by_type.external),
+            hash_entrypoints(&self.entry_points_by_type.l1_handler),
+            hash_entrypoints(&self.entry_points_by_type.constructor),
+            starknet_keccak(self.abi.clone().expect("Abi expected").as_bytes()),
+            Poseidon::hash_array(&self.sierra_program),
+        ];
 
-        normalize_address(hasher.finalize())
+        normalize_address(Poseidon::hash_array(&data))
     }
 }
 
@@ -300,12 +299,14 @@ pub fn normalize_address(address: Felt) -> Felt {
 }
 
 pub fn hash_entrypoints(entrypoints: &[SierraEntryPoint]) -> Felt {
-    let mut hasher = PoseidonHasher::new();
+    let mut data = Vec::new();
+
     for entry in entrypoints.iter() {
-        hasher.update(entry.selector);
-        hasher.update(entry.function_idx.into());
+        data.push(entry.selector);
+        data.push(entry.function_idx.into());
     }
-    hasher.finalize()
+
+    Poseidon::hash_array(&data)
 }
 
 pub fn starknet_keccak(data: &[u8]) -> Felt {
