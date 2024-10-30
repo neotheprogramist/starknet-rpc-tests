@@ -622,18 +622,20 @@ impl BytecodeSegmentStructure {
 
 impl BytecodeLeaf {
     fn hash(&self) -> Felt {
-        poseidon_hash_many(&self.data)
+        Poseidon::hash_array(&self.data)
     }
 }
 
 impl BytecodeSegmentedNode {
     fn hash(&self) -> Felt {
-        let mut hasher = PoseidonHasher::new();
+        let mut data = Vec::new();
+
         for node in self.segments.iter() {
-            hasher.update(node.segment_length.into());
-            hasher.update(node.inner_structure.hash());
+            data.push(node.segment_length.into());
+            data.push(node.inner_structure.hash());
         }
-        hasher.finalize() + Felt::ONE
+
+        Poseidon::hash_array(&data) + Felt::ONE
     }
 }
 
@@ -798,12 +800,12 @@ impl<'de> Deserialize<'de> for IntOrList {
 }
 
 fn hash_sierra_entrypoints(entrypoints: &[SierraEntryPoint]) -> Felt {
-    let mut hasher = PoseidonHasher::new();
+    let mut data = Vec::new();
 
     for entry in entrypoints.iter() {
-        hasher.update(entry.selector);
-        hasher.update(entry.function_idx.into());
+        data.push(entry.selector);
+        data.push(entry.function_idx.into());
     }
 
-    hasher.finalize()
+    Poseidon::hash_array(&data)
 }
