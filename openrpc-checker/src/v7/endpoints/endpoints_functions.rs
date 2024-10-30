@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
+use cainome_cairo_serde_derive::CairoSerde;
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 
-use starknet_types_core::felt::Felt;
+use serde::{Deserialize, Serialize};
+use starknet_types_core::{felt::Felt, hash::poseidon_hash_many};
 use starknet_types_rpc::{
     v0_7_1::{
         AddInvokeTransactionResult, BlockId, BlockTag, BlockWithTxHashes, BlockWithTxs,
@@ -10,7 +12,7 @@ use starknet_types_rpc::{
         InvokeTxnV1, MaybePendingBlockWithTxHashes, MaybePendingBlockWithTxs,
         MaybePendingStateUpdate, StateUpdate, Txn, TxnExecutionStatus, TxnReceipt, TxnStatus,
     },
-    DeclareTxn, DeployTxn, InvokeTxnReceipt, MsgFromL1,
+    DeclareTxn, DeployTxn, InvokeTxnReceipt, InvokeTxnV3, MsgFromL1,
 };
 
 use tracing::warn;
@@ -47,6 +49,283 @@ use super::{
         wait_for_sent_transaction,
     },
 };
+
+#[allow(clippy::too_many_arguments)]
+pub async fn invoke_contract_erc20_transfer(
+    url: Url,
+    sierra_path: &str,
+    casm_path: &str,
+    account_class_hash: Option<Felt>,
+    account_address: Option<Felt>,
+    private_key: Option<Felt>,
+    erc20_strk_contract_address: Option<Felt>,
+    erc20_eth_contract_address: Option<Felt>,
+    amount_per_test: Option<Felt>,
+) -> Result<bool, RpcError> {
+    let (executable_account_flattened_sierra_class, executable_account_compiled_class_hash) =
+        get_compiled_contract(
+            "target/dev/contracts_MyAccount.contract_class.json",
+            "target/dev/contracts_MyAccount.compiled_contract_class.json",
+        )
+        .await?;
+
+    let (erc_20_flattened_sierra_class, erc_20_compiled_class_hash) = get_compiled_contract(
+        "target/dev/contracts_TestToken.contract_class.json",
+        "target/dev/contracts_TestToken.compiled_contract_class.json",
+    )
+    .await?;
+
+    let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
+
+    let (
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    ) = validate_inputs(
+        account_address,
+        private_key,
+        erc20_strk_contract_address,
+        erc20_eth_contract_address,
+        amount_per_test,
+    )?;
+
+    let chain_id = get_chain_id(&provider).await?;
+
+    // PAYMASTER
+    let user_passed_account = SingleOwnerAccount::new(
+        provider.clone(),
+        LocalWallet::from(SigningKey::from_secret_scalar(private_key)),
+        account_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    // TODO DECLARE EXEC ACC
+    let declaration_hash_executable_account = match user_passed_account
+        .declare_v2(
+            Arc::new(executable_account_flattened_sierra_class),
+            executable_account_compiled_class_hash,
+        )
+        .send()
+        .await
+    {
+        Ok(result) => Ok(result.class_hash),
+        Err(AccountError::Signing(sign_error)) => {
+            if sign_error.to_string().contains("is already declared") {
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
+            } else {
+                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                    "Transaction execution error: {}",
+                    sign_error
+                ))))
+            }
+        }
+
+        Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
+            if starkneterror.to_string().contains("is already declared") {
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
+            } else {
+                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                    "Transaction execution error: {}",
+                    starkneterror
+                ))))
+            }
+        }
+        Err(e) => {
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message)?)
+        }
+    };
+
+    // TODO EXECUTABLE ACCOUNT DATA (address, signing_key etc.)
+    let create_acc_data = create_account(
+        &provider,
+        AccountType::Oz,
+        Option::None,
+        Some(declaration_hash_executable_account.unwrap()),
+    )
+    .await?;
+
+    let wait_config = WaitForTx {
+        wait: true,
+        wait_params: ValidatedWaitParams::default(),
+    };
+
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+
+    wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
+
+    let sender_address = create_acc_data.address;
+    let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
+
+    let mut executable_account = SingleOwnerAccount::new(
+        JsonRpcClient::new(HttpTransport::new(url.clone())),
+        signer,
+        sender_address,
+        chain_id,
+        ExecutionEncoding::New,
+    );
+
+    executable_account.set_block_id(BlockId::Tag(BlockTag::Pending));
+
+    // DECLARE ERC20
+    let declaration_hash = match user_passed_account
+        .declare_v2(
+            Arc::new(erc_20_flattened_sierra_class),
+            erc_20_compiled_class_hash,
+        )
+        .send()
+        .await
+    {
+        Ok(result) => Ok(result.class_hash),
+        Err(AccountError::Signing(sign_error)) => {
+            if sign_error.to_string().contains("is already declared") {
+                Ok(parse_class_hash_from_error(&sign_error.to_string())?)
+            } else {
+                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                    "Transaction execution error: {}",
+                    sign_error
+                ))))
+            }
+        }
+
+        Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
+            if starkneterror.to_string().contains("is already declared") {
+                Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
+            } else {
+                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                    "Transaction execution error: {}",
+                    starkneterror
+                ))))
+            }
+        }
+        Err(e) => {
+            let full_error_message = format!("{:?}", e);
+            Ok(extract_class_hash_from_error(&full_error_message)?)
+        }
+    };
+    // DEPLOY ERC20
+    let deployment_hash_erc20 = match declaration_hash {
+        Ok(class_hash) => {
+            let factory = ContractFactory::new(class_hash, user_passed_account.clone());
+            let mut salt_buffer = [0u8; 32];
+            let mut rng = StdRng::from_entropy();
+            rng.fill_bytes(&mut salt_buffer[1..]);
+
+            let result = factory
+                .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
+                .max_fee(Felt::from_dec_str("100000000000000000")?)
+                .send()
+                .await?;
+
+            wait_for_sent_transaction(result.transaction_hash, &user_passed_account).await?;
+            Ok(result.transaction_hash)
+        }
+        Err(e) => Err(e),
+    };
+
+    let deployment_receipt_erc20 = match deployment_hash_erc20 {
+        Ok(hash) => provider.get_transaction_receipt(hash).await?,
+        Err(e) => {
+            return Err(e);
+        }
+    };
+
+    let contract_address_erc20 = match deployment_receipt_erc20 {
+        TxnReceipt::Deploy(receipt) => receipt.contract_address,
+        TxnReceipt::Invoke(receipt) => {
+            if let Some(contract_address) = receipt
+                .common_receipt_properties
+                .events
+                .first()
+                .and_then(|event| event.data.first())
+            {
+                *contract_address
+            } else {
+                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            }
+        }
+        _ => {
+            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+        }
+    };
+
+    // TODO CREATE ACCOUNT ERC20 RECEIVER - FOR TESTING JUST ADDRESS FROM STARKNET-DEVNET 0x5c5c17f89168983de89dbde65ae20835ef0c406ad75aff3f2126e86ab40ce97
+
+    let erc20_mint_call = Call {
+        to: contract_address_erc20,
+        selector: get_selector_from_name("mint")?,
+        calldata: vec![
+            Felt::from_hex("0x5c5c17f89168983de89dbde65ae20835ef0c406ad75aff3f2126e86ab40ce97")?,
+            Felt::from_hex("0x50")?,
+            Felt::ZERO,
+        ],
+    };
+    user_passed_account
+        .execute_v1(vec![erc20_mint_call])
+        .send()
+        .await?;
+
+    // TODO PREPARE CALL TO ERC20
+    let account_erc20_receiver_address =
+        Felt::from_hex("0x5c5c17f89168983de89dbde65ae20835ef0c406ad75aff3f2126e86ab40ce97")?;
+
+    let erc20_transfer_call = Call {
+        to: contract_address_erc20,
+        selector: get_selector_from_name("transfer")?,
+        calldata: vec![
+            account_erc20_receiver_address,
+            Felt::from_hex("0xdead")?,
+            Felt::ZERO,
+        ],
+    };
+
+    // TODO PREPARE OUTSIDE EXECUTION
+    let outside_execution = OutsideExecution {
+        caller: user_passed_account.address(), // paymaster
+        nonce: Felt::ZERO,
+        calls: vec![erc20_transfer_call],
+    };
+
+    // get outside execution hash
+
+    // user_passed_account
+    //     .execute_v3(vec![outside_execution])
+    //     .send()
+    //     .await?;
+
+    // let erc20_balance_of_call = FunctionCall {
+    //     calldata: vec![account_erc20_receiver_address],
+    //     contract_address: contract_address_erc20,
+    //     entry_point_selector: get_selector_from_name("balance_of")?,
+    // };
+
+    // let balance = provider
+    //     .call(erc20_balance_of_call, BlockId::Tag(BlockTag::Pending))
+    //     .await?;
+    // tracing::info!("BALANCE {:?}", balance);
+
+    // let invoke_contract_fn_result = user_passed_account.execute_v1(vec![call]).send().await?;
+    // Ok(invoke_contract_fn_result)
+    Ok(true)
+}
+
+#[derive(Debug, CairoSerde)]
+pub struct OutsideExecution {
+    caller: Felt,
+    nonce: Felt,
+    calls: Vec<Call>,
+}
+
+impl OutsideExecution {
+    pub fn get_hash(&self, chain_id: Felt) -> Felt {
+        // poseidon_hash_many()
+        Felt::ZERO
+    }
+}
 
 #[allow(clippy::too_many_arguments)]
 pub async fn add_declare_transaction_v2(

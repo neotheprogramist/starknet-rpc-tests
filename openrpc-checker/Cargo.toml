@@ -5,6 +5,8 @@ version.workspace = true
 
 [dependencies]
 auto_impl.workspace = true
+cainome-cairo-serde.workspace = true
+cainome-cairo-serde-derive.workspace = true
 colored.workspace = true
 crypto-bigint.workspace = true
 lambdaworks-math.workspace = true
@@ -17,6 +19,7 @@ serde_json.workspace = true
 serde_with.workspace = true
 serde.workspace = true
 sha3.workspace = true
+starknet.workspace = true
 starknet-types-core.workspace = true
 starknet-types-rpc.workspace = true
 thiserror.workspace = true
