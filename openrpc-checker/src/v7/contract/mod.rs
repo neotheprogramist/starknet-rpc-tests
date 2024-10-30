@@ -13,7 +13,7 @@ use super::{
     contract::unsigned_felt::UfeHex,
 };
 use starknet_types_core::felt::Felt;
-use starknet_types_core::hash::poseidon_hash::{poseidon_hash_many, PoseidonHasher};
+use starknet_types_core::hash::{Poseidon, StarkHash};
 use starknet_types_rpc::v0_7_1::{ContractClass, DeprecatedContractClass};
 
 use std::boxed;
@@ -401,38 +401,22 @@ pub trait HashAndFlatten {
 #[allow(dead_code)]
 impl HashAndFlatten for SierraClass {
     fn class_hash(&self) -> Result<Felt, ComputeClassHashError> {
-        // Technically we don't have to use the Pythonic JSON style here. Doing this just to align
-        // with the official `cairo-lang` CLI.
-        //
-        // TODO: add an `AbiFormatter` trait and let users choose which one to use.
         let abi_str = to_string_pythonic(&self.abi).map_err(|err| {
             ComputeClassHashError::Json(JsonError {
                 message: format!("{}", err),
             })
         })?;
 
-        let mut hasher = PoseidonHasher::new();
-        hasher.update(PREFIX_CONTRACT_CLASS_V0_1_0);
+        let data = vec![
+            PREFIX_CONTRACT_CLASS_V0_1_0,
+            hash_sierra_entrypoints(&self.entry_points_by_type.external),
+            hash_sierra_entrypoints(&self.entry_points_by_type.l1_handler),
+            hash_sierra_entrypoints(&self.entry_points_by_type.constructor),
+            starknet_keccak(abi_str.as_bytes()),
+            Poseidon::hash_array(&self.sierra_program),
+        ];
 
-        // Hashes entry points
-        hasher.update(hash_sierra_entrypoints(&self.entry_points_by_type.external));
-
-        hasher.update(hash_sierra_entrypoints(
-            &self.entry_points_by_type.l1_handler,
-        ));
-
-        hasher.update(hash_sierra_entrypoints(
-            &self.entry_points_by_type.constructor,
-        ));
-
-        // Hashes ABI
-        hasher.update(starknet_keccak(abi_str.as_bytes()));
-
-        // Hashes Sierra program
-        hasher.update(poseidon_hash_many(&self.sierra_program));
-
-        // Ok(normalize_address(hasher.finalize()))
-        Ok(normalize_address(hasher.finalize()))
+        Ok(normalize_address(Poseidon::hash_array(&data)))
     }
 
     fn flatten(self) -> Result<ContractClass<Felt>, JsonError> {
@@ -456,61 +440,35 @@ trait ClassHash {
 
 impl ClassHash for ContractClass<Felt> {
     fn class_hash(&self) -> Felt {
-        let mut hasher = PoseidonHasher::new();
-        hasher.update(PREFIX_CONTRACT_CLASS_V0_1_0);
+        let data = vec![
+            PREFIX_CONTRACT_CLASS_V0_1_0,
+            hash_sierra_entrypoints(&self.entry_points_by_type.external),
+            hash_sierra_entrypoints(&self.entry_points_by_type.l1_handler),
+            hash_sierra_entrypoints(&self.entry_points_by_type.constructor),
+            starknet_keccak(self.abi.clone().expect("abi expected").as_bytes()),
+            Poseidon::hash_array(&self.sierra_program),
+        ];
 
-        // Hashes entry points
-        hasher.update(hash_sierra_entrypoints(&self.entry_points_by_type.external));
-        hasher.update(hash_sierra_entrypoints(
-            &self.entry_points_by_type.l1_handler,
-        ));
-        hasher.update(hash_sierra_entrypoints(
-            &self.entry_points_by_type.constructor,
-        ));
-
-        // Hashes ABI
-        hasher.update(starknet_keccak(
-            self.abi.clone().expect("abi expected").as_bytes(),
-        ));
-
-        // Hashes Sierra program
-        hasher.update(poseidon_hash_many(&self.sierra_program));
-
-        normalize_address(hasher.finalize())
+        normalize_address(Poseidon::hash_array(&data))
     }
 }
 
 impl CompiledClass {
     pub fn class_hash(&self) -> Result<Felt, ComputeClassHashError> {
-        let mut hasher = PoseidonHasher::new();
-        hasher.update(PREFIX_COMPILED_CLASS_V1);
-
-        // Hashes entry points
-        hasher.update(
+        let mut data = vec![
+            PREFIX_COMPILED_CLASS_V1,
             Self::hash_entrypoints(&self.entry_points_by_type.external)
                 .map_err(|_| ComputeClassHashError::InvalidBuiltinName)?,
-        );
-        hasher.update(
             Self::hash_entrypoints(&self.entry_points_by_type.l1_handler)
                 .map_err(|_| ComputeClassHashError::InvalidBuiltinName)?,
-        );
-        hasher.update(
             Self::hash_entrypoints(&self.entry_points_by_type.constructor)
                 .map_err(|_| ComputeClassHashError::InvalidBuiltinName)?,
-        );
+        ];
 
-        // Hashes bytecode
-        hasher.update(if self.bytecode_segment_lengths.is_empty() {
-            // Pre-Sierra-1.5.0 compiled classes
-            poseidon_hash_many(&self.bytecode)
+        // Bytecode hash calculation
+        let bytecode_hash = if self.bytecode_segment_lengths.is_empty() {
+            Poseidon::hash_array(&self.bytecode)
         } else {
-            // `bytecode_segment_lengths` was added since Sierra 1.5.0 and changed hash calculation.
-            // This implementation here is basically a direct translation of the Python code from
-            // `cairo-lang` v0.13.1. The goal was simply to have a working implementation as quickly
-            // as possible. There should be some optimizations to be made here.
-            // TODO: review how this can be optimized
-
-            // NOTE: this looks extremely inefficient. Maybe just use a number for tracking instead?
             let mut rev_visited_pcs: Vec<u64> = (0..(self.bytecode.len() as u64)).rev().collect();
 
             let (res, total_len) = Self::create_bytecode_segment_structure_inner(
@@ -535,29 +493,30 @@ impl CompiledClass {
             }
 
             res.hash()
-        });
+        };
+        data.push(bytecode_hash);
 
-        Ok(hasher.finalize())
+        Ok(Poseidon::hash_array(&data))
     }
 
     fn hash_entrypoints(
         entrypoints: &[CompiledClassEntrypoint],
     ) -> Result<Felt, CairoShortStringToFeltError> {
-        let mut hasher = PoseidonHasher::new();
+        let mut data = Vec::new();
 
         for entry in entrypoints {
-            hasher.update(entry.selector);
-            hasher.update(entry.offset.into());
+            data.push(entry.selector);
+            data.push(entry.offset.into());
 
-            let mut builtin_hasher = PoseidonHasher::new();
+            let mut builtin_data = Vec::new();
             for builtin in &entry.builtins {
-                builtin_hasher.update(cairo_short_string_to_felt(builtin)?)
+                builtin_data.push(cairo_short_string_to_felt(builtin)?);
             }
 
-            hasher.update(builtin_hasher.finalize());
+            data.push(Poseidon::hash_array(&builtin_data));
         }
 
-        Ok(hasher.finalize())
+        Ok(Poseidon::hash_array(&data))
     }
 
     // Direct translation of `_create_bytecode_segment_structure_inner` from `cairo-lang` v0.13.1.
@@ -659,18 +618,20 @@ impl BytecodeSegmentStructure {
 
 impl BytecodeLeaf {
     fn hash(&self) -> Felt {
-        poseidon_hash_many(&self.data)
+        Poseidon::hash_array(&self.data)
     }
 }
 
 impl BytecodeSegmentedNode {
     fn hash(&self) -> Felt {
-        let mut hasher = PoseidonHasher::new();
+        let mut data = Vec::new();
+
         for node in self.segments.iter() {
-            hasher.update(node.segment_length.into());
-            hasher.update(node.inner_structure.hash());
+            data.push(node.segment_length.into());
+            data.push(node.inner_structure.hash());
         }
-        hasher.finalize() + Felt::ONE
+
+        Poseidon::hash_array(&data) + Felt::ONE
     }
 }
 
@@ -835,12 +796,12 @@ impl<'de> Deserialize<'de> for IntOrList {
 }
 
 fn hash_sierra_entrypoints(entrypoints: &[SierraEntryPoint<Felt>]) -> Felt {
-    let mut hasher = PoseidonHasher::new();
+    let mut data = Vec::new();
 
     for entry in entrypoints.iter() {
-        hasher.update(entry.selector);
-        hasher.update(entry.function_idx.into());
+        data.push(entry.selector);
+        data.push(entry.function_idx.into());
     }
 
-    hasher.finalize()
+    Poseidon::hash_array(&data)
 }
