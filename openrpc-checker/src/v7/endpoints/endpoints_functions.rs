@@ -72,6 +72,7 @@ pub async fn invoke_contract_erc20_transfer(
             "target/dev/contracts_MyAccount.compiled_contract_class.json",
         )
         .await?;
+    info!("-----> GOT COMPILED CONTRACT");
 
     let (erc_20_flattened_sierra_class, erc_20_compiled_class_hash) = get_compiled_contract(
         "target/dev/contracts_TestToken.contract_class.json",
