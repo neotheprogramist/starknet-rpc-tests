@@ -111,8 +111,8 @@ pub async fn invoke_contract_erc20_transfer(
     // TODO DECLARE EXEC ACC
     info!("-----> DECLARING EXEC ACC CONTRACT");
     let declaration_hash_executable_account = match paymaster_account
-        .declare_v2(
-            Arc::new(executable_account_flattened_sierra_class),
+        .declare_v3(
+            executable_account_flattened_sierra_class,
             executable_account_compiled_class_hash,
         )
         .send()
@@ -142,29 +142,29 @@ pub async fn invoke_contract_erc20_transfer(
         }
         Err(e) => {
             let full_error_message = format!("{:?}", e);
+            info!("error {:?}", full_error_message);
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
 
     info!("-----> PREPARING EXECUTABLE ACCOUNT DATA");
     // TODO EXECUTABLE ACCOUNT DATA (address, signing_key etc.)
-    // let create_acc_data = create_account(
-    //     &provider,
-    //     AccountType::Oz,
-    //     Option::None,
-    //     Some(declaration_hash_executable_account.unwrap()),
-    // )
-    // .await?;
+    let create_acc_data = create_account(
+        &provider,
+        AccountType::Oz,
+        Option::None,
+        Some(declaration_hash_executable_account.unwrap()),
+    )
+    .await?;
 
-    // let wait_config = WaitForTx {
-    //     wait: true,
-    //     wait_params: ValidatedWaitParams::default(),
-    // };
-
-    // let deploy_account_txn_hash =
-    //     deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
-    // wait_for_sent_transaction(deploy_account_txn_hash, &paymaster_account).await?;
-    // info!("-----> DEPLOYED EXECUTABLE ACCOUNT CONTRACT");
+    let wait_config = WaitForTx {
+        wait: true,
+        wait_params: ValidatedWaitParams::default(),
+    };
+    let deploy_account_txn_hash =
+        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    wait_for_sent_transaction(deploy_account_txn_hash, &paymaster_account).await?;
+    info!("-----> DEPLOYED EXECUTABLE ACCOUNT CONTRACT");
 
     // let sender_address = create_acc_data.address;
     // let signer: LocalWallet = LocalWallet::from(create_acc_data.signing_key);
@@ -182,7 +182,7 @@ pub async fn invoke_contract_erc20_transfer(
     // // DECLARE ERC20
     // info!("-----> DECLARING ERC20");
     // let declaration_hash = match paymaster_account
-    //     .declare_v2(
+    //     .3(
     //         Arc::new(erc_20_flattened_sierra_class),
     //         erc_20_compiled_class_hash,
     //     )
