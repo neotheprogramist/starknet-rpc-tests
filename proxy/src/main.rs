@@ -1,4 +1,5 @@
 mod core;
+pub mod test_cases;
 use clap::Parser;
 
 use core::errors::ProxyError;

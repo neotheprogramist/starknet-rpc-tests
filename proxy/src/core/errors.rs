@@ -16,5 +16,10 @@ pub enum ProxyError {
     #[error(transparent)]
     RustlsError(#[from] rustls::Error),
     #[error(transparent)]
-    ParseError(#[from] std::num::ParseIntError),
+    ParseIntError(#[from] std::num::ParseIntError),
+    #[error(transparent)]
+    ParseUrlError(#[from] url::ParseError),
+    #[error(transparent)]
+    SerdeJsonError(#[from] serde_json::Error)
+    
 }
