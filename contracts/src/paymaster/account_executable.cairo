@@ -8,12 +8,6 @@ pub trait IExecuteFromOutsideCallback<TContractState> {
     );
 }
 
-// pub trait IExecuteFromOutsideCallback<TContractState> {
-//     fn execute_from_outside(
-//         ref self: TContractState, outside_execution: OutsideExecution, signature: Array<felt252>,
-//     ) -> Array<Span<felt252>
-// }
-
 #[starknet::contract(account)]
 mod MyAccount {
     use contracts::paymaster::interface::{OutsideExecution, OffChainMessageOutsideExecutionRev1};
