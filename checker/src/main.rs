@@ -1,4 +1,5 @@
 mod args;
+pub mod tests_traits;
 mod v5;
 mod v6;
 mod v7;

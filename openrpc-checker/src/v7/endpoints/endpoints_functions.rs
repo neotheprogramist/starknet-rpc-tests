@@ -315,6 +315,7 @@ pub async fn invoke_contract_erc20_transfer(
     let starknet::core::crypto::ExtendedSignature { r, s, v: _ } =
         ecdsa_sign(&private_key, &hash).unwrap();
 
+    // struct sign - vector1.expand(vector2);
     let mut calldata_to_executable_account_call = outside_execution_cairo_serialized.clone();
     calldata_to_executable_account_call.push(Felt::from_dec_str("2")?);
     calldata_to_executable_account_call.push(r);
