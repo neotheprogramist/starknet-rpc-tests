@@ -147,20 +147,15 @@ pub async fn invoke_contract_erc20_transfer(
     let exec_hash = declaration_hash_executable_account.unwrap();
 
     // TODO EXECUTABLE ACCOUNT DATA (address, signing_key etc.)
-    let create_acc_data = create_account(
-        &provider,
-        AccountType::Oz,
-        Option::None,
-        Some(exec_hash.clone()),
-    )
-    .await?;
+    let create_acc_data =
+        create_account(&provider, AccountType::Oz, Option::None, Some(exec_hash)).await?;
 
     // deploy new account via udc
     let udc_deploy_account_call = Call {
         to: Felt::from_hex("0x41A78E741E5AF2FEC34B695679BC6891742439F7AFB8484ECD7766661AD02BF")?,
         selector: get_selector_from_name("deployContract")?,
         calldata: vec![
-            exec_hash.clone(),
+            exec_hash,
             create_acc_data.salt,
             Felt::ZERO,
             Felt::ONE,
@@ -315,7 +310,7 @@ pub async fn invoke_contract_erc20_transfer(
     // get outside execution hash
     let outside_execution_cairo_serialized = &OutsideExecution::cairo_serialize(&outside_execution);
 
-    let hash = Poseidon::hash_array(&outside_execution_cairo_serialized);
+    let hash = Poseidon::hash_array(outside_execution_cairo_serialized);
 
     let starknet::core::crypto::ExtendedSignature { r, s, v: _ } =
         ecdsa_sign(&private_key, &hash).unwrap();
