@@ -7,9 +7,9 @@ pub struct TestSuite {
     pub test_path: PathBuf,
 }
 
-pub trait TestSuiteCommon {
+pub trait TestSuiteMadara {
     fn run(&self);
 }
 
 #[cfg(not(feature = "rust-analyzer"))]
-include!(concat!(env!("OUT_DIR"), "/generated_tests_common.rs"));
+include!(concat!(env!("OUT_DIR"), "/generated_tests_madara.rs"));

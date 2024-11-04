@@ -8,6 +8,6 @@ pub trait TestCaseTrait {
 
 impl TestCaseTrait for TestCase {
     fn run(&self) {
-        println!("COMMON V2");
+        println!("MADARA V1");
     }
 }

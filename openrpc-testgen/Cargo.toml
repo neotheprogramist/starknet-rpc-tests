@@ -30,3 +30,4 @@ crypto-utils.workspace = true
 
 [features]
 no_unknown_fields = []
+rust-analyzer = []
