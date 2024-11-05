@@ -4,7 +4,7 @@ use starknet_types_core::felt::Felt;
 
 use std::error::Error;
 
-use crate::v5::signers::key_pair::VerifyingKey;
+use crate::utils::v7::signers::key_pair::VerifyingKey;
 
 #[auto_impl(&, Box, Arc)]
 pub trait Signer {
