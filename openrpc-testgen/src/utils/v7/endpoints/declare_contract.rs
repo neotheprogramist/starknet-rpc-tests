@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::utils::v7::accounts::account::{Account, AccountError};
@@ -22,8 +23,8 @@ use url::ParseError;
 #[allow(dead_code)]
 pub async fn declare_contract<P: Provider + Send + Sync>(
     account: &SingleOwnerAccount<P, LocalWallet>,
-    sierra_path: &str,
-    casm_path: &str,
+    sierra_path: PathBuf,
+    casm_path: PathBuf,
 ) -> Result<Felt, RunnerError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await.unwrap();
@@ -103,12 +104,11 @@ pub fn extract_class_hash_from_error(error_msg: &str) -> Result<Felt, RunnerErro
     }
 }
 
-#[allow(dead_code)]
 pub async fn get_compiled_contract(
-    sierra_path: &str,
-    casm_path: &str,
+    sierra_path: PathBuf,
+    casm_path: PathBuf,
 ) -> Result<(ContractClass<Felt>, TxnHash<Felt>), RunnerError> {
-    let mut file = tokio::fs::File::open(sierra_path).await.map_err(|e| {
+    let mut file = tokio::fs::File::open(&sierra_path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
             RunnerError::ReadFileError(
                 "Contract json file not found, please execute scarb build command".to_string(),
@@ -117,12 +117,12 @@ pub async fn get_compiled_contract(
             RunnerError::ReadFileError(e.to_string())
         }
     })?;
-    let mut sierra = String::default();
+    let mut sierra = String::new();
     file.read_to_string(&mut sierra)
         .await
         .map_err(|e| RunnerError::ReadFileError(e.to_string()))?;
 
-    let mut file = tokio::fs::File::open(casm_path).await.map_err(|e| {
+    let mut file = tokio::fs::File::open(&casm_path).await.map_err(|e| {
         if e.kind() == std::io::ErrorKind::NotFound {
             RunnerError::ReadFileError(
                 "Contract json file not found, please execute scarb build command".to_string(),
@@ -131,17 +131,15 @@ pub async fn get_compiled_contract(
             RunnerError::ReadFileError(e.to_string())
         }
     })?;
-    let mut casm = String::default();
+    let mut casm = String::new();
     file.read_to_string(&mut casm)
         .await
         .map_err(|e| RunnerError::ReadFileError(e.to_string()))?;
 
     let contract_artifact: SierraClass = serde_json::from_str(&sierra)?;
-
     let compiled_class: CompiledClass = serde_json::from_str(&casm)?;
 
     let casm_class_hash = compiled_class.class_hash().unwrap();
-
     let flattened_class = contract_artifact.clone().flatten().unwrap();
 
     Ok((flattened_class, casm_class_hash))

@@ -223,7 +223,7 @@ pub async fn invoke_contract_erc20_transfer(
             Ok(extract_class_hash_from_error(&full_error_message)?)
         }
     };
-    // // DEPLOY ERC20
+    // DEPLOY ERC20
     let deployment_hash_erc20 = match declaration_hash {
         Ok(class_hash) => {
             let factory = ContractFactory::new(class_hash, paymaster_account.clone());

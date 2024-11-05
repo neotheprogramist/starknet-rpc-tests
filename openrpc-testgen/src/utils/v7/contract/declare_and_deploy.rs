@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use starknet_types_rpc::{
     v0_7_1::{BlockId, BlockTag},
     PriceUnit,
@@ -26,8 +28,8 @@ use crate::utils::v7::{
 #[allow(dead_code)]
 pub async fn decalare_and_deploy(
     url: Url,
-    sierra_path: &str,
-    casm_path: &str,
+    sierra_path: PathBuf,
+    casm_path: PathBuf,
 ) -> Result<(), String> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =

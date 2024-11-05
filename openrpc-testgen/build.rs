@@ -72,37 +72,37 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     // Get list of test files included as `pub mod` in `mod.rs`
     let declared_tests = find_pub_mods_in_mod(&main_file_path);
 
-    // Implement `RunnableTrait` for the detected struct
+    // Generate RunnableTrait implementation with async run method and setup
     writeln!(
         file,
         "impl crate::RunnableTrait for {}::{} {{",
         module_prefix, struct_name
     )
     .unwrap();
-    writeln!(file, "    fn run(&self) {{").unwrap();
+    writeln!(file, "    type Output = ();").unwrap();
+    writeln!(
+        file,
+        "    fn run(&self) -> impl std::future::Future<Output = Result<Self::Output, crate::utils::v7::endpoints::errors::RpcError>> {{"
+    )
+    .unwrap();
+    writeln!(file, "        async move {{").unwrap();
 
-    // Process test files that are declared as `pub mod` within `mod.rs`
-    for entry in fs::read_dir(module_path).expect("Could not read module directory") {
-        let entry = entry.expect("Could not read directory entry");
-        let path = entry.path();
-        if let Some(file_name) = path.file_stem().and_then(|s| s.to_str()) {
-            if declared_tests.contains(&file_name.to_string())
-                && path.extension().and_then(|s| s.to_str()) == Some("rs")
-            {
-                let content = read_to_string(&path).expect("Could not read test file");
-                let test_struct_name = find_struct_name(&content).unwrap_or("TestCase".to_string());
+    // Wywołanie setup i przypisanie wyniku do zmiennej data
+    writeln!(file, "            let data = self.setup().await?;").unwrap();
 
-                writeln!(
-                    file,
-                    "        let test_case = {}::{}::{} {{ tmp: String::from(\"value\") }};",
-                    module_prefix, file_name, test_struct_name
-                )
-                .unwrap();
-                writeln!(file, "        test_case.run();").unwrap();
-            }
-        }
+    // Generowanie testów dla każdego modułu w declared_tests
+    for test_name in declared_tests {
+        writeln!(
+            file,
+            "            let test_case = {}::{}::TestCase {{ data: data.clone() }};",
+            module_prefix, test_name
+        )
+        .unwrap();
+        writeln!(file, "            test_case.run().await?;").unwrap();
     }
 
+    writeln!(file, "            Ok(())").unwrap();
+    writeln!(file, "        }}").unwrap();
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
 }
