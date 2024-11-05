@@ -40,7 +40,7 @@ fn process_directory_recursively(dir: &Path, out_dir: &str) {
                 == Some(true)
         {
             process_module_directory(&path, out_dir);
-            process_directory_recursively(&path, out_dir); // Recurse into subdirectories
+            process_directory_recursively(&path, out_dir);
         }
     }
 }
@@ -69,6 +69,9 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         None => "TestSuite".to_string(), // default if no struct found
     };
 
+    // Get list of test files included as `pub mod` in `mod.rs`
+    let declared_tests = find_pub_mods_in_mod(&main_file_path);
+
     // Implement `RunnableTrait` for the detected struct
     writeln!(
         file,
@@ -78,12 +81,12 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     .unwrap();
     writeln!(file, "    fn run(&self) {{").unwrap();
 
-    // Process test files within this module
+    // Process test files that are declared as `pub mod` within `mod.rs`
     for entry in fs::read_dir(module_path).expect("Could not read module directory") {
         let entry = entry.expect("Could not read directory entry");
         let path = entry.path();
         if let Some(file_name) = path.file_stem().and_then(|s| s.to_str()) {
-            if file_name.starts_with("test")
+            if declared_tests.contains(&file_name.to_string())
                 && path.extension().and_then(|s| s.to_str()) == Some("rs")
             {
                 let content = read_to_string(&path).expect("Could not read test file");
@@ -104,13 +107,31 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     writeln!(file, "}}").unwrap();
 }
 
+// Finds the list of `pub mod` declarations in `mod.rs`
+fn find_pub_mods_in_mod(mod_file_path: &Path) -> Vec<String> {
+    let content = read_to_string(mod_file_path).expect("Could not read mod.rs file");
+    let mut pub_mods = Vec::new();
+
+    for line in content.lines() {
+        if line.trim_start().starts_with("pub mod ") {
+            let parts: Vec<&str> = line.split_whitespace().collect();
+            if parts.len() >= 3 {
+                let mod_name = parts[2].trim_end_matches(';').to_string();
+                pub_mods.push(mod_name);
+            }
+        }
+    }
+
+    pub_mods
+}
+
 // Utility function to find the struct name in a specific file, e.g., mod.rs
 fn find_struct_name_in_file(file_path: &Path) -> Option<String> {
     let content = read_to_string(file_path).expect("Could not read file");
     find_struct_name(&content)
 }
 
-// Utility functions for detecting struct name
+// Utility functions for detecting struct and trait names
 fn find_struct_name(content: &str) -> Option<String> {
     for line in content.lines() {
         if line.starts_with("pub struct ") {
