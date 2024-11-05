@@ -1,7 +1,6 @@
 use std::future::Future;
 use utils::v7::endpoints::errors::RpcError;
 
-pub mod structs;
 pub mod suite_openrpc;
 pub mod utils;
 
