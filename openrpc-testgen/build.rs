@@ -25,7 +25,13 @@ fn main() {
     for entry in fs::read_dir(src_dir).expect("Could not read src directory") {
         let entry = entry.expect("Could not read src subdirectory");
         let path = entry.path();
-        if path.is_dir() {
+        if path.is_dir()
+            && path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .map(|s| s.starts_with("suite_"))
+                == Some(true)
+        {
             process_module_directory(&path, &out_dir);
         }
     }
