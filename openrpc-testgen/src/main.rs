@@ -1,35 +1,28 @@
+use openrpc_testgen::suite_common::suite_common_nested::TestSuiteCommonNested;
+use openrpc_testgen::suite_common::TestSuiteCommon;
+use openrpc_testgen::suite_katana::TestSuiteKatana;
+use openrpc_testgen::suite_madara::TestSuiteMadara;
+use openrpc_testgen::TestSuiteTrait;
+use std::path::PathBuf;
+
 fn main() {
-    {
-        use openrpc_testgen::suite_common::{TestSuite, TestSuiteCommon};
-        let suite = TestSuite {
-            test_path: std::path::PathBuf::from("./suite_common/`"),
-        };
+    let suite_common = TestSuiteCommon {
+        test_path: PathBuf::from("./suite_common/"),
+    };
+    suite_common.run();
 
-        suite.run();
-    }
-    {
-        use openrpc_testgen::suite_madara::{TestSuite, TestSuiteMadara};
-        let suite = TestSuite {
-            test_path: std::path::PathBuf::from("./suite_madara/`"),
-        };
+    let suite_madara = TestSuiteMadara {
+        test_path: PathBuf::from("./suite_madara/"),
+    };
+    suite_madara.run();
 
-        suite.run();
-    }
-    {
-        use openrpc_testgen::suite_katana::{TestSuite, TestSuiteKatana};
-        let suite = TestSuite {
-            test_path: std::path::PathBuf::from("./suite_katana/`"),
-        };
+    let suite_katana = TestSuiteKatana {
+        test_path: PathBuf::from("./suite_katana/"),
+    };
+    suite_katana.run();
 
-        suite.run();
-    }
-    {
-        use openrpc_testgen::suite_common::suite_common_nested::{
-            TestSuite, TestSuiteCommonNested,
-        };
-        let suite = TestSuite {
-            test_path: std::path::PathBuf::from("./suite_common_suite_common_nested"),
-        };
-        suite.run();
-    }
+    let suite_common_nested = TestSuiteCommonNested {
+        test_path: PathBuf::from("./suite_common/suite_common_nested/"),
+    };
+    suite_common_nested.run();
 }

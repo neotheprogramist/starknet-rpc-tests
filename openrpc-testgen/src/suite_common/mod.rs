@@ -4,12 +4,8 @@ pub mod test_add_declare_v3;
 pub mod test_add_declare_v4;
 use std::path::PathBuf;
 
-pub struct TestSuite {
+pub struct TestSuiteCommon {
     pub test_path: PathBuf,
-}
-
-pub trait TestSuiteCommon {
-    fn run(&self);
 }
 
 #[cfg(not(feature = "rust-analyzer"))]

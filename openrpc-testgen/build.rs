@@ -21,13 +21,13 @@ fn main() {
         }
     }
 
-    // Iterate over each subdirectory in `src`
+    // Process each suite_ directory in `src`
     process_directory_recursively(src_dir, &out_dir);
 
     println!("cargo:rerun-if-changed=src");
 }
 
-// Rekurencyjnie przetwarza katalogi z prefiksem "suite_"
+// Recursively processes directories with prefix "suite_"
 fn process_directory_recursively(dir: &Path, out_dir: &str) {
     for entry in fs::read_dir(dir).expect("Could not read directory") {
         let entry = entry.expect("Could not read directory entry");
@@ -47,7 +47,7 @@ fn process_directory_recursively(dir: &Path, out_dir: &str) {
 
 fn process_module_directory(module_path: &Path, out_dir: &str) {
     let module_name = module_path.strip_prefix("src").unwrap().to_str().unwrap();
-    let module_name_safe = module_name.replace("/", "_"); // Zamień na bezpieczną nazwę
+    let module_name_safe = module_name.replace("/", "_");
 
     let generated_file_path =
         Path::new(out_dir).join(format!("generated_tests_{}.rs", module_name_safe));
@@ -62,23 +62,23 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     .unwrap();
     let module_prefix = format!("crate::{}", module_name.replace("/", "::"));
 
-    // Find the `struct` and `trait` names from the main file in this module
+    // Detect the struct name from `mod.rs` in each module
     let main_file_path = module_path.join("mod.rs");
-    let main_content = read_to_string(&main_file_path).expect("Could not read mod.rs file");
+    let struct_name = match find_struct_name_in_file(&main_file_path) {
+        Some(name) => name,
+        None => "TestSuite".to_string(), // default if no struct found
+    };
 
-    let struct_name = find_struct_name(&main_content).unwrap_or("TestSuite".to_string());
-    let trait_name = find_trait_name(&main_content).unwrap_or("TestSuiteCommon".to_string());
-
-    // Implement the detected trait for the detected struct
+    // Implement `TestSuiteTrait` for the detected struct
     writeln!(
         file,
-        "impl {}::{} for {}::{} {{",
-        module_prefix, trait_name, module_prefix, struct_name
+        "impl crate::TestSuiteTrait for {}::{} {{",
+        module_prefix, struct_name
     )
     .unwrap();
     writeln!(file, "    fn run(&self) {{").unwrap();
 
-    // Look for test files in the module directory
+    // Process test files within this module
     for entry in fs::read_dir(module_path).expect("Could not read module directory") {
         let entry = entry.expect("Could not read directory entry");
         let path = entry.path();
@@ -114,6 +114,13 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     writeln!(file, "}}").unwrap();
 }
 
+// Utility function to find the struct name in a specific file, e.g., mod.rs
+fn find_struct_name_in_file(file_path: &Path) -> Option<String> {
+    let content = read_to_string(file_path).expect("Could not read file");
+    find_struct_name(&content)
+}
+
+// Utility functions for detecting struct and trait names
 fn find_struct_name(content: &str) -> Option<String> {
     for line in content.lines() {
         if line.starts_with("pub struct ") {

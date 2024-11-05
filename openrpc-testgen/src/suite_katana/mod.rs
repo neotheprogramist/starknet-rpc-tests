@@ -3,12 +3,8 @@ pub mod test_add_declare_v3;
 pub mod test_add_declare_v4;
 use std::path::PathBuf;
 
-pub struct TestSuite {
+pub struct TestSuiteKatana {
     pub test_path: PathBuf,
-}
-
-pub trait TestSuiteKatana {
-    fn run(&self);
 }
 
 #[cfg(not(feature = "rust-analyzer"))]
