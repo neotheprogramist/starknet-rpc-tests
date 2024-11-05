@@ -22,8 +22,15 @@ fn main() {
     }
 
     // Iterate over each subdirectory in `src`
-    for entry in fs::read_dir(src_dir).expect("Could not read src directory") {
-        let entry = entry.expect("Could not read src subdirectory");
+    process_directory_recursively(src_dir, &out_dir);
+
+    println!("cargo:rerun-if-changed=src");
+}
+
+// Rekurencyjnie przetwarza katalogi z prefiksem "suite_"
+fn process_directory_recursively(dir: &Path, out_dir: &str) {
+    for entry in fs::read_dir(dir).expect("Could not read directory") {
+        let entry = entry.expect("Could not read directory entry");
         let path = entry.path();
         if path.is_dir()
             && path
@@ -32,17 +39,18 @@ fn main() {
                 .map(|s| s.starts_with("suite_"))
                 == Some(true)
         {
-            process_module_directory(&path, &out_dir);
+            process_module_directory(&path, out_dir);
+            process_directory_recursively(&path, out_dir);
         }
     }
-
-    println!("cargo:rerun-if-changed=src");
 }
 
 fn process_module_directory(module_path: &Path, out_dir: &str) {
-    let module_name = module_path.file_name().unwrap().to_str().unwrap();
+    let module_name = module_path.strip_prefix("src").unwrap().to_str().unwrap();
+    let module_name_safe = module_name.replace("/", "_"); // Zamień na bezpieczną nazwę
+
     let generated_file_path =
-        Path::new(out_dir).join(format!("generated_tests_{}.rs", module_name));
+        Path::new(out_dir).join(format!("generated_tests_{}.rs", module_name_safe));
     let mut file =
         File::create(&generated_file_path).expect("Could not create generated test file");
 
@@ -52,7 +60,7 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         module_name
     )
     .unwrap();
-    let module_prefix = format!("crate::{}", module_name);
+    let module_prefix = format!("crate::{}", module_name.replace("/", "::"));
 
     // Find the `struct` and `trait` names from the main file in this module
     let main_file_path = module_path.join("mod.rs");

@@ -8,6 +8,6 @@ pub trait TestCaseTrait {
 
 impl TestCaseTrait for TestCase {
     fn run(&self) {
-        println!("KATANA SPECIFIC V1");
+        println!("COMMON NESTED V3");
     }
 }

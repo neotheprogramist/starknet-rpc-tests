@@ -1,3 +1,4 @@
+pub mod suite_common_nested;
 pub mod test_add_declare_v2;
 pub mod test_add_declare_v3;
 pub mod test_add_declare_v4;

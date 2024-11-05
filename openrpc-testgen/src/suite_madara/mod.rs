@@ -10,6 +10,6 @@ pub struct TestSuite {
 pub trait TestSuiteMadara {
     fn run(&self);
 }
-
+// zunifikowac nazwe traita do TestSuite dla rownoleglych modow i nested
 #[cfg(not(feature = "rust-analyzer"))]
 include!(concat!(env!("OUT_DIR"), "/generated_tests_suite_madara.rs"));
