@@ -87,10 +87,8 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     .unwrap();
     writeln!(file, "        async move {{").unwrap();
 
-    // Wywołanie setup i przypisanie wyniku do zmiennej data
     writeln!(file, "            let data = self.setup().await?;").unwrap();
 
-    // Generowanie testów dla każdego modułu w declared_tests
     for test_name in declared_tests {
         writeln!(
             file,
