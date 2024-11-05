@@ -2,7 +2,7 @@ use openrpc_testgen::suite_common::suite_common_nested::TestSuiteCommonNested;
 use openrpc_testgen::suite_common::TestSuiteCommon;
 use openrpc_testgen::suite_katana::TestSuiteKatana;
 use openrpc_testgen::suite_madara::TestSuiteMadara;
-use openrpc_testgen::TestSuiteTrait;
+use openrpc_testgen::RunnableTrait;
 use std::path::PathBuf;
 
 fn main() {

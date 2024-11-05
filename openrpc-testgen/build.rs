@@ -40,7 +40,7 @@ fn process_directory_recursively(dir: &Path, out_dir: &str) {
                 == Some(true)
         {
             process_module_directory(&path, out_dir);
-            process_directory_recursively(&path, out_dir);
+            process_directory_recursively(&path, out_dir); // Recurse into subdirectories
         }
     }
 }
@@ -69,10 +69,10 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         None => "TestSuite".to_string(), // default if no struct found
     };
 
-    // Implement `TestSuiteTrait` for the detected struct
+    // Implement `RunnableTrait` for the detected struct
     writeln!(
         file,
-        "impl crate::TestSuiteTrait for {}::{} {{",
+        "impl crate::RunnableTrait for {}::{} {{",
         module_prefix, struct_name
     )
     .unwrap();
@@ -88,24 +88,14 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
             {
                 let content = read_to_string(&path).expect("Could not read test file");
                 let test_struct_name = find_struct_name(&content).unwrap_or("TestCase".to_string());
-                let test_trait_name =
-                    find_trait_name(&content).unwrap_or("TestCaseTrait".to_string());
 
-                writeln!(file, "        {{").unwrap();
                 writeln!(
                     file,
-                    "            use {}::{}::{};",
-                    module_prefix, file_name, test_trait_name
-                )
-                .unwrap();
-                writeln!(
-                    file,
-                    "            let test_case = {}::{}::{} {{ tmp: String::from(\"value\") }};",
+                    "        let test_case = {}::{}::{} {{ tmp: String::from(\"value\") }};",
                     module_prefix, file_name, test_struct_name
                 )
                 .unwrap();
-                writeln!(file, "            test_case.run();").unwrap();
-                writeln!(file, "        }}").unwrap();
+                writeln!(file, "        test_case.run();").unwrap();
             }
         }
     }
@@ -120,20 +110,10 @@ fn find_struct_name_in_file(file_path: &Path) -> Option<String> {
     find_struct_name(&content)
 }
 
-// Utility functions for detecting struct and trait names
+// Utility functions for detecting struct name
 fn find_struct_name(content: &str) -> Option<String> {
     for line in content.lines() {
         if line.starts_with("pub struct ") {
-            let parts: Vec<&str> = line.split_whitespace().collect();
-            return Some(parts[2].to_string());
-        }
-    }
-    None
-}
-
-fn find_trait_name(content: &str) -> Option<String> {
-    for line in content.lines() {
-        if line.starts_with("pub trait ") {
             let parts: Vec<&str> = line.split_whitespace().collect();
             return Some(parts[2].to_string());
         }
