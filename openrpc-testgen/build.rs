@@ -72,7 +72,7 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     // Get list of test files included as `pub mod` in `mod.rs`
     let declared_tests = find_pub_mods_in_mod(&main_file_path);
 
-    // Generate RunnableTrait implementation with async run method and setup
+    // Generate RunnableTrait implementation with async fn run and setup
     writeln!(
         file,
         "impl crate::RunnableTrait for {}::{} {{",
@@ -82,25 +82,23 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     writeln!(file, "    type Output = ();").unwrap();
     writeln!(
         file,
-        "    fn run(&self) -> impl std::future::Future<Output = Result<Self::Output, crate::utils::v7::endpoints::errors::RpcError>> {{"
+        "    async fn run(&self) -> Result<Self::Output, crate::utils::v7::endpoints::errors::RpcError> {{"
     )
     .unwrap();
-    writeln!(file, "        async move {{").unwrap();
 
-    writeln!(file, "            let data = self.setup().await?;").unwrap();
+    writeln!(file, "        let data = self.setup().await?;").unwrap();
 
     for test_name in declared_tests {
         writeln!(
             file,
-            "            let test_case = {}::{}::TestCase {{ data: data.clone() }};",
+            "        let test_case = {}::{}::TestCase {{ data: data.clone() }};",
             module_prefix, test_name
         )
         .unwrap();
-        writeln!(file, "            test_case.run().await?;").unwrap();
+        writeln!(file, "        test_case.run().await?;").unwrap();
     }
 
-    writeln!(file, "            Ok(())").unwrap();
-    writeln!(file, "        }}").unwrap();
+    writeln!(file, "        Ok(())").unwrap();
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
 }

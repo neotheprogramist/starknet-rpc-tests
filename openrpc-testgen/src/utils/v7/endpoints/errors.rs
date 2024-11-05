@@ -2,12 +2,12 @@ use starknet_types_core::felt::FromStrError;
 use thiserror::Error;
 
 use super::declare_contract::RunnerError;
-use core::fmt::{Display, Formatter, Result};
 use crate::utils::v7::{
     accounts::{account::AccountError, errors::CreationError, utils::mint::MintError},
     providers::provider::ProviderError,
     signers::local_wallet::SignError,
 };
+use core::fmt::{Display, Formatter, Result};
 
 #[derive(Error, Debug)]
 #[allow(dead_code)]
