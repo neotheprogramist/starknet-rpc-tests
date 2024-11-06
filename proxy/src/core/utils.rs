@@ -1,6 +1,6 @@
 use super::errors::ProxyError;
 use openssl::pkey::PKey;
-use reqwest::{blocking::Client, Body, Method, Response, Url};
+use reqwest::{blocking::Client, Url};
 use rustls::{Certificate, ServerConfig, ServerConnection, StreamOwned};
 use rustls_pemfile::Item;
 use std::{
@@ -9,10 +9,14 @@ use std::{
     net::TcpStream,
     sync::Arc,
 };
-
+use colored::*;
 use tracing::info;
 
-use crate::test_cases::state_machines::{GET_BLOCK_NUMBER_URL, Factory};
+#[cfg(not(feature = "rust-analyzer"))]
+include!(concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/generated_state_machines.rs"
+));
 
 pub fn load_tls_config() -> Result<Arc<ServerConfig>, ProxyError> {
     let private_key_bytes = include_bytes!("../../alpha-sepolia-certs/server.pem");
@@ -64,6 +68,7 @@ fn write_response_to_stream(
         tls_stream.write_all(error_response.as_bytes())?;
         info!("Failed to fetch response. Status: {}", response.status());
     }
+
     Ok(body)
 }
 
@@ -103,8 +108,9 @@ pub fn handle_connection(
         }
         request_header.push(line);
     }
-
     info!("Request: {:#?}", request_header);
+
+    let request_body = extract_request_body(&request_header, &mut buf_reader)?;
 
     if let Some(request_line) = request_header.first() {
         let parts: Vec<&str> = request_line.split_whitespace().collect();
@@ -117,22 +123,19 @@ pub fn handle_connection(
 
             let url = Url::parse(format!("https://alpha-sepolia.starknet.io{}", path).as_str())?;
 
-            let state_factory = Factory::new();
-
             let client = Client::new();
 
             let response = match method {
                 "GET" => {
                     info!("Handling GET request");
-                    client.get(url.clone()).send()?
+                    client.get(url.clone()).body(request_body.clone()).send()?
                 }
                 "POST" => {
                     info!("Handling POST request");
-                    let body = extract_request_body(&request_header, &mut buf_reader)?;
 
-                    info!("Received POST body: {}", body);
+                    info!("Received POST body: {}", request_body);
 
-                    client.post(url.clone()).body(body).send()?
+                    client.post(url.clone()).body(request_body.clone()).send()?
                 }
                 _ => {
                     info!("Unsupported HTTP method: {method}");
@@ -141,9 +144,8 @@ pub fn handle_connection(
                     });
                 }
             };
-
             let response_body = write_response_to_stream(&mut tls_stream, response)?;
-            state_factory.block_number_machine.step(Some(response_body))?;
+            run_generated_state_machines(request_body, response_body, path.to_string());
         } else {
             info!("Invalid request format");
         }

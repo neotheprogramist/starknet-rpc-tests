@@ -1,6 +1,6 @@
 mod core;
-pub mod test_cases;
 use clap::Parser;
+use tracing::info;
 
 use core::errors::ProxyError;
 use core::utils::{handle_connection, load_tls_config};
@@ -18,6 +18,7 @@ fn main() -> Result<(), ProxyError> {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
+
     let cli = Cli::parse();
 
     let addr = SocketAddr::from(([0, 0, 0, 0], cli.port));
@@ -25,6 +26,8 @@ fn main() -> Result<(), ProxyError> {
     let listener = TcpListener::bind(addr)?;
 
     let tls_config = load_tls_config()?;
+
+    info!("Proxy server is running");
 
     for stream in listener.incoming() {
         let stream = stream?;
