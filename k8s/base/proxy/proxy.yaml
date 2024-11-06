@@ -10,10 +10,9 @@ spec:
   dnsConfig:
     nameservers:
       - 8.8.8.8
-      - 1.1.1.1
   containers:
     - name: proxy
-      image: docker.io/piotr439/proxy:latest
+      image: docker.io/piotr439/proxy:dev-tests-v4
       ports:
         - containerPort: 3000
 ---
