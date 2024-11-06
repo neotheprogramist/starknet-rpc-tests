@@ -43,7 +43,7 @@ pub fn setup() -> SetupResult {
     let account_paymaster = deploy_contract("OZAccount", array![paymaster_keys.public_key]);
     let account_to_address = deploy_contract("OZAccount", array![account_to_keys.public_key]);
     let executable_account_address = deploy_contract(
-        "MyAccount", array![executable_account_keys.public_key]
+        "ExecutableAccount", array![executable_account_keys.public_key]
     );
     let erc_20_address = deploy_contract("TestToken", array![]);
 

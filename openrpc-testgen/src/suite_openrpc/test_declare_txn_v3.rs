@@ -1,5 +1,4 @@
-use colored::Colorize;
-use tracing::{error, info};
+use std::path::PathBuf;
 
 use super::SetupOutput;
 use crate::{
@@ -14,8 +13,11 @@ use crate::{
         },
         providers::provider::ProviderError,
     },
-    RunnableTrait,
+    RandomizableAccountsTrait, RunnableTrait,
 };
+use colored::Colorize;
+use std::str::FromStr;
+use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {
@@ -26,13 +28,14 @@ impl RunnableTrait for TestCase {
     type Output = ();
     async fn run(&self) -> Result<Self::Output, RpcError> {
         let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(
-            self.data.contracts_to_deploy_paths[0].sierra_path.clone(),
-            self.data.contracts_to_deploy_paths[0].casm_path.clone(),
+            PathBuf::from_str("target/dev/contracts_contracts_sample_contract_2_HelloStarknet.contract_class.json")?,
+            PathBuf::from_str("target/dev/contracts_contracts_sample_contract_2_HelloStarknet.compiled_contract_class.json")?,
         )
         .await?;
 
-        let declaration_hash = match self
-            .data
+        let accounts = self.data.random_accounts()?;
+
+        let declaration_hash = match accounts
             .paymaster_account
             .declare_v3(flattened_sierra_class, compiled_class_hash)
             .send()

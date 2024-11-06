@@ -8,6 +8,7 @@ use crate::utils::v7::{
     signers::local_wallet::SignError,
 };
 use core::fmt::{Display, Formatter, Result};
+use std::convert::Infallible;
 
 #[derive(Error, Debug)]
 #[allow(dead_code)]
@@ -38,6 +39,8 @@ pub enum RpcError {
     NonAsciiNameError(#[from] NonAsciiNameError),
     #[error(transparent)]
     FromStrError(#[from] FromStrError),
+    #[error(transparent)]
+    Infallible(#[from] Infallible),
     #[error("Unexpected block type {0}")]
     UnexpectedBlockResponseType(String),
     #[error("Unexpected txn type {0}")]

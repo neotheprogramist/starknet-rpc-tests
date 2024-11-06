@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use rand::{seq::SliceRandom, thread_rng};
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{BlockId, BlockTag};
 use url::Url;
@@ -7,13 +8,13 @@ use url::Url;
 use crate::{
     utils::v7::{
         accounts::{
-            account::{Account, AccountError},
+            account::{Account, AccountError, ConnectedAccount, ExecutionEncoder},
             call::Call,
             creation::{
                 create::{create_account, AccountType},
                 helpers::get_chain_id,
             },
-            single_owner::{ExecutionEncoding, SingleOwnerAccount},
+            single_owner::{ExecutionEncoding, SignError, SingleOwnerAccount},
         },
         endpoints::{
             declare_contract::{
@@ -29,35 +30,149 @@ use crate::{
         },
         signers::{key_pair::SigningKey, local_wallet::LocalWallet},
     },
-    SetupableTrait,
+    RandomizableAccountsTrait, SetupableTrait,
 };
 
 pub mod test_declare_txn_v2;
 pub mod test_declare_txn_v3;
-pub mod test_invoke_txn_v1;
-pub mod test_invoke_txn_v3;
 
 pub struct TestSuiteOpenRpc {
-    pub url: Url,
+    pub urls: Vec<Url>,
     pub paymaster_account_address: Felt,
     pub paymaster_private_key: Felt,
     pub udc_address: Felt,
     pub executable_account_sierra_path: PathBuf,
     pub executable_account_casm_path: PathBuf,
-    pub contracts_to_deploy_paths: Vec<ContractPathPair>,
 }
 
 #[derive(Clone, Debug)]
 pub struct SetupOutput {
-    pub paymaster_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
-    pub executable_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
-    pub contracts_to_deploy_paths: Vec<ContractPathPair>,
+    random_paymaster_accounts: RandomSingleOwnerAccount,
+    random_executable_accounts: RandomSingleOwnerAccount,
 }
 
 #[derive(Clone, Debug)]
-pub struct ContractPathPair {
-    pub sierra_path: PathBuf,
-    pub casm_path: PathBuf,
+pub struct RandomSingleOwnerAccount {
+    accounts: Vec<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>>,
+}
+
+impl RandomizableAccountsTrait for RandomSingleOwnerAccount {
+    fn random_accounts(
+        &self,
+    ) -> Result<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>, RpcError> {
+        let mut rng = thread_rng();
+        let account = self.accounts.choose(&mut rng).cloned().ok_or_else(|| {
+            RpcError::EmptyUrlList("Accounts list is empty - no urls.".to_string())
+        })?;
+        Ok(account)
+    }
+}
+
+impl RandomSingleOwnerAccount {
+    pub fn new(
+        accounts: Vec<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>>,
+    ) -> Self {
+        Self { accounts }
+    }
+
+    pub fn set_block_id(
+        &mut self,
+        block_id: BlockId<Felt>,
+    ) -> SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet> {
+        let mut acc = self.random_accounts().unwrap();
+        acc.set_block_id(block_id).clone()
+    }
+}
+
+impl Account for RandomSingleOwnerAccount {
+    type SignError =
+        SignError<<LocalWallet as crate::utils::v7::signers::signer::Signer>::SignError>;
+
+    fn address(&self) -> Felt {
+        let random_account = self.random_accounts().unwrap();
+        random_account.address()
+    }
+
+    fn chain_id(&self) -> Felt {
+        let random_account = self.random_accounts().unwrap();
+        random_account.chain_id()
+    }
+
+    async fn sign_execution_v1(
+        &self,
+        execution: &crate::utils::v7::accounts::account::RawExecutionV1,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        let random_account = self.random_accounts().unwrap();
+        random_account
+            .sign_execution_v1(execution, query_only)
+            .await
+    }
+
+    async fn sign_execution_v3(
+        &self,
+        execution: &crate::utils::v7::accounts::account::RawExecutionV3,
+        _query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        let random_account = self.random_accounts().unwrap();
+        random_account
+            .sign_execution_v3(execution, _query_only)
+            .await
+    }
+
+    async fn sign_declaration_v2(
+        &self,
+        declaration: &crate::utils::v7::accounts::account::RawDeclarationV2,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        let random_account = self.random_accounts().unwrap();
+        random_account
+            .sign_declaration_v2(declaration, query_only)
+            .await
+    }
+
+    async fn sign_declaration_v3(
+        &self,
+        declaration: &crate::utils::v7::accounts::account::RawDeclarationV3,
+        query_only: bool,
+    ) -> Result<Vec<Felt>, Self::SignError> {
+        let random_account = self.random_accounts().unwrap();
+        random_account
+            .sign_declaration_v3(declaration, query_only)
+            .await
+    }
+
+    fn is_signer_interactive(&self) -> bool {
+        let random_account = self.random_accounts().unwrap();
+        random_account.is_signer_interactive()
+    }
+}
+
+impl ExecutionEncoder for RandomSingleOwnerAccount {
+    fn encode_calls(&self, calls: &[Call]) -> Vec<Felt> {
+        let random_account = self.random_accounts().unwrap();
+        random_account.encode_calls(calls)
+    }
+}
+
+impl ConnectedAccount for RandomSingleOwnerAccount {
+    type Provider = JsonRpcClient<HttpTransport>;
+
+    fn provider(&self) -> &Self::Provider {
+        let random_account = self.random_accounts().unwrap();
+        let provider = random_account.provider();
+        provider
+    }
+
+    fn block_id(&self) -> BlockId<Felt> {
+        let random_account = self.random_accounts().unwrap();
+        random_account.block_id()
+    }
+
+    async fn get_nonce(&self) -> Result<Felt, ProviderError> {
+        let random_account = self.random_accounts().unwrap();
+        random_account.get_nonce().await
+    }
 }
 
 impl SetupableTrait for TestSuiteOpenRpc {
@@ -71,7 +186,7 @@ impl SetupableTrait for TestSuiteOpenRpc {
             )
             .await?;
 
-        let provider = JsonRpcClient::new(HttpTransport::new(self.url.clone()));
+        let provider = JsonRpcClient::new(HttpTransport::new(self.urls[0].clone()));
         let chain_id = get_chain_id(&provider).await?;
 
         let paymaster_signing_key = SigningKey::from_secret_scalar(self.paymaster_private_key);
@@ -151,7 +266,7 @@ impl SetupableTrait for TestSuiteOpenRpc {
         .await?;
 
         let mut executable_account = SingleOwnerAccount::new(
-            JsonRpcClient::new(HttpTransport::new(self.url.clone())),
+            provider.clone(),
             LocalWallet::from(executable_account_data.signing_key),
             executable_account_data.address,
             chain_id,
@@ -160,10 +275,39 @@ impl SetupableTrait for TestSuiteOpenRpc {
 
         executable_account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
+        let mut paymaster_accounts = vec![];
+        let mut executable_accounts = vec![];
+        for url in &self.urls {
+            let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
+            let chain_id = get_chain_id(&provider).await?;
+
+            let paymaster_account = SingleOwnerAccount::new(
+                provider.clone(),
+                LocalWallet::from(paymaster_signing_key),
+                self.paymaster_account_address,
+                chain_id,
+                ExecutionEncoding::New,
+            );
+
+            let executable_account = SingleOwnerAccount::new(
+                provider.clone(),
+                LocalWallet::from(executable_account_data.signing_key),
+                executable_account_data.address,
+                chain_id,
+                ExecutionEncoding::New,
+            );
+
+            paymaster_accounts.push(paymaster_account);
+            executable_accounts.push(executable_account);
+        }
+
         Ok(SetupOutput {
-            paymaster_account,
-            executable_account,
-            contracts_to_deploy_paths: self.contracts_to_deploy_paths.clone(),
+            random_executable_accounts: RandomSingleOwnerAccount {
+                accounts: executable_accounts,
+            },
+            random_paymaster_accounts: RandomSingleOwnerAccount {
+                accounts: paymaster_accounts,
+            },
         })
     }
 }
