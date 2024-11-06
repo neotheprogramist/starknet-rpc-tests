@@ -2,10 +2,10 @@ FROM rust:latest AS builder
 
 WORKDIR /usr/src/app
 
-# Copy the entire workspace context to the container
 COPY . .
 
-# Build only the `proxy` package
+RUN cargo build --release --package proxy-testgen
+
 RUN cargo build --release --package proxy
 
 FROM ubuntu:22.04
