@@ -1,6 +1,7 @@
 use colored::Colorize;
 use tracing::{error, info};
 
+use super::SetupOutput;
 use crate::{
     utils::v7::{
         accounts::account::{Account, AccountError},
@@ -15,9 +16,6 @@ use crate::{
     },
     RunnableTrait,
 };
-use std::sync::Arc;
-
-use super::SetupOutput;
 
 #[derive(Clone, Debug)]
 pub struct TestCase {
@@ -36,7 +34,7 @@ impl RunnableTrait for TestCase {
         let declaration_hash = match self
             .data
             .paymaster_account
-            .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
+            .declare_v3(flattened_sierra_class, compiled_class_hash)
             .send()
             .await
         {
@@ -72,14 +70,14 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc Add_declare_transaction_v2 COMPATIBLE".green(),
+                    "✓ Rpc Add_declare_transaction_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc add_declare_transaction_v2 INCOMPATIBLE:".red(),
+                    "✗ Rpc add_declare_transaction_v3 INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );

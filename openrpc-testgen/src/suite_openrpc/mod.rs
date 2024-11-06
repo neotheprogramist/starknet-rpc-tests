@@ -2,7 +2,6 @@ use std::path::PathBuf;
 
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{BlockId, BlockTag};
-use test_declare_txn_v2::ContractPathPair;
 use url::Url;
 
 use crate::{
@@ -34,6 +33,9 @@ use crate::{
 };
 
 pub mod test_declare_txn_v2;
+pub mod test_declare_txn_v3;
+pub mod test_invoke_txn_v1;
+pub mod test_invoke_txn_v3;
 
 pub struct TestSuiteOpenRpc {
     pub url: Url,
@@ -50,6 +52,12 @@ pub struct SetupOutput {
     pub paymaster_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
     pub executable_account: SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
     pub contracts_to_deploy_paths: Vec<ContractPathPair>,
+}
+
+#[derive(Clone, Debug)]
+pub struct ContractPathPair {
+    pub sierra_path: PathBuf,
+    pub casm_path: PathBuf,
 }
 
 impl SetupableTrait for TestSuiteOpenRpc {

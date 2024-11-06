@@ -1,5 +1,5 @@
 use openrpc_testgen::{
-    suite_openrpc::{test_declare_txn_v2::ContractPathPair, TestSuiteOpenRpc},
+    suite_openrpc::{ContractPathPair, TestSuiteOpenRpc},
     RunnableTrait,
 };
 use starknet_types_core::felt::Felt;
