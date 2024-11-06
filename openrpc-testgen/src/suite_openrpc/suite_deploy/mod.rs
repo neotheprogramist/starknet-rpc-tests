@@ -15,15 +15,15 @@ use std::str::FromStr;
 pub mod test_invoke_txn_v1;
 
 pub struct TestSuiteDeploy {
-    random_paymaster_accounts: RandomSingleOwnerAccount,
-    random_executable_accounts: RandomSingleOwnerAccount,
+    pub random_paymaster_accounts: RandomSingleOwnerAccount,
+    pub random_executable_accounts: RandomSingleOwnerAccount,
 }
 
 #[derive(Clone, Debug)]
 pub struct SetupOutput {
-    random_paymaster_accounts: RandomSingleOwnerAccount,
-    random_executable_accounts: RandomSingleOwnerAccount,
-    declaration_result: ClassAndTxnHash<Felt>,
+    pub random_paymaster_accounts: RandomSingleOwnerAccount,
+    pub random_executable_accounts: RandomSingleOwnerAccount,
+    pub declaration_result: ClassAndTxnHash<Felt>,
 }
 
 impl SetupableTrait for TestSuiteDeploy {

@@ -89,7 +89,7 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     // Call the setup function
     writeln!(file, "        let data = self.setup().await?;").unwrap();
 
-    // Process each declared test module within this suite (ignore nested suites)
+    // Process each declared test module within this suite
     for test_name in test_cases {
         writeln!(
             file,
@@ -100,18 +100,20 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         writeln!(file, "        test_case.run().await?;").unwrap();
     }
 
-    // Commented out the nested suite handling for now
-    /*
+    // Process each nested suite, dynamically retrieving its struct name
     for nested_suite in nested_suites {
+        let nested_module_path = module_path.join(&nested_suite).join("mod.rs");
+        let nested_struct_name = find_struct_name_in_file(&nested_module_path)
+            .unwrap_or_else(|| format!("{}Suite", nested_suite));
+
         writeln!(
             file,
-            "        let nested_suite = {}::{}::{} {{ data: data.clone() }};",
-            module_prefix, nested_suite, struct_name
+            "        let nested_suite = {}::{}::{} {{ random_paymaster_accounts: data.random_paymaster_accounts.clone(), random_executable_accounts: data.random_executable_accounts.clone() }};",
+            module_prefix, nested_suite, nested_struct_name
         )
         .unwrap();
         writeln!(file, "        nested_suite.run().await?;").unwrap();
     }
-    */
 
     writeln!(file, "        Ok(())").unwrap();
     writeln!(file, "    }}").unwrap();
