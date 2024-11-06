@@ -13,7 +13,7 @@ use crate::{
         },
         providers::provider::ProviderError,
     },
-    RandomizableAccountsTrait, RunnableTrait,
+    RunnableTrait,
 };
 use colored::Colorize;
 use std::str::FromStr;
@@ -33,10 +33,9 @@ impl RunnableTrait for TestCase {
         )
         .await?;
 
-        let accounts = self.data.random_accounts()?;
-
-        let declaration_hash = match accounts
-            .paymaster_account
+        let declaration_hash = match self
+            .data
+            .random_paymaster_accounts
             .declare_v3(flattened_sierra_class, compiled_class_hash)
             .send()
             .await

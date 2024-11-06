@@ -1,5 +1,5 @@
 use colored::Colorize;
-use starknet::accounts::SingleOwnerAccount;
+
 use tracing::{error, info};
 
 use crate::{
@@ -12,12 +12,9 @@ use crate::{
             },
             errors::RpcError,
         },
-        providers::{
-            jsonrpc::{HttpTransport, JsonRpcClient},
-            provider::ProviderError,
-        },
+        providers::provider::ProviderError,
     },
-    RandomizableAccountsTrait, RunnableTrait,
+    RunnableTrait,
 };
 use std::{path::PathBuf, str::FromStr, sync::Arc};
 

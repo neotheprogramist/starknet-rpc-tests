@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use rand::{seq::SliceRandom, thread_rng};
+use rand::{seq::SliceRandom, thread_rng, Rng};
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{BlockId, BlockTag};
 use url::Url;
@@ -159,9 +159,8 @@ impl ConnectedAccount for RandomSingleOwnerAccount {
     type Provider = JsonRpcClient<HttpTransport>;
 
     fn provider(&self) -> &Self::Provider {
-        let random_account = self.random_accounts().unwrap();
-        let provider = random_account.provider();
-        provider
+        let mut rng = thread_rng();
+        self.accounts[rng.gen_range(0..self.accounts.len())].provider()
     }
 
     fn block_id(&self) -> BlockId<Felt> {
