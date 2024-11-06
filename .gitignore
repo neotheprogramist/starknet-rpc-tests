@@ -25,5 +25,7 @@ rclone.conf
 # Ignore SQLite database files (e.g. pathfinder db snapshot)
 *.sqlite
 
+proxy/generated_state_machines.rs
+
 dump
 dumpdir
