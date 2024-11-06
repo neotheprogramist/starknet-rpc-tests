@@ -32,7 +32,7 @@ use crate::{
     },
     RandomizableAccountsTrait, SetupableTrait,
 };
-
+pub mod suite_deploy;
 pub mod test_declare_txn_v2;
 pub mod test_declare_txn_v3;
 

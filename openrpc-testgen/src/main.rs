@@ -30,5 +30,6 @@ async fn main() {
         )
         .unwrap(),
     };
+
     let _ = suite_openrpc.run().await;
 }

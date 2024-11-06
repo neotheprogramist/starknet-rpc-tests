@@ -69,8 +69,8 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         None => "TestSuite".to_string(), // default if no struct found
     };
 
-    // Get list of test files included as `pub mod` in `mod.rs`
-    let declared_tests = find_pub_mods_in_mod(&main_file_path);
+    // Get list of test files and suites included as `pub mod` in `mod.rs`
+    let (test_cases, nested_suites) = partition_modules(&main_file_path);
 
     // Generate RunnableTrait implementation with async fn run and setup
     writeln!(
@@ -86,9 +86,11 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     )
     .unwrap();
 
+    // Call the setup function
     writeln!(file, "        let data = self.setup().await?;").unwrap();
 
-    for test_name in declared_tests {
+    // Process each declared test module within this suite (ignore nested suites)
+    for test_name in test_cases {
         writeln!(
             file,
             "        let test_case = {}::{}::TestCase {{ data: data.clone() }};",
@@ -98,27 +100,45 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         writeln!(file, "        test_case.run().await?;").unwrap();
     }
 
+    // Commented out the nested suite handling for now
+    /*
+    for nested_suite in nested_suites {
+        writeln!(
+            file,
+            "        let nested_suite = {}::{}::{} {{ data: data.clone() }};",
+            module_prefix, nested_suite, struct_name
+        )
+        .unwrap();
+        writeln!(file, "        nested_suite.run().await?;").unwrap();
+    }
+    */
+
     writeln!(file, "        Ok(())").unwrap();
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
 }
 
-// Finds the list of `pub mod` declarations in `mod.rs`
-fn find_pub_mods_in_mod(mod_file_path: &Path) -> Vec<String> {
+// Partition modules into test cases and nested suites
+fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
     let content = read_to_string(mod_file_path).expect("Could not read mod.rs file");
-    let mut pub_mods = Vec::new();
+    let mut test_cases = Vec::new();
+    let mut nested_suites = Vec::new();
 
     for line in content.lines() {
         if line.trim_start().starts_with("pub mod ") {
             let parts: Vec<&str> = line.split_whitespace().collect();
             if parts.len() >= 3 {
                 let mod_name = parts[2].trim_end_matches(';').to_string();
-                pub_mods.push(mod_name);
+                if mod_name.starts_with("suite_") {
+                    nested_suites.push(mod_name);
+                } else {
+                    test_cases.push(mod_name);
+                }
             }
         }
     }
 
-    pub_mods
+    (test_cases, nested_suites)
 }
 
 // Utility function to find the struct name in a specific file, e.g., mod.rs
