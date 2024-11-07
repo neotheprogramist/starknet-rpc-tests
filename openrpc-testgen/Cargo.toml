@@ -32,3 +32,7 @@ crypto-utils.workspace = true
 [features]
 no_unknown_fields = []
 rust-analyzer = []
+
+[[bin]]
+name = "openrpc-testgen"
+path = "src/main.rs"
