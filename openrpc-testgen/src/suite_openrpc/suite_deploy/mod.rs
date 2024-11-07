@@ -12,6 +12,7 @@ use crate::{
     SetupableTrait,
 };
 use std::str::FromStr;
+pub mod suite_contract_calls;
 pub mod test_invoke_txn_v1;
 pub mod test_invoke_txn_v3;
 
