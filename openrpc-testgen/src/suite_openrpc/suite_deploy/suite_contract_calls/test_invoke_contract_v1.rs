@@ -20,6 +20,7 @@ impl RunnableTrait for TestCase {
     type Output = ();
 
     async fn run(&self) -> Result<Self::Output, RpcError> {
+        println!("START NESTED NESTED TESTCASE");
         let increase_balance_call = Call {
             to: self.data.deployed_contract_address,
             selector: get_selector_from_name("increase_balance")?,

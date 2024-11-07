@@ -28,6 +28,8 @@ pub struct TestCase {
 impl RunnableTrait for TestCase {
     type Output = ();
     async fn run(&self) -> Result<Self::Output, RpcError> {
+        println!("START TESTCASE");
+
         let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_1_HelloStarknet.contract_class.json")?,
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_1_HelloStarknet.compiled_contract_class.json")?,

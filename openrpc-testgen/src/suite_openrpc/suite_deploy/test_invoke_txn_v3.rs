@@ -17,6 +17,8 @@ pub struct TestCase {
 impl RunnableTrait for TestCase {
     type Output = ();
     async fn run(&self) -> Result<Self::Output, RpcError> {
+        println!("START NESTED TESTCASE");
+
         let factory = ContractFactory::new(
             self.data.declaration_result.class_hash,
             self.data.random_paymaster_accounts.random_accounts()?,

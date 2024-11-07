@@ -64,7 +64,7 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
 
     // Detect the struct name from `mod.rs` in each module
     let main_file_path = module_path.join("mod.rs");
-    let struct_name = match find_struct_name_in_file(&main_file_path) {
+    let struct_name = match find_testsuite_struct_in_file(&main_file_path) {
         Some(name) => name,
         None => "TestSuite".to_string(), // default if no struct found
     };
@@ -100,19 +100,27 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         writeln!(file, "        test_case.run().await?;").unwrap();
     }
 
-    // Process each nested suite, dynamically retrieving its struct name
+    // Process each nested suite, dynamically retrieving its struct name and fields
     for nested_suite in nested_suites {
         let nested_module_path = module_path.join(&nested_suite).join("mod.rs");
-        let nested_struct_name = find_struct_name_in_file(&nested_module_path)
-            .unwrap_or_else(|| format!("{}Suite", nested_suite));
+        if let Some(nested_struct_name) = find_testsuite_struct_in_file(&nested_module_path) {
+            let fields = get_struct_fields(&nested_module_path);
 
-        writeln!(
-            file,
-            "        let nested_suite = {}::{}::{} {{ random_paymaster_accounts: data.random_paymaster_accounts.clone(), random_executable_accounts: data.random_executable_accounts.clone() }};",
-            module_prefix, nested_suite, nested_struct_name
-        )
-        .unwrap();
-        writeln!(file, "        nested_suite.run().await?;").unwrap();
+            // Generate the instantiation code for the nested suite with required fields
+            writeln!(
+                file,
+                "        let nested_suite = {}::{}::{} {{",
+                module_prefix, nested_suite, nested_struct_name
+            )
+            .unwrap();
+
+            for field in fields {
+                writeln!(file, "            {}: data.{0}.clone(),", field).unwrap();
+            }
+
+            writeln!(file, "        }};").unwrap();
+            writeln!(file, "        nested_suite.run().await?;").unwrap();
+        }
     }
 
     writeln!(file, "        Ok(())").unwrap();
@@ -143,19 +151,41 @@ fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
     (test_cases, nested_suites)
 }
 
-// Utility function to find the struct name in a specific file, e.g., mod.rs
-fn find_struct_name_in_file(file_path: &Path) -> Option<String> {
+// Utility function to find a struct that starts with "TestSuite" in a specific file, e.g., mod.rs
+fn find_testsuite_struct_in_file(file_path: &Path) -> Option<String> {
     let content = read_to_string(file_path).expect("Could not read file");
-    find_struct_name(&content)
-}
-
-// Utility functions for detecting struct and trait names
-fn find_struct_name(content: &str) -> Option<String> {
     for line in content.lines() {
-        if line.starts_with("pub struct ") {
+        if line.starts_with("pub struct TestSuite") {
             let parts: Vec<&str> = line.split_whitespace().collect();
             return Some(parts[2].to_string());
         }
     }
     None
+}
+
+// Utility function to extract struct fields from a module's `mod.rs` file
+fn get_struct_fields(mod_file_path: &Path) -> Vec<String> {
+    let content = read_to_string(mod_file_path).expect("Could not read mod.rs file");
+    let mut fields = Vec::new();
+    let mut inside_struct = false;
+
+    for line in content.lines() {
+        if line.starts_with("pub struct TestSuite") {
+            inside_struct = true;
+        } else if inside_struct && line.starts_with("}") {
+            break;
+        } else if inside_struct {
+            // Remove "pub" and get the field name before the colon
+            if let Some(field_name) = line
+                .replace("pub ", "")
+                .split(':')
+                .next()
+                .map(|s| s.trim().to_string())
+            {
+                fields.push(field_name);
+            }
+        }
+    }
+
+    fields
 }
