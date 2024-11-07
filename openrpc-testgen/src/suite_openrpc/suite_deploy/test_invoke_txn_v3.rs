@@ -26,7 +26,7 @@ impl RunnableTrait for TestCase {
         rng.fill_bytes(&mut salt_buffer[1..]);
 
         let invoke_result = factory
-            .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
+            .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
             .send()
             .await;
 
@@ -34,14 +34,14 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc Add_invoke_transaction_v1 COMPATIBLE".green(),
+                    "✓ Rpc Add_invoke_transaction_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc Add_transaction_invoke_v1 INCOMPATIBLE:".red(),
+                    "✗ Rpc Add_invoke_transaction_v3 INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );

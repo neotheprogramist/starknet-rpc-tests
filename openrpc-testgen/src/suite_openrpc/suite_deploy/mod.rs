@@ -13,6 +13,7 @@ use crate::{
 };
 use std::str::FromStr;
 pub mod test_invoke_txn_v1;
+pub mod test_invoke_txn_v3;
 
 pub struct TestSuiteDeploy {
     pub random_paymaster_accounts: RandomSingleOwnerAccount,
