@@ -6,10 +6,12 @@ pub trait IHelloStarknet<TContractState> {
 
 #[starknet::contract]
 mod HelloStarknet {
+    use starknet::storage::Map;
+
     #[storage]
     struct Storage {
         balance: felt252,
-        balances: LegacyMap<felt252, felt252>,
+        balances: Map<felt252, felt252>,
     }
 
     #[event]
@@ -38,7 +40,7 @@ mod HelloStarknet {
         fn increase_balance(ref self: ContractState, amount: felt252) {
             self.balance.write(self.balance.read() + amount);
         }
-        
+
         fn get_balance(self: @ContractState) -> felt252 {
             self.balance.read()
         }

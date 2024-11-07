@@ -27,3 +27,5 @@ rclone.conf
 
 dump
 dumpdir
+
+.snfoundry_cache
