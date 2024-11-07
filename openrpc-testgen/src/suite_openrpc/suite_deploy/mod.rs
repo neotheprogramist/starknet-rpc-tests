@@ -17,14 +17,14 @@ pub mod test_invoke_txn_v1;
 pub mod test_invoke_txn_v3;
 
 pub struct TestSuiteDeploy {
-    pub random_paymaster_accounts: RandomSingleOwnerAccount,
-    pub random_executable_accounts: RandomSingleOwnerAccount,
+    pub random_paymaster_account: RandomSingleOwnerAccount,
+    pub random_executable_account: RandomSingleOwnerAccount,
 }
 
 #[derive(Clone, Debug)]
 pub struct SetupOutput {
-    pub random_paymaster_accounts: RandomSingleOwnerAccount,
-    pub random_executable_accounts: RandomSingleOwnerAccount,
+    pub random_paymaster_account: RandomSingleOwnerAccount,
+    pub random_executable_account: RandomSingleOwnerAccount,
     pub declaration_result: ClassAndTxnHash<Felt>,
 }
 
@@ -40,14 +40,14 @@ impl SetupableTrait for TestSuiteDeploy {
             .await?;
 
         let declaration_result = self
-            .random_paymaster_accounts
+            .random_paymaster_account
             .declare_v3(flattened_sierra_class, compiled_class_hash)
             .send()
             .await?;
 
         Ok(SetupOutput {
-            random_paymaster_accounts: self.random_paymaster_accounts.clone(),
-            random_executable_accounts: self.random_executable_accounts.clone(),
+            random_paymaster_account: self.random_paymaster_account.clone(),
+            random_executable_account: self.random_executable_account.clone(),
             declaration_result,
         })
     }

@@ -37,7 +37,7 @@ impl RunnableTrait for TestCase {
 
         let declaration_hash = match self
             .data
-            .random_paymaster_accounts
+            .random_paymaster_account
             .declare_v3(flattened_sierra_class, compiled_class_hash)
             .send()
             .await

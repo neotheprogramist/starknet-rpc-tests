@@ -16,15 +16,15 @@ use crate::{
 pub mod test_invoke_contract_v1;
 
 pub struct TestSuiteContractCalls {
-    pub random_paymaster_accounts: RandomSingleOwnerAccount,
-    pub random_executable_accounts: RandomSingleOwnerAccount,
+    pub random_paymaster_account: RandomSingleOwnerAccount,
+    pub random_executable_account: RandomSingleOwnerAccount,
     pub declaration_result: ClassAndTxnHash<Felt>,
 }
 
 #[derive(Clone, Debug)]
 pub struct SetupOutput {
-    pub random_paymaster_accounts: RandomSingleOwnerAccount,
-    pub random_executable_accounts: RandomSingleOwnerAccount,
+    pub random_paymaster_account: RandomSingleOwnerAccount,
+    pub random_executable_account: RandomSingleOwnerAccount,
     pub deployed_contract_address: Felt,
 }
 
@@ -34,7 +34,7 @@ impl SetupableTrait for TestSuiteContractCalls {
     async fn setup(&self) -> Result<Self::Output, RpcError> {
         let factory = ContractFactory::new(
             self.declaration_result.class_hash,
-            self.random_paymaster_accounts.random_accounts()?,
+            self.random_paymaster_account.random_accounts()?,
         );
         let mut salt_buffer = [0u8; 32];
         let mut rng = StdRng::from_entropy();
@@ -46,7 +46,7 @@ impl SetupableTrait for TestSuiteContractCalls {
             .await?;
 
         let deployment_receipt = self
-            .random_paymaster_accounts
+            .random_paymaster_account
             .provider()
             .get_transaction_receipt(deployment_result.transaction_hash)
             .await?;
@@ -71,8 +71,8 @@ impl SetupableTrait for TestSuiteContractCalls {
         };
 
         Ok(SetupOutput {
-            random_paymaster_accounts: self.random_paymaster_accounts.clone(),
-            random_executable_accounts: self.random_executable_accounts.clone(),
+            random_paymaster_account: self.random_paymaster_account.clone(),
+            random_executable_account: self.random_executable_account.clone(),
             deployed_contract_address,
         })
     }

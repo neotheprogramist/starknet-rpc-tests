@@ -29,7 +29,7 @@ impl RunnableTrait for TestCase {
 
         let invoke_increase_balance_result = self
             .data
-            .random_paymaster_accounts
+            .random_paymaster_account
             .execute_v1(vec![increase_balance_call])
             .send()
             .await;

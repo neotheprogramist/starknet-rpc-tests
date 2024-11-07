@@ -21,7 +21,7 @@ impl RunnableTrait for TestCase {
 
         let factory = ContractFactory::new(
             self.data.declaration_result.class_hash,
-            self.data.random_paymaster_accounts.random_accounts()?,
+            self.data.random_paymaster_account.random_accounts()?,
         );
         let mut salt_buffer = [0u8; 32];
         let mut rng = StdRng::from_entropy();

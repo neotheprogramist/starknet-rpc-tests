@@ -47,8 +47,8 @@ pub struct TestSuiteOpenRpc {
 
 #[derive(Clone, Debug)]
 pub struct SetupOutput {
-    pub random_paymaster_accounts: RandomSingleOwnerAccount,
-    pub random_executable_accounts: RandomSingleOwnerAccount,
+    pub random_paymaster_account: RandomSingleOwnerAccount,
+    pub random_executable_account: RandomSingleOwnerAccount,
 }
 
 #[derive(Clone, Debug)]
@@ -299,12 +299,12 @@ impl SetupableTrait for TestSuiteOpenRpc {
             paymaster_accounts.push(paymaster_account);
             executable_accounts.push(executable_account);
         }
-
+        // change name to be less confusing
         Ok(SetupOutput {
-            random_executable_accounts: RandomSingleOwnerAccount {
+            random_executable_account: RandomSingleOwnerAccount {
                 accounts: executable_accounts,
             },
-            random_paymaster_accounts: RandomSingleOwnerAccount {
+            random_paymaster_account: RandomSingleOwnerAccount {
                 accounts: paymaster_accounts,
             },
         })
