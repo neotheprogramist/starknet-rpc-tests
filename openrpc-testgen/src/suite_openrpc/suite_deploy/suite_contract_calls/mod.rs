@@ -13,8 +13,10 @@ use crate::{
     RandomizableAccountsTrait, SetupableTrait,
 };
 
+pub mod test_call_contract;
+pub mod test_estimate_message_fee;
 pub mod test_invoke_contract_v1;
-
+pub mod test_invoke_contract_v3;
 pub struct TestSuiteContractCalls {}
 
 #[derive(Clone, Debug)]

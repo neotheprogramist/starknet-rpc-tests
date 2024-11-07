@@ -34,9 +34,17 @@ use crate::{
     },
     SetupableTrait,
 };
+
 pub mod suite_deploy;
 pub mod test_declare_txn_v2;
 pub mod test_declare_txn_v3;
+pub mod test_get_block_number;
+pub mod test_get_block_txn_count;
+pub mod test_get_block_with_tx_hashes;
+pub mod test_get_block_with_txs;
+pub mod test_get_chain_id;
+pub mod test_get_state_update;
+pub mod test_get_storage_at;
 
 pub struct TestSuiteOpenRpc {}
 

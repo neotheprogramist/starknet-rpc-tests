@@ -27,7 +27,7 @@ impl RunnableTrait for TestCase {
 
         let invoke_increase_balance_result = test_input
             .random_paymaster_account
-            .execute_v1(vec![increase_balance_call])
+            .execute_v3(vec![increase_balance_call])
             .send()
             .await;
 
@@ -35,14 +35,14 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc invoke_contract_v1 COMPATIBLE".green(),
+                    "✓ Rpc invoke_contract_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc invoke_contract_v1 INCOMPATIBLE:".red(),
+                    "✗ Rpc invoke_contract_v3 INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );
