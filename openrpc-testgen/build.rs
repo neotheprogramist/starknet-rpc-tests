@@ -64,10 +64,8 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
 
     // Detect the struct name from `mod.rs` in each module
     let main_file_path = module_path.join("mod.rs");
-    let struct_name = match find_testsuite_struct_in_file(&main_file_path) {
-        Some(name) => name,
-        None => "TestSuite".to_string(), // default if no struct found
-    };
+    let struct_name = find_testsuite_struct_in_file(&main_file_path)
+        .expect("Expected a struct starting with 'TestSuite' in mod.rs, but none was found");
 
     // Get list of test files and suites included as `pub mod` in `mod.rs`
     let (test_cases, nested_suites) = partition_modules(&main_file_path);
@@ -103,24 +101,24 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
     // Process each nested suite, dynamically retrieving its struct name and fields
     for nested_suite in nested_suites {
         let nested_module_path = module_path.join(&nested_suite).join("mod.rs");
-        if let Some(nested_struct_name) = find_testsuite_struct_in_file(&nested_module_path) {
-            let fields = get_struct_fields(&nested_module_path);
+        let nested_struct_name = find_testsuite_struct_in_file(&nested_module_path)
+            .expect("Expected a struct starting with 'TestSuite' in nested suite mod.rs, but none was found");
+        let fields = get_struct_fields(&nested_module_path);
 
-            // Generate the instantiation code for the nested suite with required fields
-            writeln!(
-                file,
-                "        let nested_suite = {}::{}::{} {{",
-                module_prefix, nested_suite, nested_struct_name
-            )
-            .unwrap();
+        // Generate the instantiation code for the nested suite with required fields
+        writeln!(
+            file,
+            "        let nested_suite = {}::{}::{} {{",
+            module_prefix, nested_suite, nested_struct_name
+        )
+        .unwrap();
 
-            for field in fields {
-                writeln!(file, "            {}: data.{0}.clone(),", field).unwrap();
-            }
-
-            writeln!(file, "        }};").unwrap();
-            writeln!(file, "        nested_suite.run().await?;").unwrap();
+        for field in fields {
+            writeln!(file, "            {}: data.{0}.clone(),", field).unwrap();
         }
+
+        writeln!(file, "        }};").unwrap();
+        writeln!(file, "        nested_suite.run().await?;").unwrap();
     }
 
     writeln!(file, "        Ok(())").unwrap();
@@ -152,15 +150,15 @@ fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
 }
 
 // Utility function to find a struct that starts with "TestSuite" in a specific file, e.g., mod.rs
-fn find_testsuite_struct_in_file(file_path: &Path) -> Option<String> {
-    let content = read_to_string(file_path).expect("Could not read file");
+fn find_testsuite_struct_in_file(file_path: &Path) -> Result<String, String> {
+    let content = read_to_string(file_path).map_err(|_| "Could not read file".to_string())?;
     for line in content.lines() {
         if line.starts_with("pub struct TestSuite") {
             let parts: Vec<&str> = line.split_whitespace().collect();
-            return Some(parts[2].to_string());
+            return Ok(parts[2].to_string());
         }
     }
-    None
+    Err("Expected a struct starting with 'TestSuite' but none was found".to_string())
 }
 
 // Utility function to extract struct fields from a module's `mod.rs` file
