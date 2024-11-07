@@ -1,4 +1,7 @@
-use openrpc_testgen::{suite_openrpc::TestSuiteOpenRpc, RunnableTrait};
+use openrpc_testgen::{
+    suite_openrpc::{SetupInput, TestSuiteOpenRpc},
+    RunnableTrait,
+};
 use starknet_types_core::felt::Felt;
 use std::{path::PathBuf, str::FromStr};
 use url::Url;
@@ -10,7 +13,7 @@ async fn main() {
         .with_max_level(tracing::Level::INFO)
         .init();
 
-    let suite_openrpc = TestSuiteOpenRpc {
+    let suite_openrpc_input = SetupInput {
         urls: vec![Url::from_str("http://127.0.0.1:5050").unwrap()],
         paymaster_account_address: Felt::from_hex_unchecked(
             "0x64b48806902a367c8598f4f95c305e8c1a1acba5f082d294a43793113115691",
@@ -31,5 +34,5 @@ async fn main() {
         .unwrap(),
     };
 
-    let _ = suite_openrpc.run().await;
+    let _ = TestSuiteOpenRpc::run(suite_openrpc_input).await;
 }

@@ -26,18 +26,16 @@ pub struct TestCase {
 }
 
 impl RunnableTrait for TestCase {
+    type Input = SetupOutput;
     type Output = ();
-    async fn run(&self) -> Result<Self::Output, RpcError> {
-        println!("START TESTCASE");
-
+    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
         let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_1_HelloStarknet.contract_class.json")?,
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_1_HelloStarknet.compiled_contract_class.json")?,
         )
         .await?;
 
-        let declaration_hash = match self
-            .data
+        let declaration_hash = match test_input
             .random_paymaster_account
             .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
             .send()

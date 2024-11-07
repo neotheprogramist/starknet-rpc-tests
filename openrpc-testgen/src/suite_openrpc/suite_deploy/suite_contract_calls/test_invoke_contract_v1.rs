@@ -12,23 +12,20 @@ use starknet_types_core::felt::Felt;
 use tracing::{error, info};
 
 #[derive(Clone, Debug)]
-pub struct TestCase {
-    pub data: SetupOutput,
-}
+pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
+    type Input = SetupOutput;
     type Output = ();
 
-    async fn run(&self) -> Result<Self::Output, RpcError> {
-        println!("START NESTED NESTED TESTCASE");
+    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
         let increase_balance_call = Call {
-            to: self.data.deployed_contract_address,
+            to: test_input.deployed_contract_address,
             selector: get_selector_from_name("increase_balance")?,
             calldata: vec![Felt::from_hex("0x50")?],
         };
 
-        let invoke_increase_balance_result = self
-            .data
+        let invoke_increase_balance_result = test_input
             .random_paymaster_account
             .execute_v1(vec![increase_balance_call])
             .send()

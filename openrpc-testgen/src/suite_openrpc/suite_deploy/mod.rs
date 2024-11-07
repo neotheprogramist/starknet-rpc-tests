@@ -16,10 +16,7 @@ pub mod suite_contract_calls;
 pub mod test_invoke_txn_v1;
 pub mod test_invoke_txn_v3;
 
-pub struct TestSuiteDeploy {
-    pub random_paymaster_account: RandomSingleOwnerAccount,
-    pub random_executable_account: RandomSingleOwnerAccount,
-}
+pub struct TestSuiteDeploy {}
 
 #[derive(Clone, Debug)]
 pub struct SetupOutput {
@@ -29,9 +26,10 @@ pub struct SetupOutput {
 }
 
 impl SetupableTrait for TestSuiteDeploy {
+    type Input = super::SetupOutput;
     type Output = SetupOutput;
 
-    async fn setup(&self) -> Result<Self::Output, RpcError> {
+    async fn setup(setup_input: Self::Input) -> Result<Self::Output, RpcError> {
         let (flattened_sierra_class, compiled_class_hash) =
             get_compiled_contract(
                 PathBuf::from_str("target/dev/contracts_contracts_sample_contract_3_HelloStarknet.contract_class.json")?,
@@ -39,15 +37,15 @@ impl SetupableTrait for TestSuiteDeploy {
             )
             .await?;
 
-        let declaration_result = self
+        let declaration_result = setup_input
             .random_paymaster_account
             .declare_v3(flattened_sierra_class, compiled_class_hash)
             .send()
             .await?;
 
         Ok(SetupOutput {
-            random_paymaster_account: self.random_paymaster_account.clone(),
-            random_executable_account: self.random_executable_account.clone(),
+            random_paymaster_account: setup_input.random_paymaster_account.clone(),
+            random_executable_account: setup_input.random_executable_account.clone(),
             declaration_result,
         })
     }

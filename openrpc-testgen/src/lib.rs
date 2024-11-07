@@ -10,14 +10,16 @@ pub mod suite_openrpc;
 pub mod utils;
 
 pub trait RunnableTrait {
+    type Input;
     type Output;
 
-    fn run(&self) -> impl Future<Output = Result<Self::Output, RpcError>>;
+    fn run(input: Self::Input) -> impl Future<Output = Result<Self::Output, RpcError>>;
 }
 pub trait SetupableTrait {
+    type Input;
     type Output;
 
-    fn setup(&self) -> impl Future<Output = Result<Self::Output, RpcError>>;
+    fn setup(input: Self::Input) -> impl Future<Output = Result<Self::Output, RpcError>>;
 }
 
 pub trait RandomizableAccountsTrait {

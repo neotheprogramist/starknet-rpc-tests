@@ -1,6 +1,6 @@
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::{ClassAndTxnHash, TxnReceipt};
+use starknet_types_rpc::TxnReceipt;
 
 use super::RandomSingleOwnerAccount;
 use crate::{
@@ -15,11 +15,7 @@ use crate::{
 
 pub mod test_invoke_contract_v1;
 
-pub struct TestSuiteContractCalls {
-    pub random_paymaster_account: RandomSingleOwnerAccount,
-    pub random_executable_account: RandomSingleOwnerAccount,
-    pub declaration_result: ClassAndTxnHash<Felt>,
-}
+pub struct TestSuiteContractCalls {}
 
 #[derive(Clone, Debug)]
 pub struct SetupOutput {
@@ -29,12 +25,13 @@ pub struct SetupOutput {
 }
 
 impl SetupableTrait for TestSuiteContractCalls {
+    type Input = super::SetupOutput;
     type Output = SetupOutput;
 
-    async fn setup(&self) -> Result<Self::Output, RpcError> {
+    async fn setup(setup_input: Self::Input) -> Result<Self::Output, RpcError> {
         let factory = ContractFactory::new(
-            self.declaration_result.class_hash,
-            self.random_paymaster_account.random_accounts()?,
+            setup_input.declaration_result.class_hash,
+            setup_input.random_paymaster_account.random_accounts()?,
         );
         let mut salt_buffer = [0u8; 32];
         let mut rng = StdRng::from_entropy();
@@ -45,7 +42,7 @@ impl SetupableTrait for TestSuiteContractCalls {
             .send()
             .await?;
 
-        let deployment_receipt = self
+        let deployment_receipt = setup_input
             .random_paymaster_account
             .provider()
             .get_transaction_receipt(deployment_result.transaction_hash)
@@ -71,8 +68,8 @@ impl SetupableTrait for TestSuiteContractCalls {
         };
 
         Ok(SetupOutput {
-            random_paymaster_account: self.random_paymaster_account.clone(),
-            random_executable_account: self.random_executable_account.clone(),
+            random_paymaster_account: setup_input.random_paymaster_account.clone(),
+            random_executable_account: setup_input.random_executable_account.clone(),
             deployed_contract_address,
         })
     }

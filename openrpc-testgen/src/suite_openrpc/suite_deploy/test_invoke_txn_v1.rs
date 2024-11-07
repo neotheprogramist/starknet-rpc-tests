@@ -10,16 +10,15 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
-pub struct TestCase {
-    pub data: SetupOutput,
-}
+pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
+    type Input = SetupOutput;
     type Output = ();
-    async fn run(&self) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
         let factory = ContractFactory::new(
-            self.data.declaration_result.class_hash,
-            self.data.random_paymaster_account.random_accounts()?,
+            test_input.declaration_result.class_hash,
+            test_input.random_paymaster_account.random_accounts()?,
         );
         let mut salt_buffer = [0u8; 32];
         let mut rng = StdRng::from_entropy();

@@ -21,8 +21,20 @@ fn main() {
         }
     }
 
-    // Process each suite_ directory in `src`
-    process_directory_recursively(src_dir, &out_dir);
+    // Process each root suite directory in `src`
+    for entry in fs::read_dir(src_dir).expect("Could not read src directory") {
+        let entry = entry.expect("Could not read directory entry");
+        let path = entry.path();
+        if path.is_dir()
+            && path
+                .file_name()
+                .and_then(|s| s.to_str())
+                .map(|s| s.starts_with("suite_"))
+                == Some(true)
+        {
+            process_module_directory(&path, &out_dir, true); // Root suite
+        }
+    }
 
     println!("cargo:rerun-if-changed=src");
 }
@@ -39,13 +51,13 @@ fn process_directory_recursively(dir: &Path, out_dir: &str) {
                 .map(|s| s.starts_with("suite_"))
                 == Some(true)
         {
-            process_module_directory(&path, out_dir);
+            process_module_directory(&path, out_dir, false); // Nested suite
             process_directory_recursively(&path, out_dir);
         }
     }
 }
 
-fn process_module_directory(module_path: &Path, out_dir: &str) {
+fn process_module_directory(module_path: &Path, out_dir: &str, is_root_suite: bool) {
     let module_name = module_path.strip_prefix("src").unwrap().to_str().unwrap();
     let module_name_safe = module_name.replace("/", "_");
 
@@ -77,25 +89,36 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         module_prefix, struct_name
     )
     .unwrap();
+
+    // Determine Input type based on whether it is a root suite or nested suite
+    if is_root_suite {
+        writeln!(file, "    type Input = SetupInput;").unwrap(); // Root suite uses `SetupInput`
+    } else {
+        writeln!(file, "    type Input = super::SetupOutput;").unwrap(); // Nested suite uses `super::SetupOutput`
+    }
     writeln!(file, "    type Output = ();").unwrap();
     writeln!(
         file,
-        "    async fn run(&self) -> Result<Self::Output, crate::utils::v7::endpoints::errors::RpcError> {{"
+        "    async fn run(input: Self::Input) -> Result<Self::Output, crate::utils::v7::endpoints::errors::RpcError> {{"
     )
     .unwrap();
 
-    // Call the setup function
-    writeln!(file, "        let data = self.setup().await?;").unwrap();
+    // Call the setup function and store the result in `data`
+    writeln!(
+        file,
+        "        let data = {}::{}::setup(input).await?;",
+        module_prefix, struct_name
+    )
+    .unwrap();
 
-    // Process each declared test module within this suite
+    // Process each declared test module within this suite, passing `data` to each `run`
     for test_name in test_cases {
         writeln!(
             file,
-            "        let test_case = {}::{}::TestCase {{ data: data.clone() }};",
+            "        {}::{}::TestCase::run(data.clone()).await?;",
             module_prefix, test_name
         )
         .unwrap();
-        writeln!(file, "        test_case.run().await?;").unwrap();
     }
 
     // Process each nested suite, dynamically retrieving its struct name and fields
@@ -103,27 +126,22 @@ fn process_module_directory(module_path: &Path, out_dir: &str) {
         let nested_module_path = module_path.join(&nested_suite).join("mod.rs");
         let nested_struct_name = find_testsuite_struct_in_file(&nested_module_path)
             .expect("Expected a struct starting with 'TestSuite' in nested suite mod.rs, but none was found");
-        let fields = get_struct_fields(&nested_module_path);
 
-        // Generate the instantiation code for the nested suite with required fields
+        // Generate the instantiation code for the nested suite
         writeln!(
             file,
-            "        let nested_suite = {}::{}::{} {{",
+            "        {}::{}::{}::run(data.clone()).await?;",
             module_prefix, nested_suite, nested_struct_name
         )
         .unwrap();
-
-        for field in fields {
-            writeln!(file, "            {}: data.{0}.clone(),", field).unwrap();
-        }
-
-        writeln!(file, "        }};").unwrap();
-        writeln!(file, "        nested_suite.run().await?;").unwrap();
     }
 
     writeln!(file, "        Ok(())").unwrap();
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
+
+    // Recursively process nested suites within this suite
+    process_directory_recursively(module_path, out_dir);
 }
 
 // Partition modules into test cases and nested suites
@@ -159,31 +177,4 @@ fn find_testsuite_struct_in_file(file_path: &Path) -> Result<String, String> {
         }
     }
     Err("Expected a struct starting with 'TestSuite' but none was found".to_string())
-}
-
-// Utility function to extract struct fields from a module's `mod.rs` file
-fn get_struct_fields(mod_file_path: &Path) -> Vec<String> {
-    let content = read_to_string(mod_file_path).expect("Could not read mod.rs file");
-    let mut fields = Vec::new();
-    let mut inside_struct = false;
-
-    for line in content.lines() {
-        if line.starts_with("pub struct TestSuite") {
-            inside_struct = true;
-        } else if inside_struct && line.starts_with("}") {
-            break;
-        } else if inside_struct {
-            // Remove "pub" and get the field name before the colon
-            if let Some(field_name) = line
-                .replace("pub ", "")
-                .split(':')
-                .next()
-                .map(|s| s.trim().to_string())
-            {
-                fields.push(field_name);
-            }
-        }
-    }
-
-    fields
 }
