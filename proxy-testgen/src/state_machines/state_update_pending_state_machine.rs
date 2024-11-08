@@ -1,7 +1,6 @@
 use crate::StateMachine;
 use crate::StateMachineResult;
-use num_traits::Num;
-use starknet_types_rpc::v0_7_1::BlockHashAndNumber;
+use production_nodes_types::pathfinder_types::types::alpha_sepolia_blocks::PendingBlockStateMachine;
 
 #[derive(Clone)]
 pub struct Ok;
@@ -101,11 +100,17 @@ impl StateMachine for StateUpdatePendingStateMachineWrapper {
         }
     }
 
-    fn step(&mut self, request_body: String, response_body: String) -> StateMachineResult {
+    fn step(&mut self, _request_body: String, response_body: String) -> StateMachineResult {
         *self = match self {
-            //TODO: Response Validation
             StateUpdatePendingStateMachineWrapper::Ok(machine) => {
-                StateUpdatePendingStateMachineWrapper::Ok(machine.clone())
+                match serde_json::from_str::<PendingBlockStateMachine>(&response_body) {
+                    std::result::Result::Ok(_) => {
+                        StateUpdatePendingStateMachineWrapper::Ok(machine.clone())
+                    }
+                    Err(_) => {
+                        StateUpdatePendingStateMachineWrapper::Invalid(machine.clone().to_invalid())
+                    }
+                }
             }
             StateUpdatePendingStateMachineWrapper::Invalid(machine) => {
                 StateUpdatePendingStateMachineWrapper::Invalid(machine.clone())
@@ -117,10 +122,10 @@ impl StateMachine for StateUpdatePendingStateMachineWrapper {
 
         match self {
             StateUpdatePendingStateMachineWrapper::Ok(_) => {
-                StateMachineResult::Ok("State Update request SUCCESSFUL".to_string())
+                StateMachineResult::Ok("Pending State Update request SUCCESSFUL".to_string())
             }
             StateUpdatePendingStateMachineWrapper::Invalid(_) => {
-                StateMachineResult::Invalid("State Update request FAILED".to_string())
+                StateMachineResult::Invalid("Pending State Update request FAILED".to_string())
             }
             StateUpdatePendingStateMachineWrapper::Skipped(_) => StateMachineResult::Skipped,
         }
