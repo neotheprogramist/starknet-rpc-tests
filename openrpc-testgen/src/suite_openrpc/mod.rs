@@ -45,6 +45,7 @@ pub mod test_get_block_with_txs;
 pub mod test_get_chain_id;
 pub mod test_get_state_update;
 pub mod test_get_storage_at;
+pub mod test_get_transaction_by_hash;
 
 pub struct TestSuiteOpenRpc {}
 

@@ -1,4 +1,3 @@
-use super::SetupOutput;
 use crate::{
     utils::v7::{
         accounts::account::ConnectedAccount, endpoints::errors::RpcError,
@@ -16,7 +15,7 @@ pub struct TestCase {}
 
 // TODO create two cases - pending / latest
 impl RunnableTrait for TestCase {
-    type Input = SetupOutput;
+    type Input = super::SetupOutput;
     type Output = ();
 
     async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {

@@ -18,15 +18,11 @@ use crate::{
 };
 use std::{path::PathBuf, str::FromStr, sync::Arc};
 
-use super::SetupOutput;
-
 #[derive(Clone, Debug)]
-pub struct TestCase {
-    pub data: SetupOutput,
-}
+pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = SetupOutput;
+    type Input = super::SetupOutput;
     type Output = ();
     async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
         let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(

@@ -16,6 +16,7 @@ pub mod suite_contract_calls;
 pub mod test_invoke_txn_v1;
 pub mod test_invoke_txn_v3;
 
+// TODO use this struct as an output
 pub struct TestSuiteDeploy {}
 
 #[derive(Clone, Debug)]

@@ -9,6 +9,7 @@ use utils::v7::{
 pub mod suite_openrpc;
 pub mod utils;
 
+// TODO rm type output, Self::Output to Self
 pub trait RunnableTrait {
     type Input;
     type Output;

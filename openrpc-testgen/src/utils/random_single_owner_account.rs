@@ -33,7 +33,7 @@ impl RandomizableAccountsTrait for RandomSingleOwnerAccount {
         Ok(account)
     }
 }
-
+// TODO vec z wlasnoscia ze nie moze byc pusty, non zero vector
 impl RandomSingleOwnerAccount {
     pub fn new(
         accounts: Vec<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>>,
