@@ -15,10 +15,10 @@ pub struct TestCase {}
 
 // TODO create two cases - pending / latest
 impl RunnableTrait for TestCase {
-    type Input = super::SetupOutput;
+    type Input = super::TestSuiteOpenRpc;
     type Output = ();
 
-    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
         let block_with_tx_hashes = test_input
             .random_paymaster_account
             .provider()

@@ -3,7 +3,6 @@ use rand::{rngs::StdRng, RngCore, SeedableRng};
 use starknet_types_core::felt::Felt;
 use tracing::{error, info};
 
-use super::SetupOutput;
 use crate::{
     utils::v7::{contract::factory::ContractFactory, endpoints::errors::RpcError},
     RandomizableAccountsTrait, RunnableTrait,
@@ -13,9 +12,9 @@ use crate::{
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = SetupOutput;
+    type Input = super::TestSuiteDeploy;
     type Output = ();
-    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
         let factory = ContractFactory::new(
             test_input.declaration_result.class_hash,
             test_input.random_paymaster_account.random_accounts()?,

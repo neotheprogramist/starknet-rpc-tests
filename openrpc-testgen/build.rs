@@ -32,7 +32,8 @@ fn main() {
                 .map(|s| s.starts_with("suite_"))
                 == Some(true)
         {
-            process_module_directory(&path, &out_dir, true); // Root suite
+            let root_output_type = process_module_directory(&path, &out_dir, None); // Root suite has no parent Output type
+            process_directory_recursively(&path, &out_dir, Some(&root_output_type));
         }
     }
 
@@ -40,7 +41,7 @@ fn main() {
 }
 
 // Recursively processes directories with prefix "suite_"
-fn process_directory_recursively(dir: &Path, out_dir: &str) {
+fn process_directory_recursively(dir: &Path, out_dir: &str, parent_output_type: Option<&str>) {
     for entry in fs::read_dir(dir).expect("Could not read directory") {
         let entry = entry.expect("Could not read directory entry");
         let path = entry.path();
@@ -51,13 +52,18 @@ fn process_directory_recursively(dir: &Path, out_dir: &str) {
                 .map(|s| s.starts_with("suite_"))
                 == Some(true)
         {
-            process_module_directory(&path, out_dir, false); // Nested suite
-            process_directory_recursively(&path, out_dir);
+            let current_output_type = process_module_directory(&path, out_dir, parent_output_type);
+            process_directory_recursively(&path, out_dir, Some(&current_output_type));
         }
     }
 }
 
-fn process_module_directory(module_path: &Path, out_dir: &str, is_root_suite: bool) {
+// Processes a module directory, generates code, and returns the Output type of the module
+fn process_module_directory(
+    module_path: &Path,
+    out_dir: &str,
+    parent_output_type: Option<&str>,
+) -> String {
     let module_name = module_path.strip_prefix("src").unwrap().to_str().unwrap();
     let module_name_safe = module_name.replace("/", "_");
 
@@ -91,15 +97,15 @@ fn process_module_directory(module_path: &Path, out_dir: &str, is_root_suite: bo
     .unwrap();
 
     // Determine Input type based on whether it is a root suite or nested suite
-    if is_root_suite {
-        writeln!(file, "    type Input = SetupInput;").unwrap(); // Root suite uses `SetupInput`
+    if let Some(output_type) = parent_output_type {
+        writeln!(file, "    type Input = {};", output_type).unwrap(); // Nested suite uses parent Output type
     } else {
-        writeln!(file, "    type Input = super::SetupOutput;").unwrap(); // Nested suite uses `super::SetupOutput`
+        writeln!(file, "    type Input = SetupInput;").unwrap(); // Root suite uses `SetupInput`
     }
     writeln!(file, "    type Output = ();").unwrap();
     writeln!(
         file,
-        "    async fn run(input: Self::Input) -> Result<Self::Output, crate::utils::v7::endpoints::errors::RpcError> {{"
+        "    async fn run(input: &Self::Input) -> Result<Self::Output, crate::utils::v7::endpoints::errors::RpcError> {{"
     )
     .unwrap();
 
@@ -115,7 +121,7 @@ fn process_module_directory(module_path: &Path, out_dir: &str, is_root_suite: bo
     for test_name in test_cases {
         writeln!(
             file,
-            "        {}::{}::TestCase::run(data.clone()).await?;",
+            "        {}::{}::TestCase::run(&data).await?;",
             module_prefix, test_name
         )
         .unwrap();
@@ -130,7 +136,7 @@ fn process_module_directory(module_path: &Path, out_dir: &str, is_root_suite: bo
         // Generate the instantiation code for the nested suite
         writeln!(
             file,
-            "        {}::{}::{}::run(data.clone()).await?;",
+            "        {}::{}::{}::run(&data).await?;",
             module_prefix, nested_suite, nested_struct_name
         )
         .unwrap();
@@ -140,8 +146,8 @@ fn process_module_directory(module_path: &Path, out_dir: &str, is_root_suite: bo
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
 
-    // Recursively process nested suites within this suite
-    process_directory_recursively(module_path, out_dir);
+    // Return the current output type for further nested suites
+    format!("{}::{}", module_prefix, struct_name)
 }
 
 // Partition modules into test cases and nested suites

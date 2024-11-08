@@ -47,7 +47,11 @@ pub mod test_get_state_update;
 pub mod test_get_storage_at;
 pub mod test_get_transaction_by_hash;
 
-pub struct TestSuiteOpenRpc {}
+#[derive(Clone, Debug)]
+pub struct TestSuiteOpenRpc {
+    pub random_paymaster_account: RandomSingleOwnerAccount,
+    pub random_executable_account: RandomSingleOwnerAccount,
+}
 
 #[derive(Clone, Debug)]
 pub struct SetupInput {
@@ -59,17 +63,11 @@ pub struct SetupInput {
     pub executable_account_casm_path: PathBuf,
 }
 
-#[derive(Clone, Debug)]
-pub struct SetupOutput {
-    pub random_paymaster_account: RandomSingleOwnerAccount,
-    pub random_executable_account: RandomSingleOwnerAccount,
-}
-
 impl SetupableTrait for TestSuiteOpenRpc {
     type Input = SetupInput;
-    type Output = SetupOutput;
+    type Output = TestSuiteOpenRpc;
 
-    async fn setup(setup_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self::Output, RpcError> {
         let (executable_account_flattened_sierra_class, executable_account_compiled_class_hash) =
             get_compiled_contract(
                 setup_input.executable_account_sierra_path.clone(),
@@ -193,7 +191,7 @@ impl SetupableTrait for TestSuiteOpenRpc {
             executable_accounts.push(executable_account);
         }
 
-        Ok(SetupOutput {
+        Ok(TestSuiteOpenRpc {
             random_executable_account: RandomSingleOwnerAccount {
                 accounts: executable_accounts,
             },

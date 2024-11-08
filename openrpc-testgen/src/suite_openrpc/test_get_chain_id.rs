@@ -12,10 +12,10 @@ use tracing::{error, info};
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = super::SetupOutput;
+    type Input = super::TestSuiteOpenRpc;
     type Output = ();
 
-    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
         let chain_id = test_input
             .random_paymaster_account
             .provider()

@@ -17,20 +17,17 @@ pub mod test_call_contract;
 pub mod test_estimate_message_fee;
 pub mod test_invoke_contract_v1;
 pub mod test_invoke_contract_v3;
-pub struct TestSuiteContractCalls {}
-
-#[derive(Clone, Debug)]
-pub struct SetupOutput {
+pub struct TestSuiteContractCalls {
     pub random_paymaster_account: RandomSingleOwnerAccount,
     pub random_executable_account: RandomSingleOwnerAccount,
     pub deployed_contract_address: Felt,
 }
 
 impl SetupableTrait for TestSuiteContractCalls {
-    type Input = super::SetupOutput;
-    type Output = SetupOutput;
+    type Input = super::TestSuiteDeploy;
+    type Output = TestSuiteContractCalls;
 
-    async fn setup(setup_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self::Output, RpcError> {
         let factory = ContractFactory::new(
             setup_input.declaration_result.class_hash,
             setup_input.random_paymaster_account.random_accounts()?,
@@ -69,7 +66,7 @@ impl SetupableTrait for TestSuiteContractCalls {
             }
         };
 
-        Ok(SetupOutput {
+        Ok(TestSuiteContractCalls {
             random_paymaster_account: setup_input.random_paymaster_account.clone(),
             random_executable_account: setup_input.random_executable_account.clone(),
             deployed_contract_address,

@@ -14,10 +14,10 @@ use tracing::{error, info};
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = super::SetupOutput;
+    type Input = super::TestSuiteOpenRpc;
     type Output = ();
 
-    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
         let erc20_eth_address =
             Felt::from_hex("049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7")?;
         let key: Felt =

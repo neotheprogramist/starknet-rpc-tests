@@ -34,5 +34,5 @@ async fn main() {
         .unwrap(),
     };
 
-    let _ = TestSuiteOpenRpc::run(suite_openrpc_input).await;
+    let _ = TestSuiteOpenRpc::run(&suite_openrpc_input).await;
 }

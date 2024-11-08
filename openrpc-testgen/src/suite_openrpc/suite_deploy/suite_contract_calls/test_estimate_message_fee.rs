@@ -1,4 +1,3 @@
-use crate::suite_openrpc::suite_deploy::suite_contract_calls::SetupOutput;
 use crate::utils::v7::accounts::account::ConnectedAccount;
 use crate::utils::v7::providers::provider::Provider;
 use crate::{
@@ -13,10 +12,10 @@ use tracing::{error, info};
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = SetupOutput;
+    type Input = super::TestSuiteContractCalls;
     type Output = ();
 
-    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
         let estimate = test_input
             .random_paymaster_account
             .provider()
