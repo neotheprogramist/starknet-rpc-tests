@@ -15,11 +15,17 @@ use crate::{
 
 pub mod test_call_contract;
 pub mod test_estimate_message_fee;
+pub mod test_get_class_at;
+pub mod test_get_class_hash_at;
+pub mod test_get_txn_receipt;
+pub mod test_get_txn_status;
 pub mod test_invoke_contract_v1;
 pub mod test_invoke_contract_v3;
+
 pub struct TestSuiteContractCalls {
     pub random_paymaster_account: RandomSingleOwnerAccount,
     pub random_executable_account: RandomSingleOwnerAccount,
+    pub deployment_receipt: TxnReceipt<Felt>,
     pub deployed_contract_address: Felt,
 }
 
@@ -46,7 +52,7 @@ impl SetupableTrait for TestSuiteContractCalls {
             .get_transaction_receipt(deployment_result.transaction_hash)
             .await?;
 
-        let deployed_contract_address = match deployment_receipt {
+        let deployed_contract_address = match &deployment_receipt {
             TxnReceipt::Deploy(receipt) => receipt.contract_address,
             TxnReceipt::Invoke(receipt) => {
                 if let Some(contract_address) = receipt
@@ -68,6 +74,7 @@ impl SetupableTrait for TestSuiteContractCalls {
         Ok(Self {
             random_paymaster_account: setup_input.random_paymaster_account.clone(),
             random_executable_account: setup_input.random_executable_account.clone(),
+            deployment_receipt,
             deployed_contract_address,
         })
     }

@@ -26,7 +26,7 @@ impl RunnableTrait for TestCase {
 
     async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
         let created_account_data = create_account(
-            &test_input.random_paymaster_account.provider(),
+            test_input.random_paymaster_account.provider(),
             AccountType::Oz,
             Option::None,
             Some(Felt::from_hex(
@@ -73,14 +73,14 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_storage_at COMPATIBLE".green(),
+                    "✓ Rpc get_transaction_by_hash COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc get_storage_at INCOMPATIBLE:".red(),
+                    "✗ Rpc get_transaction_by_hash INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );

@@ -13,27 +13,26 @@ use tracing::{error, info};
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = super::TestSuiteOpenRpc;
+    type Input = super::TestSuiteDeploy;
 
     async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
-        let block_txn_count = test_input
+        let contract_class = test_input
             .random_paymaster_account
             .provider()
-            .get_block_transaction_count(BlockId::Tag(BlockTag::Latest))
+            .get_class(
+                BlockId::Tag(BlockTag::Latest),
+                test_input.declaration_result.class_hash,
+            )
             .await;
 
-        match block_txn_count {
+        match contract_class {
             Ok(_) => {
-                info!(
-                    "{} {}",
-                    "✓ Rpc get_block_transaction_count COMPATIBLE".green(),
-                    "✓".green()
-                );
+                info!("{} {}", "✓ Rpc get_class COMPATIBLE".green(), "✓".green());
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc get_block_transaction_count INCOMPATIBLE:".red(),
+                    "✗ Rpc get_class INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );

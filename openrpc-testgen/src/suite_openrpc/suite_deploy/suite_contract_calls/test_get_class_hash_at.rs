@@ -1,10 +1,6 @@
-use crate::{
-    utils::v7::{
-        accounts::account::ConnectedAccount, endpoints::errors::RpcError,
-        providers::provider::Provider,
-    },
-    RunnableTrait,
-};
+use crate::utils::v7::accounts::account::ConnectedAccount;
+use crate::utils::v7::providers::provider::Provider;
+use crate::{utils::v7::endpoints::errors::RpcError, RunnableTrait};
 use colored::Colorize;
 use starknet_types_rpc::{BlockId, BlockTag};
 use tracing::{error, info};
@@ -13,27 +9,30 @@ use tracing::{error, info};
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = super::TestSuiteOpenRpc;
+    type Input = super::TestSuiteContractCalls;
 
     async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
-        let block_txn_count = test_input
+        let contract_class_hash = test_input
             .random_paymaster_account
             .provider()
-            .get_block_transaction_count(BlockId::Tag(BlockTag::Latest))
+            .get_class_hash_at(
+                BlockId::Tag(BlockTag::Latest),
+                test_input.deployed_contract_address,
+            )
             .await;
 
-        match block_txn_count {
+        match contract_class_hash {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_block_transaction_count COMPATIBLE".green(),
+                    "✓ Rpc get_class_hash_at COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc get_block_transaction_count INCOMPATIBLE:".red(),
+                    "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );

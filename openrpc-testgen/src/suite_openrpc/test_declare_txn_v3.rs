@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use crate::{
     utils::v7::{
         accounts::account::{Account, AccountError},
@@ -15,6 +13,7 @@ use crate::{
     RunnableTrait,
 };
 use colored::Colorize;
+use std::path::PathBuf;
 use std::str::FromStr;
 use tracing::{error, info};
 

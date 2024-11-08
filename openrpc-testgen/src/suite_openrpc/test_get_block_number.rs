@@ -6,7 +6,6 @@ use crate::{
     RunnableTrait,
 };
 use colored::Colorize;
-
 use tracing::{error, info};
 
 #[derive(Clone, Debug)]

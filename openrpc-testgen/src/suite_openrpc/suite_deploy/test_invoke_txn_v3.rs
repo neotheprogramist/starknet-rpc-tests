@@ -1,12 +1,11 @@
-use colored::Colorize;
-use rand::{rngs::StdRng, RngCore, SeedableRng};
-use starknet_types_core::felt::Felt;
-use tracing::{error, info};
-
 use crate::{
     utils::v7::{contract::factory::ContractFactory, endpoints::errors::RpcError},
     RandomizableAccountsTrait, RunnableTrait,
 };
+use colored::Colorize;
+use rand::{rngs::StdRng, RngCore, SeedableRng};
+use starknet_types_core::felt::Felt;
+use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}

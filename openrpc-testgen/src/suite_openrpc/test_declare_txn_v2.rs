@@ -1,7 +1,3 @@
-use colored::Colorize;
-
-use tracing::{error, info};
-
 use crate::{
     utils::v7::{
         accounts::account::{Account, AccountError},
@@ -16,7 +12,9 @@ use crate::{
     },
     RunnableTrait,
 };
+use colored::Colorize;
 use std::{path::PathBuf, str::FromStr, sync::Arc};
+use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}

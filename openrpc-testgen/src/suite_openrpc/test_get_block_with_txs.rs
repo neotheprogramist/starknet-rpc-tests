@@ -6,7 +6,6 @@ use crate::{
     RunnableTrait,
 };
 use colored::Colorize;
-
 use starknet_types_rpc::{BlockId, BlockTag};
 use tracing::{error, info};
 
