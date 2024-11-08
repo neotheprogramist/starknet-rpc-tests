@@ -98,7 +98,7 @@ impl StateMachine for BlockNumberStateMachineWrapper {
         }
     }
 
-    fn step(&mut self, request_body: String, response_body: String) -> StateMachineResult {
+    fn step(&mut self, _request_body: String, response_body: String) -> StateMachineResult {
         *self = match self {
             BlockNumberStateMachineWrapper::Ok(machine) => {
                 let valid_hash =
