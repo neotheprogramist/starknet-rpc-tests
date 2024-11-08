@@ -9,17 +9,15 @@ use utils::v7::{
 pub mod suite_openrpc;
 pub mod utils;
 
-pub trait RunnableTrait {
+pub trait RunnableTrait: Sized {
     type Input;
-    type Output;
 
-    fn run(input: Self::Input) -> impl Future<Output = Result<Self::Output, RpcError>>;
+    fn run(input: &Self::Input) -> impl Future<Output = Result<Self, RpcError>>;
 }
-pub trait SetupableTrait {
+pub trait SetupableTrait: Sized {
     type Input;
-    type Output;
 
-    fn setup(input: Self::Input) -> impl Future<Output = Result<Self::Output, RpcError>>;
+    fn setup(input: &Self::Input) -> impl Future<Output = Result<Self, RpcError>>;
 }
 
 pub trait RandomizableAccountsTrait {

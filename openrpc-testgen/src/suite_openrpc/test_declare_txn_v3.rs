@@ -1,6 +1,3 @@
-use std::path::PathBuf;
-
-use super::SetupOutput;
 use crate::{
     utils::v7::{
         accounts::account::{Account, AccountError},
@@ -16,6 +13,7 @@ use crate::{
     RunnableTrait,
 };
 use colored::Colorize;
+use std::path::PathBuf;
 use std::str::FromStr;
 use tracing::{error, info};
 
@@ -23,10 +21,9 @@ use tracing::{error, info};
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = SetupOutput;
-    type Output = ();
+    type Input = super::TestSuiteOpenRpc;
 
-    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
         let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_2_HelloStarknet.contract_class.json")?,
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_2_HelloStarknet.compiled_contract_class.json")?,
@@ -71,7 +68,7 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc Add_declare_transaction_v3 COMPATIBLE".green(),
+                    "✓ Rpc add_declare_transaction_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
@@ -85,6 +82,6 @@ impl RunnableTrait for TestCase {
             }
         }
 
-        Ok(())
+        Ok(Self {})
     }
 }

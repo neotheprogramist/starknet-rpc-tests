@@ -1,21 +1,19 @@
+use crate::{
+    utils::v7::{contract::factory::ContractFactory, endpoints::errors::RpcError},
+    RandomizableAccountsTrait, RunnableTrait,
+};
 use colored::Colorize;
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 use starknet_types_core::felt::Felt;
 use tracing::{error, info};
 
-use super::SetupOutput;
-use crate::{
-    utils::v7::{contract::factory::ContractFactory, endpoints::errors::RpcError},
-    RandomizableAccountsTrait, RunnableTrait,
-};
-
 #[derive(Clone, Debug)]
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = SetupOutput;
-    type Output = ();
-    async fn run(test_input: Self::Input) -> Result<Self::Output, RpcError> {
+    type Input = super::TestSuiteDeploy;
+
+    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
         let factory = ContractFactory::new(
             test_input.declaration_result.class_hash,
             test_input.random_paymaster_account.random_accounts()?,
@@ -33,20 +31,20 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc Add_invoke_transaction_v1 COMPATIBLE".green(),
+                    "✓ Rpc add_invoke_transaction_v1 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc Add_transaction_invoke_v1 INCOMPATIBLE:".red(),
+                    "✗ Rpc add_transaction_invoke_v1 INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );
             }
         }
 
-        Ok(())
+        Ok(Self {})
     }
 }

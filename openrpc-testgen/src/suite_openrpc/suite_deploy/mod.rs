@@ -13,23 +13,21 @@ use crate::{
 };
 use std::str::FromStr;
 pub mod suite_contract_calls;
+pub mod test_get_class;
 pub mod test_invoke_txn_v1;
 pub mod test_invoke_txn_v3;
 
-pub struct TestSuiteDeploy {}
-
 #[derive(Clone, Debug)]
-pub struct SetupOutput {
+pub struct TestSuiteDeploy {
     pub random_paymaster_account: RandomSingleOwnerAccount,
     pub random_executable_account: RandomSingleOwnerAccount,
     pub declaration_result: ClassAndTxnHash<Felt>,
 }
 
 impl SetupableTrait for TestSuiteDeploy {
-    type Input = super::SetupOutput;
-    type Output = SetupOutput;
+    type Input = super::TestSuiteOpenRpc;
 
-    async fn setup(setup_input: Self::Input) -> Result<Self::Output, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self, RpcError> {
         let (flattened_sierra_class, compiled_class_hash) =
             get_compiled_contract(
                 PathBuf::from_str("target/dev/contracts_contracts_sample_contract_3_HelloStarknet.contract_class.json")?,
@@ -43,7 +41,7 @@ impl SetupableTrait for TestSuiteDeploy {
             .send()
             .await?;
 
-        Ok(SetupOutput {
+        Ok(Self {
             random_paymaster_account: setup_input.random_paymaster_account.clone(),
             random_executable_account: setup_input.random_executable_account.clone(),
             declaration_result,
