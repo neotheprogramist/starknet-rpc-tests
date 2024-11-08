@@ -13,8 +13,8 @@ pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteDeploy;
-    type Output = ();
-    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
+
+    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
         let factory = ContractFactory::new(
             test_input.declaration_result.class_hash,
             test_input.random_paymaster_account.random_accounts()?,
@@ -46,6 +46,6 @@ impl RunnableTrait for TestCase {
             }
         }
 
-        Ok(())
+        Ok(Self {})
     }
 }

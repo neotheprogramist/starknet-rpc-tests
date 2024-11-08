@@ -15,9 +15,8 @@ pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteContractCalls;
-    type Output = ();
 
-    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
         let increase_balance_call = Call {
             to: test_input.deployed_contract_address,
             selector: get_selector_from_name("increase_balance")?,
@@ -48,6 +47,6 @@ impl RunnableTrait for TestCase {
             }
         }
 
-        Ok(())
+        Ok(Self {})
     }
 }

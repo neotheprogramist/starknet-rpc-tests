@@ -23,9 +23,8 @@ pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteOpenRpc;
-    type Output = ();
 
-    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
         let created_account_data = create_account(
             &test_input.random_paymaster_account.provider(),
             AccountType::Oz,
@@ -88,6 +87,6 @@ impl RunnableTrait for TestCase {
             }
         }
 
-        Ok(())
+        Ok(Self {})
     }
 }

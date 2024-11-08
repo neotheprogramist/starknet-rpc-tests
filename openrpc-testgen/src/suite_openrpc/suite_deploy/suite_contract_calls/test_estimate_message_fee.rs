@@ -13,9 +13,8 @@ pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteContractCalls;
-    type Output = ();
 
-    async fn run(test_input: &Self::Input) -> Result<Self::Output, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
         let estimate = test_input
             .random_paymaster_account
             .provider()
@@ -48,6 +47,6 @@ impl RunnableTrait for TestCase {
             }
         }
 
-        Ok(())
+        Ok(Self {})
     }
 }

@@ -25,9 +25,8 @@ pub struct TestSuiteContractCalls {
 
 impl SetupableTrait for TestSuiteContractCalls {
     type Input = super::TestSuiteDeploy;
-    type Output = TestSuiteContractCalls;
 
-    async fn setup(setup_input: &Self::Input) -> Result<Self::Output, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self, RpcError> {
         let factory = ContractFactory::new(
             setup_input.declaration_result.class_hash,
             setup_input.random_paymaster_account.random_accounts()?,
@@ -66,7 +65,7 @@ impl SetupableTrait for TestSuiteContractCalls {
             }
         };
 
-        Ok(TestSuiteContractCalls {
+        Ok(Self {
             random_paymaster_account: setup_input.random_paymaster_account.clone(),
             random_executable_account: setup_input.random_executable_account.clone(),
             deployed_contract_address,

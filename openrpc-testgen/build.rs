@@ -102,10 +102,9 @@ fn process_module_directory(
     } else {
         writeln!(file, "    type Input = SetupInput;").unwrap(); // Root suite uses `SetupInput`
     }
-    writeln!(file, "    type Output = ();").unwrap();
     writeln!(
         file,
-        "    async fn run(input: &Self::Input) -> Result<Self::Output, crate::utils::v7::endpoints::errors::RpcError> {{"
+        "    async fn run(input: &Self::Input) -> Result<Self, crate::utils::v7::endpoints::errors::RpcError> {{"
     )
     .unwrap();
 
@@ -142,7 +141,7 @@ fn process_module_directory(
         .unwrap();
     }
 
-    writeln!(file, "        Ok(())").unwrap();
+    writeln!(file, "        Ok(data)").unwrap();
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
 

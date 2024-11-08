@@ -25,9 +25,8 @@ pub struct TestSuiteDeploy {
 
 impl SetupableTrait for TestSuiteDeploy {
     type Input = super::TestSuiteOpenRpc;
-    type Output = TestSuiteDeploy;
 
-    async fn setup(setup_input: &Self::Input) -> Result<Self::Output, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self, RpcError> {
         let (flattened_sierra_class, compiled_class_hash) =
             get_compiled_contract(
                 PathBuf::from_str("target/dev/contracts_contracts_sample_contract_3_HelloStarknet.contract_class.json")?,
@@ -41,7 +40,7 @@ impl SetupableTrait for TestSuiteDeploy {
             .send()
             .await?;
 
-        Ok(TestSuiteDeploy {
+        Ok(Self {
             random_paymaster_account: setup_input.random_paymaster_account.clone(),
             random_executable_account: setup_input.random_executable_account.clone(),
             declaration_result,

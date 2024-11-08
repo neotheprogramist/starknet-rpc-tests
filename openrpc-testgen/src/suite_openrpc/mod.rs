@@ -65,9 +65,8 @@ pub struct SetupInput {
 
 impl SetupableTrait for TestSuiteOpenRpc {
     type Input = SetupInput;
-    type Output = TestSuiteOpenRpc;
 
-    async fn setup(setup_input: &Self::Input) -> Result<Self::Output, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self, RpcError> {
         let (executable_account_flattened_sierra_class, executable_account_compiled_class_hash) =
             get_compiled_contract(
                 setup_input.executable_account_sierra_path.clone(),
@@ -191,7 +190,7 @@ impl SetupableTrait for TestSuiteOpenRpc {
             executable_accounts.push(executable_account);
         }
 
-        Ok(TestSuiteOpenRpc {
+        Ok(Self {
             random_executable_account: RandomSingleOwnerAccount {
                 accounts: executable_accounts,
             },
