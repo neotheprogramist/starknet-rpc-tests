@@ -1,9 +1,13 @@
 use crate::StateMachine;
 use crate::StateMachineResult;
-use production_nodes_types::pathfinder_types::types::alpha_sepolia_blocks::BlockStateMachine;
+use production_nodes_types::pathfinder_types::types::alpha_sepolia_blocks::{
+    BlockStateMachine, StarknetVersion,
+};
 use production_nodes_types::pathfinder_types::types::block_hash::compute_final_hash;
 use regex::Regex;
+use serde::Deserialize;
 use serde_json::Result as JsonResult;
+use serde_with::{serde_as, DisplayFromStr};
 
 #[derive(Clone)]
 pub struct Ok;
@@ -73,6 +77,19 @@ pub enum StateUpdateBlockNumberStateMachineWrapper {
     Skipped(StateUpdateBlockNumberStateMachine<Skipped>),
 }
 
+#[serde_as]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Default)]
+struct CheckVersion {
+    block: Version,
+}
+
+#[serde_as]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq, Default)]
+struct Version {
+    #[serde_as(as = "DisplayFromStr")]
+    starknet_version: StarknetVersion,
+}
+
 impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
     fn run(
         &mut self,
@@ -123,22 +140,41 @@ impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
     fn step(&mut self, _request_body: String, response_body: String) -> StateMachineResult {
         *self = match self {
             StateUpdateBlockNumberStateMachineWrapper::Ok(machine) => {
-                match serde_json::from_str::<BlockStateMachine>(&response_body) {
-                    JsonResult::Ok(block_state_machine) => {
-                        let is_valid_hash =
-                            match compute_final_hash(&block_state_machine.block.clone().into()) {
-                                std::result::Result::Ok(block_hash) => {
-                                    block_hash == block_state_machine.block.block_hash
-                                }
-                                Err(_) => false,
-                            };
+                match serde_json::from_str::<CheckVersion>(&response_body.clone()) {
+                    JsonResult::Ok(version) => {
+                        let pre_v_0_13_2 =
+                            version.block.starknet_version < StarknetVersion::V_0_13_2;
 
-                        if is_valid_hash {
-                            StateUpdateBlockNumberStateMachineWrapper::Ok(machine.clone())
-                        } else {
-                            StateUpdateBlockNumberStateMachineWrapper::Invalid(
-                                machine.clone().to_invalid(),
+                        if pre_v_0_13_2 {
+                            StateUpdateBlockNumberStateMachineWrapper::Skipped(
+                                machine.clone().to_skipped(),
                             )
+                        } else {
+                            match serde_json::from_str::<BlockStateMachine>(&response_body) {
+                                JsonResult::Ok(block_state_machine) => {
+                                    let is_valid_hash = match compute_final_hash(
+                                        &block_state_machine.block.clone().into(),
+                                    ) {
+                                        std::result::Result::Ok(block_hash) => {
+                                            block_hash == block_state_machine.block.block_hash
+                                        }
+                                        Err(_) => false,
+                                    };
+
+                                    if is_valid_hash {
+                                        StateUpdateBlockNumberStateMachineWrapper::Ok(
+                                            machine.clone(),
+                                        )
+                                    } else {
+                                        StateUpdateBlockNumberStateMachineWrapper::Invalid(
+                                            machine.clone().to_invalid(),
+                                        )
+                                    }
+                                }
+                                Err(_) => StateUpdateBlockNumberStateMachineWrapper::Invalid(
+                                    machine.clone().to_invalid(),
+                                ),
+                            }
                         }
                     }
                     Err(_) => StateUpdateBlockNumberStateMachineWrapper::Invalid(
@@ -146,6 +182,7 @@ impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
                     ),
                 }
             }
+
             StateUpdateBlockNumberStateMachineWrapper::Invalid(machine) => {
                 StateUpdateBlockNumberStateMachineWrapper::Invalid(machine.clone())
             }
@@ -158,9 +195,9 @@ impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
             StateUpdateBlockNumberStateMachineWrapper::Ok(_) => StateMachineResult::Ok(
                 "State Update by block number request SUCCESSFUL".to_string(),
             ),
-            StateUpdateBlockNumberStateMachineWrapper::Invalid(_) => {
-                StateMachineResult::Invalid("State Update by block number request FAILED".to_string())
-            }
+            StateUpdateBlockNumberStateMachineWrapper::Invalid(_) => StateMachineResult::Invalid(
+                "State Update by block number request FAILED".to_string(),
+            ),
             StateUpdateBlockNumberStateMachineWrapper::Skipped(_) => StateMachineResult::Skipped,
         }
     }
