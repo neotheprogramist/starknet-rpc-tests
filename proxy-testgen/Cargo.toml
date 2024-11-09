@@ -6,6 +6,7 @@ build = "build.rs"
 
 [dependencies]
 regex = "1.11.1"
+production-nodes-types = { path = "../production-nodes-types" }
 starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "70bd8ad21c702abb51a7598ef4aab8064cf8eec0" }
 starknet-types-core = { version = "0.1.6", default-features = false, features = [
   "hash",
@@ -13,7 +14,10 @@ starknet-types-core = { version = "0.1.6", default-features = false, features = 
 ] }
 serde_json.workspace = true
 serde.workspace = true
+serde_with = "3.9.0"
+
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 num-bigint = "0.4.6"
 num-traits = "0.2.19"
+b11r = {path = "../b11r"}
