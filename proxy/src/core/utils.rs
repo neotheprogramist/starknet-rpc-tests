@@ -1,15 +1,15 @@
 use super::errors::ProxyError;
-use openssl::pkey::PKey;
-use reqwest::{blocking::Client, Url};
-use rustls::{Certificate, ServerConfig, ServerConnection, StreamOwned};
-use rustls_pemfile::Item;
-use std::{
-    fs::File,
-    io::{prelude::*, BufReader},
-    net::TcpStream,
-    sync::Arc,
-};
 use colored::*;
+use openssl::pkey::PKey;
+use reqwest::{Client, Url};
+use rustls::{Certificate, ServerConfig};
+use rustls_pemfile::Item;
+use std::io::BufReader as StdBufReader;
+use std::sync::Arc;
+use tokio::io::{AsyncBufReadExt, AsyncReadExt, AsyncWriteExt, BufReader};
+use tokio::net::TcpStream;
+use tokio_rustls::server::TlsStream;
+use tokio_rustls::TlsAcceptor;
 use tracing::info;
 
 #[cfg(not(feature = "rust-analyzer"))]
@@ -26,7 +26,7 @@ pub fn load_tls_config() -> Result<Arc<ServerConfig>, ProxyError> {
 
     let certs = load_certs("proxy/alpha-sepolia-certs/server.crt")?;
 
-    let config = rustls::ServerConfig::builder()
+    let config = ServerConfig::builder()
         .with_safe_defaults()
         .with_no_client_auth()
         .with_single_cert(certs, private_key)?;
@@ -35,8 +35,8 @@ pub fn load_tls_config() -> Result<Arc<ServerConfig>, ProxyError> {
 }
 
 fn load_certs(path: &str) -> Result<Vec<Certificate>, ProxyError> {
-    let cert_file = File::open(path)?;
-    let mut cert_reader = BufReader::new(cert_file);
+    let cert_file = std::fs::File::open(path)?;
+    let mut cert_reader = StdBufReader::new(cert_file);
 
     let mut certs = Vec::new();
     while let Some(item) = rustls_pemfile::read_one(&mut cert_reader)? {
@@ -48,31 +48,37 @@ fn load_certs(path: &str) -> Result<Vec<Certificate>, ProxyError> {
     Ok(certs)
 }
 
-fn write_response_to_stream(
-    tls_stream: &mut StreamOwned<ServerConnection, TcpStream>,
-    response: reqwest::blocking::Response,
+async fn write_response_to_stream(
+    tls_stream: &mut TlsStream<TcpStream>,
+    response: reqwest::Response,
 ) -> Result<String, ProxyError> {
-    let mut body = "".to_string();
-    if response.status().is_success() {
-        body = response.text()?;
-        info!("Response body: {}", body);
+    let status = response.status();
+    let headers = response.headers().clone();
+    let body_bytes = response.bytes().await?;
 
-        let response = format!(
+    let body = String::from_utf8_lossy(&body_bytes).to_string();
+
+    info!("Response Status: {}", status);
+    info!("Response Headers: {:?}", headers);
+    info!("Response Body: {}", body);
+
+    if status.is_success() {
+        let response_str = format!(
             "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n{}",
             body.len(),
             body
         );
-        tls_stream.write_all(response.as_bytes())?;
+        tls_stream.write_all(response_str.as_bytes()).await?;
     } else {
-        let error_response = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 20\r\n\r\nSepolia Request Failed".to_string();
-        tls_stream.write_all(error_response.as_bytes())?;
-        info!("Failed to fetch response. Status: {}", response.status());
+        let error_response = "HTTP/1.1 500 Internal Server Error\r\nContent-Length: 22\r\n\r\nSepolia Request Failed";
+        tls_stream.write_all(error_response.as_bytes()).await?;
+        info!("Failed to fetch response. Status: {}", status);
     }
 
     Ok(body)
 }
 
-fn extract_request_body<R: BufRead>(
+async fn extract_request_body<R: AsyncBufReadExt + Unpin>(
     request_header: &[String],
     reader: &mut R,
 ) -> Result<String, ProxyError> {
@@ -84,25 +90,25 @@ fn extract_request_body<R: BufRead>(
 
     let mut body = String::new();
     if let Some(length) = content_length {
-        reader.take(length as u64).read_to_string(&mut body)?;
+        let mut body_reader = reader.take(length as u64);
+        body_reader.read_to_string(&mut body).await?;
     }
     Ok(body)
 }
 
-pub fn handle_connection(
+pub async fn handle_connection(
     stream: TcpStream,
     tls_config: Arc<ServerConfig>,
 ) -> Result<(), ProxyError> {
-    let server_conn = ServerConnection::new(tls_config)?;
-    let mut tls_stream = StreamOwned::new(server_conn, stream);
+    let acceptor = TlsAcceptor::from(tls_config);
+    let mut tls_stream = acceptor.accept(stream).await?;
 
-    let mut buf_reader: BufReader<&mut StreamOwned<ServerConnection, TcpStream>> =
-        BufReader::new(&mut tls_stream);
+    let mut buf_reader = BufReader::new(&mut tls_stream);
 
     let mut request_header = Vec::new();
     loop {
         let mut line = String::new();
-        buf_reader.read_line(&mut line)?;
+        buf_reader.read_line(&mut line).await?;
         if line == "\r\n" || line.is_empty() {
             break;
         }
@@ -110,7 +116,7 @@ pub fn handle_connection(
     }
     info!("Request: {:#?}", request_header);
 
-    let request_body = extract_request_body(&request_header, &mut buf_reader)?;
+    let request_body = extract_request_body(&request_header, &mut buf_reader).await?;
 
     if let Some(request_line) = request_header.first() {
         let parts: Vec<&str> = request_line.split_whitespace().collect();
@@ -128,14 +134,15 @@ pub fn handle_connection(
             let response = match method {
                 "GET" => {
                     info!("Handling GET request");
-                    client.get(url.clone()).body(request_body.clone()).send()?
+                    client.get(url.clone()).send().await?
                 }
                 "POST" => {
                     info!("Handling POST request");
-
-                    info!("Received POST body: {}", request_body);
-
-                    client.post(url.clone()).body(request_body.clone()).send()?
+                    client
+                        .post(url.clone())
+                        .body(request_body.clone())
+                        .send()
+                        .await?
                 }
                 _ => {
                     info!("Unsupported HTTP method: {method}");
@@ -144,7 +151,7 @@ pub fn handle_connection(
                     });
                 }
             };
-            let response_body = write_response_to_stream(&mut tls_stream, response)?;
+            let response_body = write_response_to_stream(&mut tls_stream, response).await?;
             run_generated_state_machines(request_body, response_body, path.to_string());
         } else {
             info!("Invalid request format");

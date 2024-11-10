@@ -20,6 +20,5 @@ pub enum ProxyError {
     #[error(transparent)]
     ParseUrlError(#[from] url::ParseError),
     #[error(transparent)]
-    SerdeJsonError(#[from] serde_json::Error)
-    
+    SerdeJsonError(#[from] serde_json::Error),
 }
