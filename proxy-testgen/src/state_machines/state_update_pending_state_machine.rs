@@ -17,6 +17,12 @@ pub struct StateUpdatePendingStateMachine<S> {
     state: S,
 }
 
+impl<S> StateUpdatePendingStateMachine<S> {
+    pub fn get_state(&self) -> &S {
+        &self.state
+    }
+}
+
 impl StateUpdatePendingStateMachine<Ok> {
     pub fn new() -> Self {
         Self {

@@ -24,6 +24,12 @@ pub struct StateUpdateBlockNumberStateMachine<S> {
     state: S,
 }
 
+impl<S> StateUpdateBlockNumberStateMachine<S> {
+    pub fn get_state(&self) -> &S {
+        &self.state
+    }
+}
+
 impl StateUpdateBlockNumberStateMachine<Ok> {
     pub fn new() -> Self {
         Self {

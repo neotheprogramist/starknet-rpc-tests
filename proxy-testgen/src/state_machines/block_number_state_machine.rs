@@ -18,6 +18,12 @@ pub struct BlockNumberStateMachine<S> {
     state: S,
 }
 
+impl<S> BlockNumberStateMachine<S> {
+    pub fn get_state(&self) -> &S {
+        &self.state
+    }
+}
+
 impl BlockNumberStateMachine<Ok> {
     pub fn new() -> Self {
         Self {
@@ -115,9 +121,10 @@ impl StateMachine for BlockNumberStateMachineWrapper {
                                 16,
                             ),
                         ) {
-                            (std::result::Result::Ok(block_hash_int), std::result::Result::Ok(stark_prime)) => {
-                                block_hash_int < stark_prime
-                            }
+                            (
+                                std::result::Result::Ok(block_hash_int),
+                                std::result::Result::Ok(stark_prime),
+                            ) => block_hash_int < stark_prime,
                             _ => false,
                         }
                         }
