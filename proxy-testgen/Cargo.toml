@@ -20,4 +20,3 @@ tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 num-bigint = "0.4.6"
 num-traits = "0.2.19"
-b11r = {path = "../b11r"}

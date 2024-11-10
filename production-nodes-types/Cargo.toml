@@ -6,7 +6,7 @@ version.workspace = true
 [dependencies]
 anyhow = "1.0.75"
 blockifier = { git = "https://github.com/neotheprogramist/blockifier.git", branch = "feat/add-deserialization-serialization", features = [
-    "testing",
+  "testing",
 ] }
 bincode = "2.0.0-rc.3"
 bitvec = "1.0.1"
@@ -25,4 +25,4 @@ starknet-types-core = { version = "0.1.6", default-features = false, features = 
   "curve",
 ] }
 rand = "0.8.5"
-primitive-types = {version = "0.12.1", features = ["serde"]}
+primitive-types = { version = "0.12.1", features = ["serde"] }
