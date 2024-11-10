@@ -32,3 +32,5 @@ dumpdir
 
 # Ignore txt 
 *.txt
+
+.snfoundry_cache

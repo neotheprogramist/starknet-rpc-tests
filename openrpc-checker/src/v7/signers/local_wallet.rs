@@ -2,7 +2,6 @@ use super::{
     key_pair::{SigningKey, VerifyingKey},
     signer::Signer,
 };
-// use starknet_types_core::curve::{EcdsaSignError, Signature};
 use crypto_utils::curve::signer::{EcdsaSignError, Signature};
 use starknet_types_core::felt::Felt;
 

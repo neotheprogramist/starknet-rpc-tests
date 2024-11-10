@@ -2,7 +2,7 @@ use crate::v6::accounts::account::ContractClassHasher;
 use crate::v6::{accounts::errors::NotPreparedError, providers::provider::Provider};
 use crypto_utils::curve::signer::compute_hash_on_elements;
 use starknet_types_core::felt::Felt;
-use starknet_types_core::hash::PoseidonHasher;
+use starknet_types_core::hash::{Poseidon, StarkHash};
 use starknet_types_rpc::v0_6_0::{
     BroadcastedDeclareTxn, BroadcastedDeclareTxnV2, BroadcastedDeclareTxnV3, BroadcastedTxn,
     ClassAndTxnHash, ContractClass, DaMode, FeeEstimate, MaybePendingBlockWithTxHashes,
@@ -609,56 +609,52 @@ impl RawDeclarationV2 {
 #[allow(dead_code)]
 impl RawDeclarationV3 {
     pub fn transaction_hash(&self, chain_id: Felt, address: Felt, query_only: bool) -> Felt {
-        let mut hasher = PoseidonHasher::new();
+        // Main data vector to collect all elements for hashing
+        let mut data = vec![
+            PREFIX_DECLARE,
+            if query_only {
+                QUERY_VERSION_THREE
+            } else {
+                Felt::THREE
+            },
+            address,
+        ];
 
-        hasher.update(PREFIX_DECLARE);
-        hasher.update(if query_only {
-            QUERY_VERSION_THREE
-        } else {
-            Felt::THREE
-        });
-        hasher.update(address);
+        // Inner fee hasher data collection
+        let mut fee_data = vec![Felt::ZERO]; // Hard-coded fee market
 
-        hasher.update({
-            let mut fee_hasher = PoseidonHasher::new();
+        // First L1 gas resource buffer
+        let mut resource_buffer = [
+            0, 0, b'L', b'1', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+        resource_buffer[8..(8 + 8)].copy_from_slice(&self.gas.to_be_bytes());
+        resource_buffer[(8 + 8)..].copy_from_slice(&self.gas_price.to_be_bytes());
+        fee_data.push(Felt::from_bytes_be(&resource_buffer));
 
-            // Tip: fee market has not been been activated yet so it's hard-coded to be 0
-            fee_hasher.update(Felt::ZERO);
+        // Second L2 gas resource buffer
+        let resource_buffer = [
+            0, 0, b'L', b'2', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0,
+        ];
+        fee_data.push(Felt::from_bytes_be(&resource_buffer));
 
-            let mut resource_buffer = [
-                0, 0, b'L', b'1', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            ];
-            resource_buffer[8..(8 + 8)].copy_from_slice(&self.gas.to_be_bytes());
-            resource_buffer[(8 + 8)..].copy_from_slice(&self.gas_price.to_be_bytes());
-            fee_hasher.update(Felt::from_bytes_be(&resource_buffer));
+        // Hash the fee data and add it to the main data
+        data.push(Poseidon::hash_array(&fee_data));
 
-            // L2 resources are hard-coded to 0
-            let resource_buffer = [
-                0, 0, b'L', b'2', b'_', b'G', b'A', b'S', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            ];
-            fee_hasher.update(Felt::from_bytes_be(&resource_buffer));
+        // Hard-coded empty `paymaster_data` and `account_deployment_data`
+        data.push(Poseidon::hash_array(&[]));
+        data.push(chain_id);
+        data.push(self.nonce);
+        data.push(Felt::ZERO); // Hard-coded L1 DA mode for nonce and fee
+        data.push(Poseidon::hash_array(&[])); // Empty `account_deployment_data`
 
-            fee_hasher.finalize()
-        });
+        // Contract class and compiled class hashes
+        data.push(self.contract_class.class_hash());
+        data.push(self.compiled_class_hash);
 
-        // Hard-coded empty `paymaster_data`
-        hasher.update(PoseidonHasher::new().finalize());
-
-        hasher.update(chain_id);
-        hasher.update(self.nonce);
-
-        // Hard-coded L1 DA mode for nonce and fee
-        hasher.update(Felt::ZERO);
-
-        // Hard-coded empty `account_deployment_data`
-        hasher.update(PoseidonHasher::new().finalize());
-
-        hasher.update(self.contract_class.class_hash());
-        hasher.update(self.compiled_class_hash);
-
-        hasher.finalize()
+        // Final hash computation
+        Poseidon::hash_array(&data)
     }
 
     pub fn contract_class(&self) -> &ContractClass {

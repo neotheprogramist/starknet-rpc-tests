@@ -5,7 +5,7 @@ use super::constants::{
 };
 use crypto_utils::curve::signer::{compute_hash_on_elements, verify};
 use starknet_types_core::felt::Felt;
-use starknet_types_core::hash::poseidon_hash::poseidon_hash_many;
+use starknet_types_core::hash::{Poseidon, StarkHash};
 use starknet_types_rpc::{v0_7_1::starknet_api_openrpc::*, DeployAccountTxn};
 
 pub fn verify_deploy_account_signature(
@@ -97,20 +97,18 @@ fn calculate_deploy_v3_transaction_hash(
     chain_id: &Felt,
     txn: &DeployAccountTxnV3<Felt>,
 ) -> Result<Felt, Error> {
-    let common_fields = common_fields_for_hash(PREFIX_DEPLOY_ACCOUNT, *chain_id, txn)?;
-
-    let constructor_calldata_hash = poseidon_hash_many(&txn.constructor_calldata);
+    let constructor_calldata_hash = Poseidon::hash_array(&txn.constructor_calldata);
 
     let fields_to_hash = [
-        common_fields.as_slice(),
+        common_fields_for_hash(PREFIX_DEPLOY_ACCOUNT, *chain_id, txn)?.as_slice(),
         &[constructor_calldata_hash],
         &[txn.class_hash],
         &[txn.contract_address_salt],
     ]
     .concat();
 
-    let txn_hash = poseidon_hash_many(fields_to_hash.as_slice());
-    Ok(txn_hash)
+    // Compute the final transaction hash
+    Ok(Poseidon::hash_array(&fields_to_hash))
 }
 
 /// Returns the array of Felts that reflects (tip, resource_bounds_for_fee) from SNIP-8
@@ -170,10 +168,10 @@ fn common_fields_for_hash(
             txn.class_hash,
             compute_hash_on_elements(&txn.constructor_calldata.clone()),
         ),
-        poseidon_hash_many(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
-        poseidon_hash_many(&txn.paymaster_data),                        // h(paymaster_data)
-        chain_id,                                                       // chain_id
-        txn.nonce,                                                      // nonce
+        Poseidon::hash_array(get_resource_bounds_array(txn)?.as_slice()), /* h(tip, resource_bounds_for_fee) */
+        Poseidon::hash_array(&txn.paymaster_data),                        // h(paymaster_data)
+        chain_id,                                                         // chain_id
+        txn.nonce,                                                        // nonce
         get_data_availability_modes_field_element(txn), /* nonce_data_availability ||
                                                          * fee_data_availability_mode */
     ];
