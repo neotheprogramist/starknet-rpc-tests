@@ -55,3 +55,11 @@ After running the above commands, you should have the following files in `proxy/
 - `server.crt`: Signed server certificate
 
 `ca.crt` file will be used in each service’s Dockerfile.
+
+## Step 2: Build Docker Image with new Certificates
+
+Go into `root` directory.
+
+```bash
+docker build --no-cache -t <proxy-image-name> -f proxy/Dockerfile .
+```
