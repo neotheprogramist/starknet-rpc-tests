@@ -66,9 +66,8 @@ pub fn compute_final_hash(header: &BlockHeaderData) -> Result<Felt, io::Error> {
         &[0_u8; 7], // zero padding
     ]
     .concat();
-    
-    let concat_counts = Felt::from_bytes_be_slice(concat_bytes.as_slice());
 
+    let concat_counts = Felt::from_bytes_be_slice(concat_bytes.as_slice());
 
     // let mut concat_counts = [0u8; 32];
     // let mut writer = concat_counts.as_mut_slice();

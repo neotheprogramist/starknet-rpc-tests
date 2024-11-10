@@ -40,7 +40,6 @@ impl Error for HexParseError {}
 
 const OVERFLOW_MSG: &str = "The maximum field value was exceeded.";
 
-
 impl std::fmt::Display for HexParseError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -52,7 +51,6 @@ impl std::fmt::Display for HexParseError {
         }
     }
 }
-
 
 impl GasPrice {
     pub const ZERO: GasPrice = GasPrice(0u128);
@@ -168,7 +166,6 @@ pub fn bytes_as_hex_str<'a>(bytes: &'a [u8], buf: &'a mut [u8]) -> &'a str {
     // Unwrap is safe because `buf` holds valid UTF8 characters.
     std::str::from_utf8(res).unwrap()
 }
-
 
 /// The first stage of conversion - skip leading zeros
 fn skip_zeros(bytes: &[u8]) -> (impl Iterator<Item = &u8>, usize, usize) {

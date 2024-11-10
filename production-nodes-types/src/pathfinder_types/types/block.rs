@@ -1,4 +1,4 @@
-use super::{alpha_sepolia_blocks::count_events, event::{extract_emmited_events, get_events_count}, header::L1DataAvailabilityMode};
+use super::{alpha_sepolia_blocks::count_events, header::L1DataAvailabilityMode};
 use serde::{Deserialize, Serialize};
 use starknet_types_core::felt::Felt;
 
@@ -73,8 +73,6 @@ pub struct ResourcePrice {
 }
 
 impl From<super::alpha_sepolia_blocks::Block> for BlockHeaderData {
-
-
     fn from(block: super::alpha_sepolia_blocks::Block) -> Self {
         Self {
             hash: block.block_hash,
