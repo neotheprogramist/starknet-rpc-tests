@@ -9,6 +9,7 @@ members = [
   "openrpc-checker",
   "hive",
   "proxy",
+  "proxy-testgen", "production-nodes-types",
 ]
 
 [workspace.package]
