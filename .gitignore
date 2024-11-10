@@ -29,3 +29,6 @@ proxy/generated_state_machines.rs
 
 dump
 dumpdir
+
+# Ignore txt 
+*.txt
