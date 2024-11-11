@@ -17,11 +17,17 @@ use super::{
     structs::WaitForTx,
 };
 
+pub enum DeployAccountVersion {
+    V1,
+    V3,
+}
+
 pub async fn deploy_account(
     provider: &JsonRpcClient<HttpTransport>,
     chain_id: Felt,
     wait_config: WaitForTx,
     account_data: GenerateAccountResponse,
+    version: DeployAccountVersion,
 ) -> Result<TxnHash<Felt>, CreationError> {
     if account_data.deployed {
         tracing::warn!("Account already deployed!");
@@ -53,6 +59,7 @@ pub async fn deploy_account(
             chain_id,
             Some(account_data.max_fee),
             wait_config,
+            version,
         )
         .await?
     };

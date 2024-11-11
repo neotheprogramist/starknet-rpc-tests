@@ -49,6 +49,8 @@ pub mod test_get_transaction_by_hash_non_existent;
 pub mod test_get_txn_by_block_id_and_index;
 pub mod test_get_txn_by_block_id_and_index_declare_v2;
 pub mod test_get_txn_by_block_id_and_index_declare_v3;
+pub mod test_get_txn_by_block_id_and_index_deploy_account_v1;
+pub mod test_get_txn_by_block_id_and_index_deploy_account_v3;
 
 #[derive(Clone, Debug)]
 pub struct TestSuiteOpenRpc {

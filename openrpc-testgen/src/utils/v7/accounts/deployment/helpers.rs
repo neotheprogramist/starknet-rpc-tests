@@ -12,7 +12,7 @@ use crate::utils::v7::{
     signers::{key_pair::SigningKey, local_wallet::LocalWallet},
 };
 
-use super::structs::WaitForTx;
+use super::{deploy::DeployAccountVersion, structs::WaitForTx};
 
 // Cairo string of "STARKNET_CONTRACT_ADDRESS"
 const CONTRACT_ADDRESS_PREFIX: Felt = Felt::from_raw([
@@ -50,6 +50,7 @@ pub async fn get_deployment_result(
     chain_id: Felt,
     max_fee: Option<Felt>,
     wait_config: WaitForTx,
+    version: DeployAccountVersion,
 ) -> Result<Felt, CreationError> {
     match account_type {
         AccountType::Oz => {
@@ -61,12 +62,14 @@ pub async fn get_deployment_result(
                 chain_id,
                 max_fee,
                 wait_config,
+                version,
             )
             .await
         }
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn deploy_oz_account(
     provider: &JsonRpcClient<HttpTransport>,
     class_hash: Felt,
@@ -75,6 +78,7 @@ async fn deploy_oz_account(
     chain_id: Felt,
     max_fee: Option<Felt>,
     wait_config: WaitForTx,
+    version: DeployAccountVersion,
 ) -> Result<Felt, CreationError> {
     let factory = OpenZeppelinAccountFactory::new(
         class_hash,
@@ -85,7 +89,16 @@ async fn deploy_oz_account(
     .await
     .unwrap();
 
-    deploy_account(factory, provider, salt, max_fee, wait_config, class_hash).await
+    deploy_account(
+        factory,
+        provider,
+        salt,
+        max_fee,
+        wait_config,
+        class_hash,
+        version,
+    )
+    .await
 }
 
 #[allow(unused_variables)]
@@ -96,20 +109,39 @@ async fn deploy_account<T>(
     max_fee: Option<Felt>,
     wait_config: WaitForTx,
     class_hash: Felt,
+    version: DeployAccountVersion,
 ) -> Result<Felt, CreationError>
 where
     T: AccountFactory + Sync,
 {
-    let deployment = account_factory.deploy_v3(salt);
-    let deploy_max_fee = if let Some(max_fee) = max_fee {
-        max_fee
-    } else {
-        match deployment.estimate_fee().await {
-            Ok(max_fee) => Felt::from_dec_str(&max_fee.overall_fee.to_string()).unwrap(),
-            Err(error) => return Err(CreationError::RpcError(error.to_string())),
+    match version {
+        DeployAccountVersion::V1 => {
+            let deployment: crate::utils::v7::accounts::factory::AccountDeploymentV1<'_, T> =
+                account_factory.deploy_v1(salt);
+            let deploy_max_fee = if let Some(max_fee) = max_fee {
+                max_fee
+            } else {
+                match deployment.estimate_fee().await {
+                    Ok(max_fee) => Felt::from_dec_str(&max_fee.overall_fee.to_string()).unwrap(),
+                    Err(error) => return Err(CreationError::RpcError(error.to_string())),
+                }
+            };
+            let result = deployment.send().await.unwrap();
+            Ok(result.transaction_hash)
         }
-    };
-    let result = deployment.send().await.unwrap();
-
-    Ok(result.transaction_hash)
+        DeployAccountVersion::V3 => {
+            let deployment: crate::utils::v7::accounts::factory::AccountDeploymentV3<'_, T> =
+                account_factory.deploy_v3(salt);
+            let deploy_max_fee = if let Some(max_fee) = max_fee {
+                max_fee
+            } else {
+                match deployment.estimate_fee().await {
+                    Ok(max_fee) => Felt::from_dec_str(&max_fee.overall_fee.to_string()).unwrap(),
+                    Err(error) => return Err(CreationError::RpcError(error.to_string())),
+                }
+            };
+            let result = deployment.send().await.unwrap();
+            Ok(result.transaction_hash)
+        }
+    }
 }
