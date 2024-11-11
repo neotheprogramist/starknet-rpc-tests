@@ -47,6 +47,7 @@ pub mod test_get_storage_at;
 pub mod test_get_transaction_by_hash;
 pub mod test_get_transaction_by_hash_non_existent;
 pub mod test_get_txn_by_block_id_and_index;
+pub mod test_get_txn_by_block_id_and_index_declare_v2;
 #[derive(Clone, Debug)]
 pub struct TestSuiteOpenRpc {
     pub random_paymaster_account: RandomSingleOwnerAccount,
