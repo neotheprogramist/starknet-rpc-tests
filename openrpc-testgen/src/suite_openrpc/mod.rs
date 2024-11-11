@@ -54,6 +54,8 @@ pub mod test_get_txn_by_block_id_and_index_declare_v3;
 pub struct TestSuiteOpenRpc {
     pub random_paymaster_account: RandomSingleOwnerAccount,
     pub random_executable_account: RandomSingleOwnerAccount,
+    pub account_class_hash: Felt,
+    pub udc_address: Felt,
 }
 
 #[derive(Clone, Debug)]
@@ -61,9 +63,10 @@ pub struct SetupInput {
     pub urls: Vec<Url>,
     pub paymaster_account_address: Felt,
     pub paymaster_private_key: Felt,
-    pub udc_address: Felt,
     pub executable_account_sierra_path: PathBuf,
     pub executable_account_casm_path: PathBuf,
+    pub account_class_hash: Felt,
+    pub udc_address: Felt,
 }
 
 impl SetupableTrait for TestSuiteOpenRpc {
@@ -200,6 +203,8 @@ impl SetupableTrait for TestSuiteOpenRpc {
             random_paymaster_account: RandomSingleOwnerAccount {
                 accounts: paymaster_accounts,
             },
+            account_class_hash: setup_input.account_class_hash,
+            udc_address: setup_input.udc_address,
         })
     }
 }

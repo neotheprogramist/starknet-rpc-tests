@@ -33,18 +33,21 @@ async fn main() {
             "target/dev/contracts_ExecutableAccount.compiled_contract_class.json",
         )
         .unwrap(),
+        account_class_hash: Felt::from_hex_unchecked(
+            "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
+        ),
     };
     // let suite_openrpc_input = SetupInput {
-    //     urls: vec![Url::from_str("http://127.0.0.1:9615").unwrap()],
+    //     urls: vec![Url::from_str("http://0.0.0.0:9944").unwrap()],
 
     //     paymaster_account_address: Felt::from_hex_unchecked(
-    //         "0x021ae26856dbb24032cac6bba14a776741331dc031f0dc43efb5f333e6a64da2",
+    //         "0x008a1719e7ca19f3d91e8ef50a48fc456575f645497a1d55f30e3781f786afe4",
     //     ),
     //     paymaster_private_key: Felt::from_hex_unchecked(
-    //         "0x077e56c6dc32d40a67f6f7e6625c8dc5e570abe49c0a24e9202e4ae906abcc07",
+    //         "0x0514977443078cf1e0c36bc88b89ada9a46061a5cf728f40274caea21d76f174",
     //     ),
     //     udc_address: Felt::from_hex_unchecked(
-    //         "0x41A78E741E5AF2FEC34B695679BC6891742439F7AFB8484ECD7766661AD02BF",
+    //         "0x041a78e741e5af2fec34b695679bc6891742439f7afb8484ecd7766661ad02bf",
     //     ),
     //     executable_account_sierra_path: PathBuf::from_str(
     //         "target/dev/contracts_ExecutableAccount.contract_class.json",
@@ -55,7 +58,7 @@ async fn main() {
     //     )
     //     .unwrap(),
     //     account_class_hash: Felt::from_hex_unchecked(
-    //         "0x6fd07cc9fa064074ddf41e67db0f8f7883a04a2be0d908feffa40badca1d7b1",
+    //         "0xe2eb8f5672af4e6a4e8a8f1b44989685e668489b0a25437733756c5a34a1d6",
     //     ),
     // };
 
