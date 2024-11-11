@@ -4,6 +4,7 @@ pub mod block_builder_input;
 pub mod block_hash;
 pub mod chain;
 pub mod event;
+pub mod gateway_add_transaction;
 pub mod hash;
 pub mod header;
 pub mod merkle_node;
