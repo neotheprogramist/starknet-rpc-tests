@@ -1,0 +1,22 @@
+# will have compiled files and executables
+**/target/
+
+# Scarb
+**/Scarb.lock
+
+# vscode
+**/.vscode/
+
+# Git
+**/.git
+
+# Docker
+**/Dockerfile
+
+
+# Ignores
+**/.gitignore
+**/.dockerignore
+
+
+**/*.cargo

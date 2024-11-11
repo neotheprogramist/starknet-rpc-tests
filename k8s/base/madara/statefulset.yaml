@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: madara
-          image: docker.io/uacias/madara:v1.0.0
+          image: docker.io/piotr439/madara:latest
           envFrom:
             - secretRef:
                 name: madara-secret

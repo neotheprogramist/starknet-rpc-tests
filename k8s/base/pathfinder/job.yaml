@@ -7,7 +7,7 @@ spec:
     spec:
       containers:
         - name: pathfinder-setup
-          image: docker.io/uacias/patfinder-dbs:latest
+          image: docker.io/uacias/pathfinder-dbs:270k
           command: ["/bin/sh", "-c"]
           args:
             - |

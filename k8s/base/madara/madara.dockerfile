@@ -16,7 +16,7 @@ RUN git clone https://github.com/madara-alliance/madara.git
 WORKDIR /usr/src/madara/
 
 # Checkout the specific commit
-RUN git checkout 166ec294d91e46d34419d224a94cadcfdfc5926e
+RUN git checkout 6e13ec2e0252232beb5e7495ac600e7e52d7e3a1
 
 # Installing scarb
 ENV SCARB_VERSION="v2.8.2"
