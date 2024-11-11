@@ -32,7 +32,7 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_storage_at COMPATIBLE".green(),
+                    "\n✓ Rpc get_storage_at COMPATIBLE".green(),
                     "✓".green()
                 );
             }

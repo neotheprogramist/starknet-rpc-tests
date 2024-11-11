@@ -308,7 +308,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc add_declare_transaction COMPATIBLE".green(),
+                "\n✓ Rpc add_declare_transaction COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -325,7 +325,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc add_invoke_transaction COMPATIBLE".green(),
+                "\n✓ Rpc add_invoke_transaction COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -343,7 +343,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc invoke_contract COMPATIBLE".green(),
+                "\n✓ Rpc invoke_contract COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -359,7 +359,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc block_number COMPATIBLE".green(),
+                "\n✓ Rpc block_number COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -373,7 +373,7 @@ pub async fn test_rpc_endpoints(
 
     match rpc.chain_id(url.clone()).await {
         Ok(_) => {
-            info!("{} {}", "✓ Rpc chain_id COMPATIBLE".green(), "✓".green())
+            info!("{} {}", "\n✓ Rpc chain_id COMPATIBLE".green(), "✓".green())
         }
         Err(e) => error!(
             "{} {} {}",
@@ -386,7 +386,7 @@ pub async fn test_rpc_endpoints(
     restart_devnet(url.clone()).await?;
     match rpc.call(url.clone(), sierra_path, casm_path).await {
         Ok(_) => {
-            info!("{} {}", "✓ Rpc call COMPATIBLE".green(), "✓".green())
+            info!("{} {}", "\n✓ Rpc call COMPATIBLE".green(), "✓".green())
         }
         Err(e) => error!(
             "{} {} {}",
@@ -405,7 +405,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc estimate_message_fee COMPATIBLE".green(),
+                "\n✓ Rpc estimate_message_fee COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -421,7 +421,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_block_transaction_count COMPATIBLE".green(),
+                "\n✓ Rpc get_block_transaction_count COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -437,7 +437,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_block_with_tx_hashes COMPATIBLE".green(),
+                "\n✓ Rpc get_block_with_tx_hashes COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -453,7 +453,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_block_with_txs COMPATIBLE".green(),
+                "\n✓ Rpc get_block_with_txs COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -469,7 +469,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_state_update COMPATIBLE".green(),
+                "\n✓ Rpc get_state_update COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -485,7 +485,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_storage_at COMPATIBLE".green(),
+                "\n✓ Rpc get_storage_at COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -506,7 +506,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_transaction_status_succeeded COMPATIBLE".green(),
+                "\n✓ Rpc get_transaction_status_succeeded COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -527,7 +527,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_transaction_by_hash_invoke COMPATIBLE".green(),
+                "\n✓ Rpc get_transaction_by_hash_invoke COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -543,7 +543,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_transaction_by_hash_deploy_acc COMPATIBLE".green(),
+                "\n✓ Rpc get_transaction_by_hash_deploy_acc COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -559,7 +559,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_transaction_by_block_id_and_index COMPATIBLE".green(),
+                "\n✓ Rpc get_transaction_by_block_id_and_index COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -580,7 +580,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_transaction_by_hash_non_existent_tx COMPATIBLE".green(),
+                "\n✓ Rpc get_transaction_by_hash_non_existent_tx COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -599,7 +599,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_transaction_receipt COMPATIBLE".green(),
+                "\n✓ Rpc get_transaction_receipt COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -615,7 +615,7 @@ pub async fn test_rpc_endpoints(
 
     match rpc.get_class(url.clone(), sierra_path, casm_path).await {
         Ok(_) => {
-            info!("{} {}", "✓ Rpc get_class COMPATIBLE".green(), "✓".green())
+            info!("{} {}", "\n✓ Rpc get_class COMPATIBLE".green(), "✓".green())
         }
         Err(e) => error!(
             "{} {} {}",
@@ -634,7 +634,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_class_hash_at COMPATIBLE".green(),
+                "\n✓ Rpc get_class_hash_at COMPATIBLE".green(),
                 "✓".green()
             )
         }
@@ -652,7 +652,7 @@ pub async fn test_rpc_endpoints(
         Ok(_) => {
             info!(
                 "{} {}",
-                "✓ Rpc get_class_at COMPATIBLE".green(),
+                "\n✓ Rpc get_class_at COMPATIBLE".green(),
                 "✓".green()
             )
         }

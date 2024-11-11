@@ -84,7 +84,7 @@ impl RunnableTrait for TestCase {
             Txn::Declare(DeclareTxn::V3(_)) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_transaction_by_block_id_and_index_declare_v2 COMPATIBLE".green(),
+                    "\n✓ Rpc get_transaction_by_block_id_and_index_declare_v2 COMPATIBLE".green(),
                     "✓".green()
                 );
             }

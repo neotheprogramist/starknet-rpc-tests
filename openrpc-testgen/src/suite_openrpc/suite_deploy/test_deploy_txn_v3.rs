@@ -31,14 +31,14 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc add_invoke_transaction_v3 COMPATIBLE".green(),
+                    "\n✓ Rpc deploy_transaction_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc add_invoke_transaction_v3 INCOMPATIBLE:".red(),
+                    "✗ Rpc deploy_transaction_v3 INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );

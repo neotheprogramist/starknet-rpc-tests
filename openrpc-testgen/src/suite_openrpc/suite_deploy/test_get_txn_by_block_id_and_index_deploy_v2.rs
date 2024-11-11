@@ -83,7 +83,7 @@ impl RunnableTrait for TestCase {
             Txn::Invoke(InvokeTxn::V1(_)) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc test_get_txn_by_block_id_and_index_deploy_v2 COMPATIBLE".green(),
+                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v2 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
@@ -95,7 +95,7 @@ impl RunnableTrait for TestCase {
             }) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc test_get_txn_by_block_id_and_index_deploy_v2 COMPATIBLE".green(),
+                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v2 COMPATIBLE".green(),
                     "✓".green()
                 );
             }

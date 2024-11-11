@@ -25,7 +25,7 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_class_hash_at COMPATIBLE".green(),
+                    "\n✓ Rpc get_class_hash_at COMPATIBLE".green(),
                     "✓".green()
                 );
             }

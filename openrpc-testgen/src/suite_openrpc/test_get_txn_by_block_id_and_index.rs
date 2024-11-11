@@ -39,7 +39,7 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_transaction_by_block_id_and_index COMPATIBLE".green(),
+                    "\n✓ Rpc get_transaction_by_block_id_and_index COMPATIBLE".green(),
                     "✓".green()
                 );
             }

@@ -1,41 +1,41 @@
-use std::{path::PathBuf, str::FromStr, sync::Arc};
-
+use crate::utils::v7::accounts::account::Account;
 use crate::{
     utils::v7::{
-        accounts::account::{Account, ConnectedAccount},
+        accounts::{account::ConnectedAccount, call::Call},
         endpoints::{
-            declare_contract::get_compiled_contract, errors::RpcError,
-            utils::wait_for_sent_transaction,
+            errors::RpcError,
+            utils::{get_selector_from_name, wait_for_sent_transaction},
         },
         providers::provider::Provider,
     },
     RandomizableAccountsTrait, RunnableTrait,
 };
 use colored::Colorize;
-use starknet_types_rpc::{BlockId, DeclareTxn, MaybePendingBlockWithTxs, Txn};
+use starknet_types_core::felt::Felt;
+use starknet_types_rpc::{BlockId, InvokeTxn, MaybePendingBlockWithTxs, Txn};
 use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = super::TestSuiteOpenRpc;
+    type Input = super::TestSuiteContractCalls;
 
     async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
-        let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(
-            PathBuf::from_str("target/dev/contracts_contracts_sample_contract_4_HelloStarknet.contract_class.json")?,
-            PathBuf::from_str("target/dev/contracts_contracts_sample_contract_4_HelloStarknet.compiled_contract_class.json")?,
-        )
-        .await?;
+        let increase_balance_call = Call {
+            to: test_input.deployed_contract_address,
+            selector: get_selector_from_name("increase_balance")?,
+            calldata: vec![Felt::from_hex("0x50")?],
+        };
 
-        let declaration_result = test_input
+        let invoke_result = test_input
             .random_paymaster_account
-            .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
+            .execute_v1(vec![increase_balance_call])
             .send()
             .await?;
 
         wait_for_sent_transaction(
-            declaration_result.transaction_hash,
+            invoke_result.transaction_hash,
             &test_input.random_paymaster_account.random_accounts()?,
         )
         .await?;
@@ -57,18 +57,18 @@ impl RunnableTrait for TestCase {
             MaybePendingBlockWithTxs::Block(block_with_txs) => block_with_txs
                 .transactions
                 .iter()
-                .position(|tx| tx.transaction_hash == declaration_result.transaction_hash)
+                .position(|tx| tx.transaction_hash == invoke_result.transaction_hash)
                 .ok_or_else(|| {
-                    RpcError::TransactionNotFound(declaration_result.transaction_hash.to_string())
+                    RpcError::TransactionNotFound(invoke_result.transaction_hash.to_string())
                 })?
                 .try_into()
                 .map_err(|_| RpcError::TransactionIndexOverflow)?,
             MaybePendingBlockWithTxs::Pending(block_with_txs) => block_with_txs
                 .transactions
                 .iter()
-                .position(|tx| tx.transaction_hash == declaration_result.transaction_hash)
+                .position(|tx| tx.transaction_hash == invoke_result.transaction_hash)
                 .ok_or_else(|| {
-                    RpcError::TransactionNotFound(declaration_result.transaction_hash.to_string())
+                    RpcError::TransactionNotFound(invoke_result.transaction_hash.to_string())
                 })?
                 .try_into()
                 .map_err(|_| RpcError::TransactionIndexOverflow)?,
@@ -81,10 +81,10 @@ impl RunnableTrait for TestCase {
             .await?;
 
         match txn {
-            Txn::Declare(DeclareTxn::V2(_)) => {
+            Txn::Invoke(InvokeTxn::V1(_)) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc get_transaction_by_block_id_and_index_declare_v2 COMPATIBLE".green(),
+                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v2 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
@@ -92,7 +92,7 @@ impl RunnableTrait for TestCase {
                 let error_message = format!("Unexpected transaction response type: {:?}", txn);
                 error!(
                     "{} {} {}",
-                    "✗ Rpc get_transaction_by_block_id_and_index_declare_v2 INCOMPATIBLE:".red(),
+                    "✗ Rpc test_get_txn_by_block_id_and_index_deploy_v2 INCOMPATIBLE:".red(),
                     error_message,
                     "✗".red()
                 );

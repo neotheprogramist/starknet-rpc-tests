@@ -26,7 +26,7 @@ impl RunnableTrait for TestCase {
             Err(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_transaction_by_hash_non_existent COMPATIBLE".green(),
+                    "\n✓ Rpc get_transaction_by_hash_non_existent COMPATIBLE".green(),
                     "✓".green()
                 );
             }

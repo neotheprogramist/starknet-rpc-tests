@@ -118,7 +118,7 @@ impl RunnableTrait for TestCase {
             Txn::DeployAccount(DeployAccountTxn::V1(_)) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_transaction_by_block_id_and_index_deploy_account_v3 COMPATIBLE"
+                    "\n✓ Rpc get_transaction_by_block_id_and_index_deploy_account_v3 COMPATIBLE"
                         .green(),
                     "✓".green()
                 );
