@@ -6,11 +6,8 @@ use std::path::Path;
 fn main() -> io::Result<()> {
     // Set the environment variable to rerun the build script if any file in src/state_machines changes
     println!("cargo:rerun-if-changed=src/state_machines");
-
-    // Define the directory to search in
     let state_machines_dir = Path::new("src/state_machines");
 
-    // Define the output file path in the workspace target directory
     let dest_path = Path::new("../proxy/generated_state_machines.rs");
     fs::create_dir_all(dest_path.parent().unwrap())?;
     let mut output = File::create(dest_path)?;
@@ -31,7 +28,6 @@ fn main() -> io::Result<()> {
                 .to_str()
                 .map_or(false, |name| name.ends_with("_state_machine.rs"))
         {
-            // Open the file and read line by line to find an enum ending in "Wrapper"
             let file = File::open(&path)?;
             let reader = io::BufReader::new(file);
             let mut enum_name = None;
@@ -42,7 +38,7 @@ fn main() -> io::Result<()> {
                 if line.trim_start().starts_with("pub enum") && line.contains("Wrapper") {
                     if let Some(name) = line.split_whitespace().nth(2) {
                         enum_name = Some(name.to_string());
-                        break; // Stop reading the file once we find the enum
+                        break;
                     }
                 }
             }
@@ -51,13 +47,11 @@ fn main() -> io::Result<()> {
             if let Some(enum_name) = enum_name {
                 let module_name = path.file_stem().unwrap().to_str().unwrap();
 
-                // Generate the fully qualified path to the enum
                 let fully_qualified_enum = format!(
                     "proxy_testgen::state_machines::{}::{}",
                     module_name, enum_name
                 );
 
-                // Generate the code for each wrapper using the new format
                 writeln!(output, "    // Generated code for enum: {}", enum_name)?;
                 writeln!(output, "    let result = proxy_testgen::StateMachine::run(")?;
                 writeln!(output, "        &mut {}::new(),", fully_qualified_enum)?;
