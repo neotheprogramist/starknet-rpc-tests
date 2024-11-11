@@ -12,7 +12,7 @@ spec:
       - 8.8.8.8
   containers:
     - name: proxy
-      image: docker.io/piotr439/proxy:version_check
+      image: docker.io/piotr439/proxy:add_transaction
       ports:
         - containerPort: 3000
 ---
