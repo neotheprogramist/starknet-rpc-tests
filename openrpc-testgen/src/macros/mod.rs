@@ -1,2 +1,2 @@
-pub mod assert_no_panic;
+pub mod assert_result;
 pub mod errors;

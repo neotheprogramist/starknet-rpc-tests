@@ -26,7 +26,7 @@ macro_rules! assert_result {
             } else {
                 Err(
                     $crate::macros::errors::AssertionNoPanicError::AssertionNoPanicFailed(
-                        crate::macros::assert_no_panic::DEFAULT_ASSERTION_ERROR.to_string(),
+                        crate::macros::assert_result::DEFAULT_ASSERTION_ERROR.to_string(),
                     ),
                 )
             }
