@@ -2,6 +2,16 @@
 const DEFAULT_ASSERTION_ERROR: &str = "Assertion failed";
 /// Evaluates a boolean condition and returns a Result instead of panicking.
 ///
+/// # Panic Safety
+/// This macro is designed to be panic-safe. It catches any panics that might occur
+/// during condition evaluation and converts them into `Err` results.
+///
+/// # Differences from assert!
+/// Unlike the standard `assert!` macro, this version:
+/// * Returns a Result instead of panicking
+/// * Safely handles panics in the condition evaluation
+/// * Provides structured error types for better error handling
+///
 /// # Arguments
 /// * `condition` - The boolean expression to evaluate.
 /// * `message` (optional) - Custom error message for failure case.
