@@ -1,5 +1,4 @@
-#[allow(dead_code)]
-const DEFAULT_ASSERTION_ERROR: &str = "Assertion failed";
+pub const DEFAULT_ASSERTION_ERROR: &str = "Assertion failed";
 /// Evaluates a boolean condition and returns a Result instead of panicking.
 ///
 /// # Panic Safety
@@ -22,6 +21,8 @@ const DEFAULT_ASSERTION_ERROR: &str = "Assertion failed";
 ///
 /// # Examples
 /// ```
+/// use openrpc_testgen::assert_result;
+///
 /// let result = assert_result!(1 + 1 == 2);
 /// assert!(result.is_ok());
 ///
