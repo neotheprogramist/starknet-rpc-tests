@@ -6,6 +6,7 @@ use utils::v7::{
     signers::local_wallet::LocalWallet,
 };
 
+pub mod macros;
 pub mod suite_openrpc;
 pub mod utils;
 
