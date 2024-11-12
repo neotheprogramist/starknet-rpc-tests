@@ -1,0 +1,13 @@
+[package]
+name = "openrpc-testgen-runner"
+edition.workspace = true
+version.workspace = true
+
+[dependencies]
+clap.workspace = true
+tracing-subscriber.workspace = true
+tracing.workspace = true
+url.workspace = true
+starknet-types-core.workspace = true
+tokio.workspace = true
+openrpc-testgen = { path = "../openrpc-testgen" }
