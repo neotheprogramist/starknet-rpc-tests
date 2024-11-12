@@ -1,3 +1,4 @@
+#[allow(dead_code)]
 const DEFAULT_ASSERTION_ERROR: &str = "Assertion failed";
 /// Evaluates a boolean condition and returns a Result instead of panicking.
 ///
@@ -26,7 +27,7 @@ macro_rules! assert_result {
             } else {
                 Err(
                     $crate::macros::errors::AssertionNoPanicError::AssertionNoPanicFailed(
-                        crate::macros::assert_result::DEFAULT_ASSERTION_ERROR.to_string(),
+                        $crate::macros::assert_result::DEFAULT_ASSERTION_ERROR.to_string(),
                     ),
                 )
             }
