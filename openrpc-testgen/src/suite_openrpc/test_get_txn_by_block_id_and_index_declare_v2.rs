@@ -63,7 +63,7 @@ impl RunnableTrait for TestCase {
                 })?
                 .try_into()
                 .map_err(|_| RpcError::TransactionIndexOverflow)?,
-            MaybePendingBlockWithTxs::Pending(block_with_txs) => block_with_txs
+            MaybePendingBlockWithTxs::Pending(pending_block_with_txs) => pending_block_with_txs
                 .transactions
                 .iter()
                 .position(|tx| tx.transaction_hash == declaration_result.transaction_hash)

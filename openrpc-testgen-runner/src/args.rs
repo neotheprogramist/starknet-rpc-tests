@@ -10,21 +10,29 @@ pub struct Args {
     #[arg(long, env, help = "URL of the L2 node", value_delimiter = ' ')]
     pub urls: Vec<Url>,
 
-    #[arg(long, env)]
+    #[arg(long, env, help = "Address of an account that would pay for fees")]
     pub paymaster_account_address: Felt,
 
-    #[arg(long, env)]
+    #[arg(long, env, help = "Private Key of an account that would pay for fees")]
     pub paymaster_private_key: Felt,
 
-    #[arg(long, env)]
+    #[arg(long, env, help = "Universal Deployer Contract address")]
     pub udc_address: Felt,
 
-    #[arg(long, env)]
+    #[arg(
+        long,
+        env,
+        help = "Path to sierra of Executable Account contract (necessary to delegate fee payment to paymaster)"
+    )]
     pub executable_account_sierra_path: PathBuf,
 
-    #[arg(long, env)]
+    #[arg(
+        long,
+        env,
+        help = "Path to casm of Executable Account contract (necessary to delegate fee payment to paymaster)"
+    )]
     pub executable_account_casm_path: PathBuf,
 
-    #[arg(long, env)]
+    #[arg(long, env, help = "Class hash of account contract")]
     pub account_class_hash: Felt,
 }
