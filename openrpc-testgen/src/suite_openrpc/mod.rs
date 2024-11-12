@@ -37,6 +37,7 @@ use crate::{
 pub mod suite_deploy;
 pub mod test_declare_txn_v2;
 pub mod test_declare_txn_v3;
+pub mod test_erc20_transfer;
 pub mod test_get_block_number;
 pub mod test_get_block_txn_count;
 pub mod test_get_block_with_tx_hashes;
@@ -87,13 +88,15 @@ impl SetupableTrait for TestSuiteOpenRpc {
 
         let paymaster_signing_key =
             SigningKey::from_secret_scalar(setup_input.paymaster_private_key);
-        let paymaster_account = SingleOwnerAccount::new(
+        let mut paymaster_account = SingleOwnerAccount::new(
             provider.clone(),
             LocalWallet::from(paymaster_signing_key),
             setup_input.paymaster_account_address,
             chain_id,
             ExecutionEncoding::New,
         );
+
+        paymaster_account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
         let declare_executable_account_hash = match paymaster_account
             .declare_v3(

@@ -353,9 +353,9 @@ pub async fn invoke_contract_erc20_transfer(
 
 #[derive(Debug, CairoSerde)]
 pub struct OutsideExecution {
-    caller: Felt,
-    nonce: Felt,
-    calls: Vec<Call>,
+    pub caller: Felt,
+    pub nonce: Felt,
+    pub calls: Vec<Call>,
 }
 
 #[allow(clippy::too_many_arguments)]
