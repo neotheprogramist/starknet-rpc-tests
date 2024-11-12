@@ -138,6 +138,7 @@ pub async fn handle_connection(
                 }
                 "POST" => {
                     info!("Handling POST request");
+                    info!("Post body: {}", request_body);
                     client
                         .post(url.clone())
                         .body(request_body.clone())
