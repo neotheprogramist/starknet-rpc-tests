@@ -7,7 +7,12 @@ use url::Url;
 #[derive(Parser, Debug, Clone)]
 #[command(version, about, long_about = None, disable_version_flag = true)]
 pub struct Args {
-    #[arg(long, env, help = "URL of the L2 node", value_delimiter = ' ')]
+    #[arg(
+        long,
+        env,
+        help = "Space-separated URLs of the L2 nodes (e.g. 'http://127.0.0.1:5050 http://127.0.0.1:5050')",
+        value_delimiter = ' '
+    )]
     pub urls: Vec<Url>,
 
     #[arg(long, env, help = "Address of an account that would pay for fees")]
