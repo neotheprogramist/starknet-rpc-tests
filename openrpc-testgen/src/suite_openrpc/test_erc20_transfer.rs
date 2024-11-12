@@ -1,4 +1,5 @@
 use crate::{
+    assert_result,
     utils::v7::{
         accounts::{
             account::{Account, ConnectedAccount},
@@ -245,19 +246,19 @@ impl RunnableTrait for TestCase {
             )
             .await?;
 
-        assert!(
+        assert_result!(
             balance_after_txn == amount_to_transfer,
             "Balances do not match"
-        );
-        assert!(
+        )?;
+        assert_result!(
             balance_before_transfer > balance_after_transfer,
             "Token balance on executable account did not decrease as expected."
-        );
+        )?;
 
-        assert!(
+        assert_result!(
             gas_balance_before > gas_balance_after,
             "Gas balance on paymaster account did not decrease after transaction."
-        );
+        )?;
 
         info!(
             "{} {}",
