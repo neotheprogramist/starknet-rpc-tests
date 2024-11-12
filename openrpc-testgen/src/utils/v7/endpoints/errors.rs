@@ -57,6 +57,10 @@ pub enum RpcError {
     TransactionFailed(String),
     #[error("Empty url error {0}")]
     EmptyUrlList(String),
+    #[error("Transaction with hash {0} not found in the block")]
+    TransactionNotFound(String),
+    #[error("Transaction index overflowed when converting to u64")]
+    TransactionIndexOverflow,
     #[error("Unexpected error occured: {0}")]
     Other(String),
 }

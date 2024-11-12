@@ -15,7 +15,7 @@ use crate::utils::v7::{
             structs::MintRequest2,
         },
         deployment::{
-            deploy::deploy_account,
+            deploy::{deploy_account, DeployAccountVersion},
             structs::{ValidatedWaitParams, WaitForTx},
         },
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
@@ -63,7 +63,15 @@ pub async fn decalare_and_deploy(
 
     let chain_id = get_chain_id(&provider).await.unwrap();
 
-    match deploy_account(&provider, chain_id, wait_conifg, create_acc_data).await {
+    match deploy_account(
+        &provider,
+        chain_id,
+        wait_conifg,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await
+    {
         Ok(value) => Some(value),
         Err(e) => {
             return Err(e.to_string());

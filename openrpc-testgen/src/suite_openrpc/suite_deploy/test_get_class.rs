@@ -27,7 +27,7 @@ impl RunnableTrait for TestCase {
 
         match contract_class {
             Ok(_) => {
-                info!("{} {}", "✓ Rpc get_class COMPATIBLE".green(), "✓".green());
+                info!("{} {}", "\n✓ Rpc get_class COMPATIBLE".green(), "✓".green());
             }
             Err(e) => {
                 error!(

@@ -48,7 +48,7 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc call_contract COMPATIBLE".green(),
+                    "\n✓ Rpc call_contract COMPATIBLE".green(),
                     "✓".green()
                 );
             }

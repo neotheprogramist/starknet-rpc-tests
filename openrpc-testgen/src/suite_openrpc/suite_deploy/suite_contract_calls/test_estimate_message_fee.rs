@@ -33,7 +33,7 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc estimate_message_fee COMPATIBLE".green(),
+                    "\n✓ Rpc estimate_message_fee COMPATIBLE".green(),
                     "✓".green()
                 );
             }

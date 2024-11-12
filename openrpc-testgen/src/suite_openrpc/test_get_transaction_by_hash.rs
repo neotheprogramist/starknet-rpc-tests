@@ -29,21 +29,15 @@ impl RunnableTrait for TestCase {
             test_input.random_paymaster_account.provider(),
             AccountType::Oz,
             Option::None,
-            Some(Felt::from_hex(
-                "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
-            )?),
+            Some(test_input.account_class_hash),
         )
         .await?;
 
         let deploy_account_account_call = Call {
-            to: Felt::from_hex(
-                "0x41A78E741E5AF2FEC34B695679BC6891742439F7AFB8484ECD7766661AD02BF",
-            )?,
+            to: test_input.udc_address,
             selector: get_selector_from_name("deployContract")?,
             calldata: vec![
-                Felt::from_hex(
-                    "0x061dac032f228abef9c6626f995015233097ae253a7f72d68552db02f2971b8f",
-                )?,
+                test_input.account_class_hash,
                 created_account_data.salt,
                 Felt::ZERO,
                 Felt::ONE,
@@ -73,7 +67,7 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "✓ Rpc get_transaction_by_hash COMPATIBLE".green(),
+                    "\n✓ Rpc get_transaction_by_hash COMPATIBLE".green(),
                     "✓".green()
                 );
             }

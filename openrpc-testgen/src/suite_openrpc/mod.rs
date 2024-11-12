@@ -37,6 +37,7 @@ use crate::{
 pub mod suite_deploy;
 pub mod test_declare_txn_v2;
 pub mod test_declare_txn_v3;
+pub mod test_erc20_transfer;
 pub mod test_get_block_number;
 pub mod test_get_block_txn_count;
 pub mod test_get_block_with_tx_hashes;
@@ -47,10 +48,17 @@ pub mod test_get_storage_at;
 pub mod test_get_transaction_by_hash;
 pub mod test_get_transaction_by_hash_non_existent;
 pub mod test_get_txn_by_block_id_and_index;
+pub mod test_get_txn_by_block_id_and_index_declare_v2;
+pub mod test_get_txn_by_block_id_and_index_declare_v3;
+pub mod test_get_txn_by_block_id_and_index_deploy_account_v1;
+pub mod test_get_txn_by_block_id_and_index_deploy_account_v3;
+
 #[derive(Clone, Debug)]
 pub struct TestSuiteOpenRpc {
     pub random_paymaster_account: RandomSingleOwnerAccount,
     pub random_executable_account: RandomSingleOwnerAccount,
+    pub account_class_hash: Felt,
+    pub udc_address: Felt,
 }
 
 #[derive(Clone, Debug)]
@@ -58,9 +66,10 @@ pub struct SetupInput {
     pub urls: Vec<Url>,
     pub paymaster_account_address: Felt,
     pub paymaster_private_key: Felt,
-    pub udc_address: Felt,
     pub executable_account_sierra_path: PathBuf,
     pub executable_account_casm_path: PathBuf,
+    pub account_class_hash: Felt,
+    pub udc_address: Felt,
 }
 
 impl SetupableTrait for TestSuiteOpenRpc {
@@ -79,13 +88,15 @@ impl SetupableTrait for TestSuiteOpenRpc {
 
         let paymaster_signing_key =
             SigningKey::from_secret_scalar(setup_input.paymaster_private_key);
-        let paymaster_account = SingleOwnerAccount::new(
+        let mut paymaster_account = SingleOwnerAccount::new(
             provider.clone(),
             LocalWallet::from(paymaster_signing_key),
             setup_input.paymaster_account_address,
             chain_id,
             ExecutionEncoding::New,
         );
+
+        paymaster_account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
         let declare_executable_account_hash = match paymaster_account
             .declare_v3(
@@ -197,6 +208,8 @@ impl SetupableTrait for TestSuiteOpenRpc {
             random_paymaster_account: RandomSingleOwnerAccount {
                 accounts: paymaster_accounts,
             },
+            account_class_hash: setup_input.account_class_hash,
+            udc_address: setup_input.udc_address,
         })
     }
 }

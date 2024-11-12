@@ -31,7 +31,7 @@ use crate::utils::v7::{
             helpers::get_chain_id,
         },
         deployment::{
-            deploy::deploy_account,
+            deploy::{deploy_account, DeployAccountVersion},
             structs::{ValidatedWaitParams, WaitForTx},
         },
         single_owner::{ExecutionEncoding, SingleOwnerAccount},
@@ -353,9 +353,9 @@ pub async fn invoke_contract_erc20_transfer(
 
 #[derive(Debug, CairoSerde)]
 pub struct OutsideExecution {
-    caller: Felt,
-    nonce: Felt,
-    calls: Vec<Call>,
+    pub caller: Felt,
+    pub nonce: Felt,
+    pub calls: Vec<Call>,
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -421,8 +421,14 @@ pub async fn add_declare_transaction_v2(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
     let sender_address = create_acc_data.address;
@@ -535,8 +541,14 @@ pub async fn add_declare_transaction_v3(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -644,8 +656,14 @@ pub async fn add_invoke_transaction_v1(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -768,8 +786,14 @@ pub async fn add_invoke_transaction_v3(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -892,8 +916,14 @@ pub async fn invoke_contract_v1(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1054,8 +1084,14 @@ pub async fn invoke_contract_v3(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1233,8 +1269,14 @@ pub async fn call(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1397,8 +1439,14 @@ pub async fn estimate_message_fee(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1644,8 +1692,14 @@ pub async fn get_transaction_status_succeeded(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1798,8 +1852,14 @@ pub async fn get_transaction_by_hash_invoke(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -1938,8 +1998,14 @@ pub async fn get_transaction_by_hash_deploy_acc(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2010,8 +2076,14 @@ pub async fn get_transaction_by_block_id_and_index(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2132,8 +2204,14 @@ pub async fn get_transaction_receipt(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2305,7 +2383,7 @@ pub async fn get_transaction_receipt(
 //         wait_params: ValidatedWaitParams::default(),
 //     };
 
-//     match deploy_account(&provider, chain_id, wait_config, create_acc_data).await {
+//     match deploy_account(&provider, chain_id, wait_config, create_acc_data,DeployAccountVersion::V3).await {
 //         Ok(value) => Some(value),
 //         Err(e) => {
 //             info!("{}", "Could not deploy an account");
@@ -2421,8 +2499,14 @@ pub async fn get_class(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2537,8 +2621,14 @@ pub async fn get_class_hash_at(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
@@ -2694,8 +2784,14 @@ pub async fn get_class_at(
         wait_params: ValidatedWaitParams::default(),
     };
 
-    let deploy_account_txn_hash =
-        deploy_account(&provider, chain_id, wait_config, create_acc_data).await?;
+    let deploy_account_txn_hash = deploy_account(
+        &provider,
+        chain_id,
+        wait_config,
+        create_acc_data,
+        DeployAccountVersion::V3,
+    )
+    .await?;
 
     wait_for_sent_transaction(deploy_account_txn_hash, &user_passed_account).await?;
 
