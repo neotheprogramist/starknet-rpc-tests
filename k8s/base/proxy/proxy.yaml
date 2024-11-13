@@ -12,7 +12,7 @@ spec:
       - 8.8.8.8
   containers:
     - name: proxy
-      image: docker.io/piotr439/proxy:dev_txn
+      image: docker.io/piotr439/proxy:dev_commitments
       ports:
         - containerPort: 3000
 ---
