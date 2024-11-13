@@ -25,14 +25,14 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc get_class_hash_at COMPATIBLE".green(),
+                    "\n✓ Rpc get_class_at COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc get_class_hash_at INCOMPATIBLE:".red(),
+                    "✗ Rpc get_class_at INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );

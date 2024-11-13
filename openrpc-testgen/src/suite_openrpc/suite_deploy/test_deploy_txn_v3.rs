@@ -31,7 +31,7 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc deploy_transaction_v3 COMPATIBLE".green(),
+                    "\n✓ Rpc add_deploy_transaction_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }

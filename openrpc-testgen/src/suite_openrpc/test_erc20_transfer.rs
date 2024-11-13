@@ -4,17 +4,20 @@ use crate::{
         conversions::felts_to_biguint::felts_slice_to_biguint,
         v7::{
             accounts::{
-                account::{Account, ConnectedAccount},
+                account::{Account, AccountError, ConnectedAccount},
                 call::Call,
             },
             contract::factory::ContractFactory,
             endpoints::{
-                declare_contract::get_compiled_contract,
+                declare_contract::{
+                    extract_class_hash_from_error, get_compiled_contract,
+                    parse_class_hash_from_error, RunnerError,
+                },
                 endpoints_functions::OutsideExecution,
                 errors::{CallError, RpcError},
                 utils::{get_selector_from_name, wait_for_sent_transaction},
             },
-            providers::provider::Provider,
+            providers::provider::{Provider, ProviderError},
         },
     },
     RandomizableAccountsTrait, RunnableTrait,
@@ -46,14 +49,42 @@ impl RunnableTrait for TestCase {
         .await?;
 
         // Declare and deploy erc20
-        let declaration_hash = test_input
+        let declaration_hash = match test_input
             .random_paymaster_account
             .declare_v3(erc_20_flattened_sierra_class, erc_20_compiled_class_hash)
             .send()
-            .await?;
+            .await
+        {
+            Ok(result) => Ok(result.class_hash),
+            Err(AccountError::Signing(sign_error)) => {
+                if sign_error.to_string().contains("is already declared") {
+                    Ok(parse_class_hash_from_error(&sign_error.to_string())?)
+                } else {
+                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    ))))
+                }
+            }
+
+            Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
+                if starkneterror.to_string().contains("is already declared") {
+                    Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
+                } else {
+                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    ))))
+                }
+            }
+            Err(e) => {
+                let full_error_message = format!("{:?}", e);
+                Ok(extract_class_hash_from_error(&full_error_message)?)
+            }
+        };
 
         let factory = ContractFactory::new(
-            declaration_hash.class_hash,
+            declaration_hash?,
             test_input.random_paymaster_account.random_accounts()?,
         );
         let mut salt_buffer = [0u8; 32];

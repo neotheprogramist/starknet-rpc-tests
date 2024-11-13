@@ -2,17 +2,22 @@ use std::{path::PathBuf, str::FromStr};
 
 use crate::{
     utils::v7::{
-        accounts::account::{Account, ConnectedAccount},
+        accounts::account::{Account, AccountError, ConnectedAccount},
         endpoints::{
-            declare_contract::get_compiled_contract, errors::RpcError,
-            utils::wait_for_sent_transaction,
+            declare_contract::{
+                extract_class_hash_from_error, get_compiled_contract, parse_class_hash_from_error,
+                RunnerError,
+            },
+            errors::RpcError,
         },
-        providers::provider::Provider,
+        providers::provider::{Provider, ProviderError},
     },
     RandomizableAccountsTrait, RunnableTrait,
 };
 use colored::Colorize;
-use starknet_types_rpc::{BlockId, DeclareTxn, MaybePendingBlockWithTxs, Txn};
+use starknet_types_rpc::{
+    BlockId, DeclareTxn, EventFilterWithPageRequest, MaybePendingBlockWithTxs, Txn,
+};
 use tracing::{error, info};
 
 #[derive(Clone, Debug)]
@@ -28,48 +33,126 @@ impl RunnableTrait for TestCase {
         )
         .await?;
 
-        let declaration_result = test_input
+        let (declaration_tx_hash, tx_block) = match test_input
             .random_paymaster_account
             .declare_v3(flattened_sierra_class, compiled_class_hash)
             .send()
-            .await?;
+            .await
+        {
+            Ok(result) => {
+                let block_number = test_input
+                    .random_paymaster_account
+                    .provider()
+                    .block_hash_and_number()
+                    .await?
+                    .block_number;
+                Ok((result.transaction_hash, block_number))
+            }
+            Err(AccountError::Signing(sign_error)) => {
+                if sign_error.to_string().contains("is already declared") {
+                    Ok((parse_class_hash_from_error(&sign_error.to_string())?, 0))
+                } else {
+                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    ))))
+                }
+            }
+            Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
+                if starkneterror.to_string().contains("is already declared") {
+                    Ok((parse_class_hash_from_error(&starkneterror.to_string())?, 0))
+                } else {
+                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    ))))
+                }
+            }
+            Err(e) => {
+                let full_error_message = format!("{:?}", e);
 
-        wait_for_sent_transaction(
-            declaration_result.transaction_hash,
-            &test_input.random_paymaster_account.random_accounts()?,
-        )
-        .await?;
+                let class_hash = extract_class_hash_from_error(&full_error_message)?;
 
-        let block_number = test_input
-            .random_paymaster_account
-            .provider()
-            .block_hash_and_number()
-            .await?
-            .block_number;
+                let filter = EventFilterWithPageRequest {
+                    address: None,
+                    from_block: Some(BlockId::Number(0)),
+                    to_block: None,
+                    keys: None,
+                    chunk_size: 100,
+                    continuation_token: None,
+                };
+
+                let provider = test_input.random_paymaster_account.provider();
+                let random_account_address = test_input
+                    .random_paymaster_account
+                    .random_accounts()?
+                    .address();
+
+                let mut continuation_token = None;
+                let mut found_txn_hash = None;
+                let mut found_block_number = None;
+
+                loop {
+                    let mut current_filter = filter.clone();
+                    current_filter.continuation_token = continuation_token.clone();
+
+                    let events_chunk = provider.get_events(current_filter).await?;
+                    for event in events_chunk.events {
+                        if event.event.keys.contains(&random_account_address) {
+                            let txn_hash = event.transaction_hash;
+
+                            let txn_details = provider.get_transaction_by_hash(txn_hash).await?;
+
+                            if let Txn::Declare(DeclareTxn::V3(declare_txn)) = txn_details {
+                                if declare_txn.class_hash == class_hash {
+                                    found_txn_hash = Some(txn_hash);
+                                    found_block_number = event.block_number;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if found_txn_hash.is_some() && found_block_number.is_some() {
+                        break;
+                    }
+
+                    if let Some(token) = events_chunk.continuation_token {
+                        continuation_token = Some(token);
+                    } else {
+                        break;
+                    }
+                }
+
+                if let (Some(tx_hash), Some(block_number)) = (found_txn_hash, found_block_number) {
+                    Ok((tx_hash, block_number))
+                } else {
+                    Err(RpcError::RunnerError(RunnerError::AccountFailure(
+                        "Transaction hash not found for the declared class.".to_string(),
+                    )))
+                }
+            }
+        }?;
 
         let block_with_txns = test_input
             .random_paymaster_account
             .provider()
-            .get_block_with_txs(BlockId::Number(block_number))
+            .get_block_with_txs(BlockId::Number(tx_block))
             .await?;
 
         let txn_index: u64 = match block_with_txns {
             MaybePendingBlockWithTxs::Block(block_with_txs) => block_with_txs
                 .transactions
                 .iter()
-                .position(|tx| tx.transaction_hash == declaration_result.transaction_hash)
-                .ok_or_else(|| {
-                    RpcError::TransactionNotFound(declaration_result.transaction_hash.to_string())
-                })?
+                .position(|tx| tx.transaction_hash == declaration_tx_hash)
+                .ok_or_else(|| RpcError::TransactionNotFound(declaration_tx_hash.to_string()))?
                 .try_into()
                 .map_err(|_| RpcError::TransactionIndexOverflow)?,
             MaybePendingBlockWithTxs::Pending(block_with_txs) => block_with_txs
                 .transactions
                 .iter()
-                .position(|tx| tx.transaction_hash == declaration_result.transaction_hash)
-                .ok_or_else(|| {
-                    RpcError::TransactionNotFound(declaration_result.transaction_hash.to_string())
-                })?
+                .position(|tx| tx.transaction_hash == declaration_tx_hash)
+                .ok_or_else(|| RpcError::TransactionNotFound(declaration_tx_hash.to_string()))?
                 .try_into()
                 .map_err(|_| RpcError::TransactionIndexOverflow)?,
         };
@@ -77,14 +160,14 @@ impl RunnableTrait for TestCase {
         let txn = test_input
             .random_paymaster_account
             .provider()
-            .get_transaction_by_block_id_and_index(BlockId::Number(block_number), txn_index)
+            .get_transaction_by_block_id_and_index(BlockId::Number(tx_block), txn_index)
             .await?;
 
         match txn {
             Txn::Declare(DeclareTxn::V3(_)) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc get_transaction_by_block_id_and_index_declare_v2 COMPATIBLE".green(),
+                    "\n✓ Rpc get_transaction_by_block_id_and_index_declare_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
@@ -92,7 +175,7 @@ impl RunnableTrait for TestCase {
                 let error_message = format!("Unexpected transaction response type: {:?}", txn);
                 error!(
                     "{} {} {}",
-                    "✗ Rpc get_transaction_by_block_id_and_index_declare_v2 INCOMPATIBLE:".red(),
+                    "✗ Rpc get_transaction_by_block_id_and_index_declare_v3 INCOMPATIBLE:".red(),
                     error_message,
                     "✗".red()
                 );
