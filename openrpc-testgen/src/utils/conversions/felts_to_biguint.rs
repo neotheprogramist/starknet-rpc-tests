@@ -18,6 +18,6 @@ pub fn felts_slice_to_biguint(
             "Felts vector needs to be the size of 2".to_string(),
         ));
     }
-    let felts_array: [Felt; 2] = [felts_slice[0].clone(), felts_slice[1].clone()];
+    let felts_array: [Felt; 2] = [felts_slice[0], felts_slice[1]];
     Ok(felts_to_biguint(felts_array))
 }
