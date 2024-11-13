@@ -1,5 +1,5 @@
 use crate::block_build::errors::Error;
-use pathfinder_types::types::block_builder_input::B11rInput;
+use production_nodes_types::pathfinder_types::types::block_builder_input::B11rInput;
 use serde::Serialize;
 use std::path::PathBuf;
 use std::{

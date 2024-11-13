@@ -7,7 +7,7 @@ version.workspace = true
 anyhow = "1.0"
 clap.workspace = true
 hex = "0.4.3"
-pathfinder-types.workspace = true
+production-nodes-types = { path = "../production-nodes-types" }
 serde_json.workspace = true
 serde.workspace = true
 sha3.workspace = true

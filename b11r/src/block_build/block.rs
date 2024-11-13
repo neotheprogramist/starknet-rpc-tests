@@ -1,4 +1,4 @@
-use pathfinder_types::{
+use production_nodes_types::pathfinder_types::{
     starknet::state_diff::StateDiff,
     types::{
         block::{Block, BlockHeader, BlockHeaderData},
@@ -8,7 +8,7 @@ use pathfinder_types::{
             calculate_transaction_commitment, compute_final_hash,
         },
         event::{extract_emmited_events, get_events_count, Event},
-        receipt::convert_receipts,
+        receipt::{convert_receipts, Receipt},
         reply::{state_update::StateDiff as GatewayStateDiff, StateUpdate as GatewayStateUpdate},
         state_update::{state_diff_commitment::compute, StateUpdate},
     },
@@ -51,6 +51,13 @@ pub fn build_block_tx_hashes_thin(b11r_input: B11rInput) -> Result<Block, Error>
         &state_update_common.declared_cairo_classes,
         &state_update_common.declared_sierra_classes,
     );
+
+    let receipts: Vec<Receipt> = convert_receipts(transaction_receipts.clone())
+        .into_iter()
+        .map(|receipt| receipt.into())
+        .collect();
+
+    let receipt_commitment = calculate_receipt_commitment(&receipts)?;
 
     let mut block_header_data: BlockHeaderData = BlockHeaderData {
         hash: Default::default(),
@@ -98,9 +105,7 @@ pub fn build_block_tx_hashes_thin(b11r_input: B11rInput) -> Result<Block, Error>
                 .trim_start_matches("0x"),
             16,
         )?,
-        receipt_commitment: calculate_receipt_commitment(&convert_receipts(
-            transaction_receipts.clone(),
-        ))?,
+        receipt_commitment,
         l1_da_mode: block_header.l1_da_mode,
     };
 
