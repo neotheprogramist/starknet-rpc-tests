@@ -27,12 +27,20 @@ pub struct DeployAccountResponse {
 
 #[derive(Clone, Debug, serde::Deserialize)]
 #[serde(tag = "type")]
-pub enum AddTransactionResponseType {
+pub enum AddTransactionRequestType {
     #[serde(rename = "INVOKE_FUNCTION")]
-    Invoke(InvokeResponse),
+    Invoke,
     #[serde(rename = "DECLARE")]
-    Declare(DeclareResponse),
+    Declare,
     #[serde(rename = "DEPLOY_ACCOUNT")]
+    DeployAccount,
+}
+
+#[derive(Clone, Debug, serde::Deserialize)]
+#[serde(tag = "type")]
+pub enum AddTransactionResponseType {
+    Invoke(InvokeResponse),
+    Declare(DeclareResponse),
     DeployAccount(DeployAccountResponse),
 }
 
