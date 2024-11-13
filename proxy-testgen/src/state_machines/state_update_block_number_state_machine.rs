@@ -1,13 +1,23 @@
 use crate::StateMachine;
 use crate::StateMachineResult;
-use production_nodes_types::pathfinder_types::types::alpha_sepolia_blocks::{
-    BlockStateMachine, StarknetVersion,
+use anyhow::Result;
+use production_nodes_types::pathfinder_types::types::block_hash::{
+    calculate_receipt_commitment, compute_final_hash,
 };
-use production_nodes_types::pathfinder_types::types::block_hash::compute_final_hash;
+use production_nodes_types::pathfinder_types::types::gateway_state_update::{
+    BlockStateUpdate, StarknetVersion,
+};
+use production_nodes_types::pathfinder_types::types::state_update::{
+    state_diff_commitment::compute, StateUpdate,
+};
+use production_nodes_types::pathfinder_types::types::{
+    event::Event, receipt::Receipt, reply::StateUpdate as GatewayStateUpdate,
+};
 use regex::Regex;
 use serde::Deserialize;
 use serde_json::Result as JsonResult;
 use serde_with::{serde_as, DisplayFromStr};
+use starknet_types_core::felt::Felt;
 
 #[derive(Clone)]
 pub struct Ok;
@@ -156,9 +166,24 @@ impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
                                 machine.clone().to_skipped(),
                             )
                         } else {
-                            match serde_json::from_str::<BlockStateMachine>(&response_body) {
+                            match serde_json::from_str::<BlockStateUpdate>(&response_body) {
                                 JsonResult::Ok(block_state_machine) => {
-                                    let is_valid_hash = match compute_final_hash(
+                                    let valid_receipt_commitment = match compute_receipt_commitment(
+                                        block_state_machine.clone().block.transaction_receipts,
+                                    ) {
+                                        std::result::Result::Ok(commitment) => {
+                                            commitment
+                                                == block_state_machine.block.receipt_commitment
+                                        }
+                                        Err(_) => false,
+                                    };
+
+                                    let valid_state_diff_commitment =
+                                        compute_state_diff(
+                                            block_state_machine.clone().state_update,
+                                        ) == block_state_machine.block.state_diff_commitment;
+
+                                    let is_valid_block_hash = match compute_final_hash(
                                         &block_state_machine.block.clone().into(),
                                     ) {
                                         std::result::Result::Ok(block_hash) => {
@@ -167,7 +192,11 @@ impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
                                         Err(_) => false,
                                     };
 
-                                    if is_valid_hash {
+                                    let valid_hashes = valid_receipt_commitment
+                                        && valid_state_diff_commitment
+                                        && is_valid_block_hash;
+
+                                    if valid_hashes {
                                         StateUpdateBlockNumberStateMachineWrapper::Ok(
                                             machine.clone(),
                                         )
@@ -207,6 +236,27 @@ impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
             StateUpdateBlockNumberStateMachineWrapper::Skipped(_) => StateMachineResult::Skipped,
         }
     }
+}
+
+pub fn compute_state_diff(state_update_gateway: GatewayStateUpdate) -> Felt {
+    let state_update_common: StateUpdate = state_update_gateway.into();
+    compute(
+        &state_update_common.contract_updates,
+        &state_update_common.system_contract_updates,
+        &state_update_common.declared_cairo_classes,
+        &state_update_common.declared_sierra_classes,
+    )
+}
+
+pub fn compute_receipt_commitment(
+    transaction_receipts: Vec<(Receipt, Vec<Event>)>,
+) -> Result<Felt> {
+    let receipts: Vec<Receipt> = transaction_receipts
+        .into_iter()
+        .map(|(receipt, _events)| receipt)
+        .collect();
+
+    calculate_receipt_commitment(&receipts)
 }
 
 impl StateUpdateBlockNumberStateMachineWrapper {
