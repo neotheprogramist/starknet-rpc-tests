@@ -2,10 +2,16 @@ use starknet_types_core::felt::FromStrError;
 use thiserror::Error;
 
 use super::declare_contract::RunnerError;
-use crate::utils::v7::{
-    accounts::{account::AccountError, errors::CreationError, utils::mint::MintError},
-    providers::provider::ProviderError,
-    signers::local_wallet::SignError,
+use crate::{
+    macros::errors::AssertionNoPanicError,
+    utils::{
+        conversions::errors::ConversionsError,
+        v7::{
+            accounts::{account::AccountError, errors::CreationError, utils::mint::MintError},
+            providers::provider::ProviderError,
+            signers::local_wallet::SignError,
+        },
+    },
 };
 use core::fmt::{Display, Formatter, Result};
 use std::convert::Infallible;
@@ -41,6 +47,10 @@ pub enum RpcError {
     FromStrError(#[from] FromStrError),
     #[error(transparent)]
     Infallible(#[from] Infallible),
+    #[error(transparent)]
+    AssertNoPanic(#[from] AssertionNoPanicError),
+    #[error(transparent)]
+    Conversions(#[from] ConversionsError),
     #[error("Unexpected block type {0}")]
     UnexpectedBlockResponseType(String),
     #[error("Unexpected txn type {0}")]
