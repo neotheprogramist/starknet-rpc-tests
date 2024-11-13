@@ -1,4 +1,4 @@
-use super::{alpha_sepolia_blocks::count_events, header::L1DataAvailabilityMode};
+use super::{gateway_state_update::count_events, header::L1DataAvailabilityMode};
 use serde::{Deserialize, Serialize};
 use starknet_types_core::felt::Felt;
 
@@ -72,8 +72,8 @@ pub struct ResourcePrice {
     pub price_in_wei: U128,
 }
 
-impl From<super::alpha_sepolia_blocks::Block> for BlockHeaderData {
-    fn from(block: super::alpha_sepolia_blocks::Block) -> Self {
+impl From<super::gateway_state_update::Block> for BlockHeaderData {
+    fn from(block: super::gateway_state_update::Block) -> Self {
         Self {
             hash: block.block_hash,
             parent_hash: block.parent_block_hash,
