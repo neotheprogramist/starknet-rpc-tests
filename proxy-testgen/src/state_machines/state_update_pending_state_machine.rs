@@ -1,6 +1,6 @@
 use crate::StateMachine;
 use crate::StateMachineResult;
-use production_nodes_types::pathfinder_types::types::alpha_sepolia_blocks::PendingBlockStateMachine;
+use production_nodes_types::pathfinder_types::types::gateway_state_update::PendingBlockStateMachine;
 
 #[derive(Clone)]
 pub struct Ok;
