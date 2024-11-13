@@ -1,9 +1,9 @@
 use crate::StateMachine;
 use crate::StateMachineResult;
 use num_traits::Num;
-use production_nodes_types::pathfinder_types::types::alpha_sepolia_blocks::StarknetVersion;
 use production_nodes_types::pathfinder_types::types::block_builder_input::TransactionHash;
 use production_nodes_types::pathfinder_types::types::gateway_add_transaction::*;
+use production_nodes_types::pathfinder_types::types::gateway_state_update::StarknetVersion;
 use serde::Deserialize;
 use serde_json::Result as JsonResult;
 use serde_with::{serde_as, DisplayFromStr};
@@ -21,7 +21,6 @@ pub struct Skipped;
 pub struct AddTransactionStateMachine<S> {
     path: String,
     transaction_type: Option<AddTransactionResponseType>,
-    transaction_hash: Option<TransactionHash>,
     state: S,
 }
 
@@ -37,7 +36,6 @@ impl AddTransactionStateMachine<Ok> {
             path: "/gateway/add_transaction".to_string(),
             state: Ok,
             transaction_type: None,
-            transaction_hash: None,
         }
     }
 
@@ -46,7 +44,6 @@ impl AddTransactionStateMachine<Ok> {
             path: self.path,
             state: Invalid,
             transaction_type: self.transaction_type,
-            transaction_hash: None,
         }
     }
 
@@ -55,7 +52,6 @@ impl AddTransactionStateMachine<Ok> {
             path: self.path.clone(),
             state: Skipped,
             transaction_type: None,
-            transaction_hash: None,
         }
     }
 }
@@ -72,7 +68,6 @@ impl AddTransactionStateMachine<Invalid> {
             path: self.path,
             state: Skipped,
             transaction_type: None,
-            transaction_hash: None,
         }
     }
 }
@@ -164,64 +159,67 @@ impl StateMachine for AddTransactionStateMachineWrapper {
         };
 
         *self = match self {
-            AddTransactionStateMachineWrapper::Ok(machine) => match machine.transaction_type {
-                Some(AddTransactionResponseType::Invoke) => {
-                    match serde_json::from_str::<InvokeResponse>(&response_body) {
-                        JsonResult::Ok(invoke_response) => {
-                            if validate_transaction_hash(invoke_response.transaction_hash) {
-                                machine.transaction_type = Some(AddTransactionResponseType::Invoke);
-                                machine.transaction_hash = Some(invoke_response.transaction_hash);
-                                AddTransactionStateMachineWrapper::Ok(machine.clone())
-                            } else {
-                                machine.transaction_type = None;
-                                AddTransactionStateMachineWrapper::Ok(machine.clone())
+            AddTransactionStateMachineWrapper::Ok(machine) => {
+                match machine.transaction_type.clone() {
+                    Some(AddTransactionResponseType::Invoke(_)) => {
+                        match serde_json::from_str::<InvokeResponse>(&response_body) {
+                            JsonResult::Ok(invoke_response) => {
+                                if validate_transaction_hash(invoke_response.transaction_hash) {
+                                    machine.transaction_type =
+                                        Some(AddTransactionResponseType::Invoke(invoke_response));
+                                    AddTransactionStateMachineWrapper::Ok(machine.clone())
+                                } else {
+                                    machine.transaction_type = None;
+                                    AddTransactionStateMachineWrapper::Ok(machine.clone())
+                                }
                             }
-                        }
-                        Err(_) => {
-                            AddTransactionStateMachineWrapper::Invalid(machine.clone().to_invalid())
+                            Err(_) => AddTransactionStateMachineWrapper::Invalid(
+                                machine.clone().to_invalid(),
+                            ),
                         }
                     }
-                }
-                Some(AddTransactionResponseType::Declare) => {
-                    match serde_json::from_str::<DeclareResponse>(&response_body) {
-                        JsonResult::Ok(delcare_response) => {
-                            if validate_transaction_hash(delcare_response.transaction_hash) {
-                                machine.transaction_type =
-                                    Some(AddTransactionResponseType::Declare);
-                                machine.transaction_hash = Some(delcare_response.transaction_hash);
+                    Some(AddTransactionResponseType::Declare(_)) => {
+                        match serde_json::from_str::<DeclareResponse>(&response_body) {
+                            JsonResult::Ok(delcare_response) => {
+                                if validate_transaction_hash(delcare_response.transaction_hash) {
+                                    machine.transaction_type =
+                                        Some(AddTransactionResponseType::Declare(delcare_response));
 
-                                AddTransactionStateMachineWrapper::Ok(machine.clone())
-                            } else {
-                                machine.transaction_type = None;
-                                AddTransactionStateMachineWrapper::Ok(machine.clone())
+                                    AddTransactionStateMachineWrapper::Ok(machine.clone())
+                                } else {
+                                    machine.transaction_type = None;
+                                    AddTransactionStateMachineWrapper::Ok(machine.clone())
+                                }
                             }
-                        }
-                        Err(_) => {
-                            AddTransactionStateMachineWrapper::Invalid(machine.clone().to_invalid())
+                            Err(_) => AddTransactionStateMachineWrapper::Invalid(
+                                machine.clone().to_invalid(),
+                            ),
                         }
                     }
-                }
-                Some(AddTransactionResponseType::DeployAccount) => {
-                    match serde_json::from_str::<DeployAccountResponse>(&response_body) {
-                        JsonResult::Ok(deploy_acc_response) => {
-                            if validate_transaction_hash(deploy_acc_response.transaction_hash) {
-                                machine.transaction_type =
-                                    Some(AddTransactionResponseType::DeployAccount);
-                                machine.transaction_hash =
-                                    Some(deploy_acc_response.transaction_hash);
-                                AddTransactionStateMachineWrapper::Ok(machine.clone())
-                            } else {
-                                machine.transaction_type = None;
-                                AddTransactionStateMachineWrapper::Ok(machine.clone())
+                    Some(AddTransactionResponseType::DeployAccount(_)) => {
+                        match serde_json::from_str::<DeployAccountResponse>(&response_body) {
+                            JsonResult::Ok(deploy_acc_response) => {
+                                if validate_transaction_hash(deploy_acc_response.transaction_hash) {
+                                    machine.transaction_type =
+                                        Some(AddTransactionResponseType::DeployAccount(
+                                            deploy_acc_response,
+                                        ));
+                                    AddTransactionStateMachineWrapper::Ok(machine.clone())
+                                } else {
+                                    machine.transaction_type = None;
+                                    AddTransactionStateMachineWrapper::Ok(machine.clone())
+                                }
                             }
-                        }
-                        Err(_) => {
-                            AddTransactionStateMachineWrapper::Invalid(machine.clone().to_invalid())
+                            Err(_) => AddTransactionStateMachineWrapper::Invalid(
+                                machine.clone().to_invalid(),
+                            ),
                         }
                     }
+                    None => {
+                        AddTransactionStateMachineWrapper::Invalid(machine.clone().to_invalid())
+                    }
                 }
-                None => AddTransactionStateMachineWrapper::Invalid(machine.clone().to_invalid()),
-            },
+            }
             AddTransactionStateMachineWrapper::Invalid(machine) => {
                 AddTransactionStateMachineWrapper::Invalid(machine.clone())
             }
@@ -252,16 +250,10 @@ impl AddTransactionStateMachineWrapper {
     pub fn get_message(&self) -> String {
         match self {
             AddTransactionStateMachineWrapper::Ok(machine) => {
-                format!(
-                    "Add Transaction request SUCCESSFUL - Type: {:?}, Hash: {:?}",
-                    machine.transaction_type, machine.transaction_hash
-                )
+                machine.transaction_type.clone().unwrap().to_string()
             }
             AddTransactionStateMachineWrapper::Invalid(machine) => {
-                format!(
-                    "Add Transaction request FAILED - Type: {:?}, Hash: {:?}",
-                    machine.transaction_type, machine.transaction_hash
-                )
+                machine.transaction_type.clone().unwrap().to_string()
             }
             AddTransactionStateMachineWrapper::Skipped(_) => "".to_string(),
         }
