@@ -2,10 +2,11 @@ use std::io;
 
 use super::block::BlockHeaderData;
 use super::header::{BlockHeader, L1DataAvailabilityMode};
-use super::receipt::ThinReceipt;
 use crate::pathfinder_types::types::event::Event;
 use crate::pathfinder_types::types::hash::{FeltHash, PoseidonHash};
+use crate::pathfinder_types::types::receipt::ExecutionStatus;
 use anyhow::{Context, Result};
+use crypto_utils::hash::{poseidon_hash_many, PoseidonHasher};
 // use starknet_types_core::hash::{poseidon_hash_many, PoseidonHasher};
 // use starknet_types_core::hash::{poseidon_hash_many, PoseidonHasher};
 use starknet_types_core::hash::{Poseidon, StarkHash};
@@ -121,47 +122,100 @@ pub fn calculate_transaction_commitment(transactions: &[TxnWithHash<Felt>]) -> R
     calculate_commitment_root::<PoseidonHash>(final_hashes)
 }
 
-pub fn calculate_receipt_commitment(receipts: &[ThinReceipt]) -> Result<Felt> {
+// pub fn calculate_receipt_commitment(receipts: &[ThinReceipt]) -> Result<Felt> {
+//     use rayon::prelude::*;
+
+//     let hashes: Vec<Felt> = receipts
+//         .par_iter()
+//         .map(|receipt| {
+//             // Gather all components of the hash into a single vector of Felts
+//             let mut data = vec![
+//                 receipt.transaction_hash,
+//                 receipt.actual_fee.into(),
+//                 // L2 to L1 message data
+//                 (receipt.l2_to_l1_messages.len() as u64).into(),
+//             ];
+
+//             for msg in &receipt.l2_to_l1_messages {
+//                 data.push(msg.from_address);
+//                 data.push(msg.to_address);
+//                 data.push((msg.payload.len() as u64).into());
+//                 data.extend(msg.payload.iter().copied());
+//             }
+
+//             // Revert reason hash
+//             let revert_reason_hash = match &receipt.revert_reason {
+//                 None => Felt::ZERO,
+//                 Some(reason) => {
+//                     let mut keccak = sha3::Keccak256::default();
+//                     keccak.update(reason.as_bytes());
+//                     let mut hashed_bytes: [u8; 32] = keccak.finalize().into();
+//                     hashed_bytes[0] &= 0b00000011_u8; // Discard the six MSBs
+//                     Felt::from_bytes_be(&hashed_bytes)
+//                 }
+//             };
+//             data.push(revert_reason_hash);
+
+//             // Execution resources
+//             data.push(Felt::ZERO); // L2 gas placeholder
+//             data.push(receipt.l1_gas.into()); // L1 gas consumed
+//             data.push(receipt.l1_data_gas.into()); // L1 data gas consumed
+
+//             // Compute the hash for the entire data vector
+//             Poseidon::hash_array(&data)
+//         })
+//         .collect();
+
+//     calculate_commitment_root::<PoseidonHash>(hashes)
+// }
+
+pub fn calculate_receipt_commitment(receipts: &[super::receipt::Receipt]) -> Result<Felt> {
     use rayon::prelude::*;
 
-    let hashes: Vec<Felt> = receipts
+    let hashes = receipts
         .par_iter()
         .map(|receipt| {
-            // Gather all components of the hash into a single vector of Felts
-            let mut data = vec![
+            poseidon_hash_many(&[
                 receipt.transaction_hash,
-                receipt.actual_fee.into(),
-                // L2 to L1 message data
-                (receipt.l2_to_l1_messages.len() as u64).into(),
-            ];
-
-            for msg in &receipt.l2_to_l1_messages {
-                data.push(msg.from_address);
-                data.push(msg.to_address);
-                data.push((msg.payload.len() as u64).into());
-                data.extend(msg.payload.iter().copied());
-            }
-
-            // Revert reason hash
-            let revert_reason_hash = match &receipt.revert_reason {
-                None => Felt::ZERO,
-                Some(reason) => {
-                    let mut keccak = sha3::Keccak256::default();
-                    keccak.update(reason.as_bytes());
-                    let mut hashed_bytes: [u8; 32] = keccak.finalize().into();
-                    hashed_bytes[0] &= 0b00000011_u8; // Discard the six MSBs
-                    Felt::from_bytes_be(&hashed_bytes)
-                }
-            };
-            data.push(revert_reason_hash);
-
-            // Execution resources
-            data.push(Felt::ZERO); // L2 gas placeholder
-            data.push(receipt.l1_gas.into()); // L1 gas consumed
-            data.push(receipt.l1_data_gas.into()); // L1 data gas consumed
-
-            // Compute the hash for the entire data vector
-            Poseidon::hash_array(&data)
+                receipt.actual_fee,
+                // Calculate hash of messages sent.
+                {
+                    let mut hasher = PoseidonHasher::new();
+                    hasher.update((receipt.l2_to_l1_messages.len() as u64).into());
+                    for msg in &receipt.l2_to_l1_messages {
+                        hasher.update(msg.from_address);
+                        hasher.update(msg.to_address);
+                        hasher.update((msg.payload.len() as u64).into());
+                        for payload in &msg.payload {
+                            hasher.update(*payload);
+                        }
+                    }
+                    hasher.finalize()
+                },
+                // Revert reason.
+                match &receipt.execution_status {
+                    ExecutionStatus::Succeeded => Felt::ZERO,
+                    ExecutionStatus::Reverted { reason } => {
+                        let mut keccak = sha3::Keccak256::default();
+                        keccak.update(reason.as_bytes());
+                        let mut hashed_bytes: [u8; 32] = keccak.finalize().into();
+                        hashed_bytes[0] &= 0b00000011_u8; // Discard the six MSBs.
+                        Felt::from_bytes_be(&hashed_bytes)
+                    }
+                },
+                // Execution resources:
+                // L2 gas
+                Felt::ZERO,
+                // L1 gas consumed
+                receipt.execution_resources.total_gas_consumed.l1_gas.into(),
+                // L1 data gas consumed
+                receipt
+                    .execution_resources
+                    .total_gas_consumed
+                    .l1_data_gas
+                    .into(),
+            ])
+            // .into()
         })
         .collect();
 
