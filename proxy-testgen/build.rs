@@ -4,13 +4,13 @@ use std::io::{self, Write};
 use std::path::Path;
 
 fn main() -> io::Result<()> {
-    // Set the environment variable to rerun the build script if any file in src/state_machines changes
     println!("cargo:rerun-if-changed=src/state_machines");
     let state_machines_dir = Path::new("src/state_machines");
 
-    let dest_path = Path::new("../proxy/generated_state_machines.rs");
-    fs::create_dir_all(dest_path.parent().unwrap())?;
-    let mut output = File::create(dest_path)?;
+    let shared_dir = Path::new("../target/shared");
+    fs::create_dir_all(shared_dir).expect("Failed to create shared output directory");
+    let dest_path = shared_dir.join("generated_state_machines.rs");
+    let mut output = File::create(&dest_path)?;
 
     // Write the necessary imports and start the function definition
     writeln!(output, "pub fn run_generated_state_machines(request_body: String, response_body: String, path: String) {{")?;
