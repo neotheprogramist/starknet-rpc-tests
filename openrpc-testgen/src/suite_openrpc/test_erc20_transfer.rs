@@ -1,18 +1,21 @@
 use crate::{
     assert_result,
-    utils::v7::{
-        accounts::{
-            account::{Account, ConnectedAccount},
-            call::Call,
+    utils::{
+        conversions::felts_to_biguint::felts_slice_to_biguint,
+        v7::{
+            accounts::{
+                account::{Account, ConnectedAccount},
+                call::Call,
+            },
+            contract::factory::ContractFactory,
+            endpoints::{
+                declare_contract::get_compiled_contract,
+                endpoints_functions::OutsideExecution,
+                errors::{CallError, RpcError},
+                utils::{get_selector_from_name, wait_for_sent_transaction},
+            },
+            providers::provider::Provider,
         },
-        contract::factory::ContractFactory,
-        endpoints::{
-            declare_contract::get_compiled_contract,
-            endpoints_functions::OutsideExecution,
-            errors::{CallError, RpcError},
-            utils::{get_selector_from_name, wait_for_sent_transaction},
-        },
-        providers::provider::Provider,
     },
     RandomizableAccountsTrait, RunnableTrait,
 };
@@ -42,6 +45,7 @@ impl RunnableTrait for TestCase {
         )
         .await?;
 
+        // Declare and deploy erc20
         let declaration_hash = test_input
             .random_paymaster_account
             .declare_v3(erc_20_flattened_sierra_class, erc_20_compiled_class_hash)
@@ -92,6 +96,7 @@ impl RunnableTrait for TestCase {
             }
         };
 
+        // Mint erc20 for the executable account
         let erc20_mint_call = Call {
             to: contract_address_erc20,
             selector: get_selector_from_name("mint")?,
@@ -111,6 +116,7 @@ impl RunnableTrait for TestCase {
             .send()
             .await?;
 
+        // Prepare erc20 transfer call
         let account_erc20_receiver_address =
             Felt::from_hex("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1")?;
         let amount_to_transfer = vec![Felt::from_hex("0x100")?, Felt::ZERO];
@@ -159,7 +165,8 @@ impl RunnableTrait for TestCase {
             calldata: calldata_to_executable_account_call,
         };
 
-        let balance_before_transfer = test_input
+        // Get the balances before transfer
+        let exec_balance_before_transfer = test_input
             .random_executable_account
             .provider()
             .call(
@@ -175,7 +182,7 @@ impl RunnableTrait for TestCase {
             )
             .await?;
 
-        let gas_balance_before = test_input
+        let paymaster_balance_before = test_input
             .random_paymaster_account
             .provider()
             .call(
@@ -199,7 +206,7 @@ impl RunnableTrait for TestCase {
             .send()
             .await?;
 
-        let balance_after_transfer = test_input
+        let exec_balance_after_transfer = test_input
             .random_executable_account
             .provider()
             .call(
@@ -215,7 +222,7 @@ impl RunnableTrait for TestCase {
             )
             .await?;
 
-        let gas_balance_after = test_input
+        let paymaster_balance_after = test_input
             .random_paymaster_account
             .provider()
             .call(
@@ -233,7 +240,7 @@ impl RunnableTrait for TestCase {
             )
             .await?;
 
-        let balance_after_txn = test_input
+        let receiver_balance_after_txn = test_input
             .random_paymaster_account
             .provider()
             .call(
@@ -246,17 +253,27 @@ impl RunnableTrait for TestCase {
             )
             .await?;
 
-        assert_result!(
-            balance_after_txn == amount_to_transfer,
-            "Balances do not match"
-        )?;
-        assert_result!(
-            balance_before_transfer > balance_after_transfer,
-            "Token balance on executable account did not decrease as expected."
-        )?;
+        // Prepare assert data
+        let receiver_balance_after_txn = felts_slice_to_biguint(receiver_balance_after_txn)?;
+        let amount_to_transfer = felts_slice_to_biguint(amount_to_transfer)?;
 
         assert_result!(
-            gas_balance_before > gas_balance_after,
+            receiver_balance_after_txn == amount_to_transfer,
+            "Balances do not match"
+        )?;
+
+        let exec_balance_after_transfer = felts_slice_to_biguint(exec_balance_after_transfer)?;
+        let exec_balance_before_transfer = felts_slice_to_biguint(exec_balance_before_transfer)?;
+
+        assert_result!(
+            exec_balance_before_transfer == exec_balance_after_transfer + amount_to_transfer,
+            "Token balance on executable account did not decrease by the transfer amount."
+        )?;
+
+        let paymaster_balance_after = felts_slice_to_biguint(paymaster_balance_after)?;
+        let paymaster_balance_before = felts_slice_to_biguint(paymaster_balance_before)?;
+        assert_result!(
+            paymaster_balance_after < paymaster_balance_before,
             "Gas balance on paymaster account did not decrease after transaction."
         )?;
 

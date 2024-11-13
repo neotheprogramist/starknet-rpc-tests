@@ -4,10 +4,13 @@ use thiserror::Error;
 use super::declare_contract::RunnerError;
 use crate::{
     macros::errors::AssertionNoPanicError,
-    utils::v7::{
-        accounts::{account::AccountError, errors::CreationError, utils::mint::MintError},
-        providers::provider::ProviderError,
-        signers::local_wallet::SignError,
+    utils::{
+        conversions::errors::ConversionsError,
+        v7::{
+            accounts::{account::AccountError, errors::CreationError, utils::mint::MintError},
+            providers::provider::ProviderError,
+            signers::local_wallet::SignError,
+        },
     },
 };
 use core::fmt::{Display, Formatter, Result};
@@ -46,6 +49,8 @@ pub enum RpcError {
     Infallible(#[from] Infallible),
     #[error(transparent)]
     AssertNoPanic(#[from] AssertionNoPanicError),
+    #[error(transparent)]
+    Conversions(#[from] ConversionsError),
     #[error("Unexpected block type {0}")]
     UnexpectedBlockResponseType(String),
     #[error("Unexpected txn type {0}")]
