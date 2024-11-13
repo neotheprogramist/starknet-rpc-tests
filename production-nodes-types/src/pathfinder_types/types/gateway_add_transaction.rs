@@ -1,4 +1,5 @@
 use super::{block::ClassHash, block_builder_input::TransactionHash};
+use std::fmt;
 
 /// API response for an INVOKE_FUNCTION transaction
 #[derive(Clone, Debug, serde::Deserialize, PartialEq, Eq)]
@@ -28,9 +29,39 @@ pub struct DeployAccountResponse {
 #[serde(tag = "type")]
 pub enum AddTransactionResponseType {
     #[serde(rename = "INVOKE_FUNCTION")]
-    Invoke,
+    Invoke(InvokeResponse),
     #[serde(rename = "DECLARE")]
-    Declare,
+    Declare(DeclareResponse),
     #[serde(rename = "DEPLOY_ACCOUNT")]
-    DeployAccount,
+    DeployAccount(DeployAccountResponse),
+}
+
+impl fmt::Display for AddTransactionResponseType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AddTransactionResponseType::Invoke(invoke_response) => {
+                write!(
+                    f,
+                    "INVOKE_FUNCTION - Code: {}, Transaction Hash: {:?}",
+                    invoke_response.code, invoke_response.transaction_hash
+                )
+            }
+            AddTransactionResponseType::Declare(declare_response) => {
+                write!(
+                    f,
+                    "DECLARE - Code: {}, Transaction Hash: {:?}, Class Hash: {:?}",
+                    declare_response.code,
+                    declare_response.transaction_hash,
+                    declare_response.class_hash
+                )
+            }
+            AddTransactionResponseType::DeployAccount(deploy_account_response) => {
+                write!(
+                    f,
+                    "DEPLOY_ACCOUNT - Code: {}, Transaction Hash: {:?}",
+                    deploy_account_response.code, deploy_account_response.transaction_hash
+                )
+            }
+        }
+    }
 }
