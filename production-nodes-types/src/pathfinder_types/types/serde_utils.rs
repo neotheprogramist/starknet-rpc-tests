@@ -4,7 +4,7 @@ use primitive_types::H160;
 use serde::de::Visitor;
 use serde_with::DeserializeAs;
 
-use super::alpha_sepolia_blocks::{EthereumAddress, GasPrice};
+use super::gateway_state_update::{EthereumAddress, GasPrice};
 
 pub struct GasPriceAsHexStr;
 

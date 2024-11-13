@@ -1,9 +1,10 @@
-pub mod alpha_sepolia_blocks;
 pub mod block;
 pub mod block_builder_input;
 pub mod block_hash;
 pub mod chain;
 pub mod event;
+pub mod gateway_add_transaction;
+pub mod gateway_state_update;
 pub mod hash;
 pub mod header;
 pub mod merkle_node;

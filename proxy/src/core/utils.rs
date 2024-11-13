@@ -12,10 +12,9 @@ use tokio_rustls::server::TlsStream;
 use tokio_rustls::TlsAcceptor;
 use tracing::info;
 
-#[cfg(not(feature = "rust-analyzer"))]
 include!(concat!(
     env!("CARGO_MANIFEST_DIR"),
-    "/generated_state_machines.rs"
+    "/../target/shared/generated_state_machines.rs"
 ));
 
 pub fn load_tls_config() -> Result<Arc<ServerConfig>, ProxyError> {
@@ -138,6 +137,7 @@ pub async fn handle_connection(
                 }
                 "POST" => {
                     info!("Handling POST request");
+                    info!("Post body: {}", request_body);
                     client
                         .post(url.clone())
                         .body(request_body.clone())

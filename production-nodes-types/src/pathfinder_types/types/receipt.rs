@@ -19,6 +19,23 @@ pub struct ThinReceipt {
     pub l1_data_gas: u128,
 }
 
+impl From<Receipt> for ThinReceipt {
+    fn from(receipt: Receipt) -> Self {
+        ThinReceipt {
+            transaction_hash: receipt.transaction_hash,
+            actual_fee: u128::from_str_radix(
+                receipt.actual_fee.to_hex_string().trim_start_matches("0x"),
+                16,
+            )
+            .unwrap_or(0),
+            l2_to_l1_messages: receipt.clone().l2_to_l1_messages,
+            revert_reason: receipt.clone().revert_reason().map(|s| s.to_string()),
+            l1_gas: receipt.execution_resources.total_gas_consumed.l1_gas,
+            l1_data_gas: receipt.execution_resources.total_gas_consumed.l1_data_gas,
+        }
+    }
+}
+
 #[derive(Clone, Deserialize, Default, Debug, PartialEq, Eq)]
 pub struct Receipt {
     pub actual_fee: Felt,
@@ -38,6 +55,28 @@ impl Receipt {
         match &self.execution_status {
             ExecutionStatus::Succeeded => None,
             ExecutionStatus::Reverted { reason } => Some(reason.as_str()),
+        }
+    }
+}
+
+impl From<ThinReceipt> for Receipt {
+    fn from(receipt: ThinReceipt) -> Self {
+        Receipt {
+            actual_fee: receipt.actual_fee.into(),
+            execution_resources: ExecutionResources {
+                total_gas_consumed: L1Gas {
+                    l1_gas: receipt.l1_gas,
+                    l1_data_gas: receipt.l1_data_gas,
+                },
+                ..Default::default()
+            },
+            l2_to_l1_messages: receipt.l2_to_l1_messages,
+            execution_status: match receipt.revert_reason {
+                Some(reason) => ExecutionStatus::Reverted { reason },
+                None => ExecutionStatus::Succeeded,
+            },
+            transaction_hash: receipt.transaction_hash,
+            transaction_index: 0,
         }
     }
 }

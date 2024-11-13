@@ -1,5 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
+use super::reply::StateUpdate;
 use super::serde_utils::GasPriceAsHexStr;
 use crate::pathfinder_types::types::{
     block::{BlockHash, BlockTimestamp, CasmHash, ClassHash, ContractAddress},
@@ -39,8 +40,9 @@ pub type L1ToL2MessageNonce = Felt;
 pub type L1ToL2MessagePayloadElem = Felt;
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
-pub struct BlockStateMachine {
+pub struct BlockStateUpdate {
     pub block: Block,
+    pub state_update: StateUpdate,
 }
 
 #[serde_as]

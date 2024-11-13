@@ -1,3 +1,4 @@
+pub mod add_transaction_state_machine;
 pub mod block_number_state_machine;
 pub mod state_update_block_number_state_machine;
 pub mod state_update_pending_state_machine;
