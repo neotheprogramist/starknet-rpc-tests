@@ -43,14 +43,14 @@ impl RunnableTrait for TestCase {
             Ok(_) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc get_transaction_status COMPATIBLE".green(),
+                    "\n✓ Rpc get_transaction_receipt COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Err(e) => {
                 error!(
                     "{} {} {}",
-                    "✗ Rpc get_transaction_status INCOMPATIBLE:".red(),
+                    "✗ Rpc get_transaction_receipt INCOMPATIBLE:".red(),
                     e.to_string().red(),
                     "✗".red()
                 );

@@ -84,7 +84,7 @@ impl RunnableTrait for TestCase {
             Txn::Invoke(InvokeTxn::V3(_)) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v2 COMPATIBLE".green(),
+                    "\n✓ Rpc test_get_txn_by_block_id_and_index_invoke_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
@@ -92,7 +92,7 @@ impl RunnableTrait for TestCase {
                 let error_message = format!("Unexpected transaction response type: {:?}", txn);
                 error!(
                     "{} {} {}",
-                    "✗ Rpc test_get_txn_by_block_id_and_index_deploy_v2 INCOMPATIBLE:".red(),
+                    "✗ Rpc test_get_txn_by_block_id_and_index_invoke_v3 INCOMPATIBLE:".red(),
                     error_message,
                     "✗".red()
                 );

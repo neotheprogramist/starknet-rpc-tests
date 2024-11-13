@@ -32,7 +32,7 @@ fn main() {
                 .map(|s| s.starts_with("suite_"))
                 == Some(true)
         {
-            let root_output_type = process_module_directory(&path, &out_dir, None); // Root suite has no parent Output type
+            let root_output_type = process_module_directory(&path, &out_dir, None);
             process_directory_recursively(&path, &out_dir, Some(&root_output_type));
         }
     }
@@ -40,7 +40,6 @@ fn main() {
     println!("cargo:rerun-if-changed=src");
 }
 
-// Recursively processes directories with prefix "suite_"
 fn process_directory_recursively(dir: &Path, out_dir: &str, parent_output_type: Option<&str>) {
     for entry in fs::read_dir(dir).expect("Could not read directory") {
         let entry = entry.expect("Could not read directory entry");
@@ -58,7 +57,6 @@ fn process_directory_recursively(dir: &Path, out_dir: &str, parent_output_type: 
     }
 }
 
-// Processes a module directory, generates code, and returns the Output type of the module
 fn process_module_directory(
     module_path: &Path,
     out_dir: &str,
@@ -80,15 +78,12 @@ fn process_module_directory(
     .unwrap();
     let module_prefix = format!("crate::{}", module_name.replace("/", "::"));
 
-    // Detect the struct name from `mod.rs` in each module
     let main_file_path = module_path.join("mod.rs");
     let struct_name = find_testsuite_struct_in_file(&main_file_path)
         .expect("Expected a struct starting with 'TestSuite' in mod.rs, but none was found");
 
-    // Get list of test files and suites included as `pub mod` in `mod.rs`
     let (test_cases, nested_suites) = partition_modules(&main_file_path);
 
-    // Generate RunnableTrait implementation with async fn run and setup
     writeln!(
         file,
         "impl crate::RunnableTrait for {}::{} {{",
@@ -96,19 +91,25 @@ fn process_module_directory(
     )
     .unwrap();
 
-    // Determine Input type based on whether it is a root suite or nested suite
     if let Some(output_type) = parent_output_type {
-        writeln!(file, "    type Input = {};", output_type).unwrap(); // Nested suite uses parent Output type
+        writeln!(file, "    type Input = {};", output_type).unwrap();
     } else {
-        writeln!(file, "    type Input = SetupInput;").unwrap(); // Root suite uses `SetupInput`
+        writeln!(file, "    type Input = SetupInput;").unwrap();
     }
+
     writeln!(
         file,
         "    async fn run(input: &Self::Input) -> Result<Self, crate::utils::v7::endpoints::errors::RpcError> {{"
     )
     .unwrap();
 
-    // Call the setup function and store the result in `data`
+    writeln!(
+        file,
+        "        tracing::info!(\"\\x1b[33m\n\n🚀 Starting Test Suite: {}::{} 🚀\\x1b[0m\");",
+        module_prefix, struct_name
+    )
+    .unwrap();
+
     writeln!(
         file,
         "        let data = {}::{}::setup(input).await?;",
@@ -116,7 +117,6 @@ fn process_module_directory(
     )
     .unwrap();
 
-    // Process each declared test module within this suite, passing `data` to each `run`
     for test_name in test_cases {
         writeln!(
             file,
@@ -126,13 +126,11 @@ fn process_module_directory(
         .unwrap();
     }
 
-    // Process each nested suite, dynamically retrieving its struct name and fields
     for nested_suite in nested_suites {
         let nested_module_path = module_path.join(&nested_suite).join("mod.rs");
         let nested_struct_name = find_testsuite_struct_in_file(&nested_module_path)
             .expect("Expected a struct starting with 'TestSuite' in nested suite mod.rs, but none was found");
 
-        // Generate the instantiation code for the nested suite
         writeln!(
             file,
             "        {}::{}::{}::run(&data).await?;",
@@ -145,11 +143,9 @@ fn process_module_directory(
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
 
-    // Return the current output type for further nested suites
     format!("{}::{}", module_prefix, struct_name)
 }
 
-// Partition modules into test cases and nested suites
 fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
     let content = read_to_string(mod_file_path).expect("Could not read mod.rs file");
     let mut test_cases = Vec::new();
@@ -172,7 +168,6 @@ fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
     (test_cases, nested_suites)
 }
 
-// Utility function to find a struct that starts with "TestSuite" in a specific file, e.g., mod.rs
 fn find_testsuite_struct_in_file(file_path: &Path) -> Result<String, String> {
     let content = read_to_string(file_path).map_err(|_| "Could not read file".to_string())?;
     for line in content.lines() {

@@ -1,15 +1,22 @@
 use std::path::PathBuf;
 
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::ClassAndTxnHash;
+use starknet_types_rpc::{BlockId, ClassAndTxnHash, DeclareTxn, EventFilterWithPageRequest, Txn};
 
 use super::RandomSingleOwnerAccount;
 use crate::{
     utils::v7::{
-        accounts::account::Account,
-        endpoints::{declare_contract::get_compiled_contract, errors::RpcError},
+        accounts::account::{Account, AccountError, ConnectedAccount},
+        endpoints::{
+            declare_contract::{
+                extract_class_hash_from_error, get_compiled_contract, parse_class_hash_from_error,
+                RunnerError,
+            },
+            errors::RpcError,
+        },
+        providers::provider::{Provider, ProviderError},
     },
-    SetupableTrait,
+    RandomizableAccountsTrait, SetupableTrait,
 };
 use std::str::FromStr;
 pub mod suite_contract_calls;
@@ -37,11 +44,105 @@ impl SetupableTrait for TestSuiteDeploy {
             )
             .await?;
 
-        let declaration_result = setup_input
+        let declaration_result = match setup_input
             .random_paymaster_account
             .declare_v3(flattened_sierra_class, compiled_class_hash)
             .send()
-            .await?;
+            .await
+        {
+            Ok(result) => Ok(result),
+            Err(AccountError::Signing(sign_error)) => {
+                if sign_error.to_string().contains("is already declared") {
+                    Ok(ClassAndTxnHash {
+                        class_hash: parse_class_hash_from_error(&sign_error.to_string())?,
+                        transaction_hash: Felt::ZERO,
+                    })
+                } else {
+                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    ))))
+                }
+            }
+
+            Err(AccountError::Provider(ProviderError::Other(starkneterror))) => {
+                if starkneterror.to_string().contains("is already declared") {
+                    Ok(ClassAndTxnHash {
+                        class_hash: parse_class_hash_from_error(&starkneterror.to_string())?,
+                        transaction_hash: Felt::ZERO,
+                    })
+                } else {
+                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    ))))
+                }
+            }
+            Err(e) => {
+                let full_error_message = format!("{:?}", e);
+                let class_hash = extract_class_hash_from_error(&full_error_message)?;
+
+                let filter = EventFilterWithPageRequest {
+                    address: None,
+                    from_block: Some(BlockId::Number(0)),
+                    to_block: None,
+                    keys: None,
+                    chunk_size: 100,
+                    continuation_token: None,
+                };
+
+                let provider = setup_input.random_paymaster_account.provider();
+                let random_account_address = setup_input
+                    .random_paymaster_account
+                    .random_accounts()?
+                    .address();
+
+                let mut continuation_token = None;
+                let mut found_txn_hash = None;
+
+                loop {
+                    let mut current_filter = filter.clone();
+                    current_filter.continuation_token = continuation_token.clone();
+
+                    let events_chunk = provider.get_events(current_filter).await?;
+                    for event in events_chunk.events {
+                        if event.event.keys.contains(&random_account_address) {
+                            let txn_hash = event.transaction_hash;
+
+                            let txn_details = provider.get_transaction_by_hash(txn_hash).await?;
+
+                            if let Txn::Declare(DeclareTxn::V3(declare_txn)) = txn_details {
+                                if declare_txn.class_hash == class_hash {
+                                    found_txn_hash = Some(txn_hash);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if found_txn_hash.is_some() {
+                        break;
+                    }
+
+                    if let Some(token) = events_chunk.continuation_token {
+                        continuation_token = Some(token);
+                    } else {
+                        break;
+                    }
+                }
+
+                if let Some(tx_hash) = found_txn_hash {
+                    Ok(ClassAndTxnHash {
+                        class_hash,
+                        transaction_hash: tx_hash,
+                    })
+                } else {
+                    Err(RpcError::RunnerError(RunnerError::AccountFailure(
+                        "Transaction hash not found for the declared class.".to_string(),
+                    )))
+                }
+            }
+        }?;
 
         Ok(Self {
             random_paymaster_account: setup_input.random_paymaster_account.clone(),
