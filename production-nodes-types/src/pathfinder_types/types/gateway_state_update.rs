@@ -14,9 +14,11 @@ use primitive_types::H160;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 use starknet_types_core::felt::Felt;
+use starknet_types_rpc::v0_7_1::starknet_api_openrpc::{
+    DeclareTxn, DeployAccountTxn, InvokeTxn, Txn, TxnWithHash,
+};
 
 pub type SequencerAddress = Felt;
-pub type TransactionVersion = Felt;
 pub type Fee = Felt;
 pub type TransactionNonce = Felt;
 pub type TransactionSignatureElem = Felt;
@@ -65,8 +67,8 @@ pub struct Block {
     pub timestamp: BlockTimestamp,
     #[serde_as(as = "Vec<transaction::Receipt>")]
     pub transaction_receipts: Vec<(Receipt, Vec<Event>)>,
-    // #[serde_as(as = "Vec<transaction::Transaction>")]
-    pub transactions: Vec<Transaction>,
+    #[serde_as(as = "Vec<Transaction>")]
+    pub transactions: Vec<TxnWithHash<Felt>>,
     /// Version metadata introduced in 0.9.1, older blocks will not have it.
     // #[serde(default)]
     #[serde_as(as = "DisplayFromStr")]
@@ -135,6 +137,15 @@ impl Serialize for DaMode {
     }
 }
 
+impl From<DaMode> for starknet_types_rpc::v0_7_1::starknet_api_openrpc::DaMode {
+    fn from(value: DaMode) -> Self {
+        match value {
+            DaMode::L1 => Self::L1,
+            DaMode::L2 => Self::L2,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 pub struct PendingBlockStateMachine {
     block: PendingBlock,
@@ -161,7 +172,7 @@ pub struct PendingBlock {
 }
 
 /// Represents deserialized L2 transaction data.
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(tag = "type")]
 #[serde(deny_unknown_fields)]
 pub enum Transaction {
@@ -178,6 +189,273 @@ pub enum Transaction {
     Invoke(InvokeTransaction),
     #[serde(rename = "L1_HANDLER")]
     L1Handler(L1HandlerTransaction),
+}
+
+impl Transaction {
+    /// Returns hash of the transaction
+    pub fn hash(&self) -> TransactionHash {
+        match self {
+            Transaction::Declare(t) => match t {
+                DeclareTransaction::V0(t) => t.transaction_hash,
+                DeclareTransaction::V1(t) => t.transaction_hash,
+                DeclareTransaction::V2(t) => t.transaction_hash,
+                DeclareTransaction::V3(t) => t.transaction_hash,
+            },
+            Transaction::Deploy(t) => t.transaction_hash,
+            Transaction::DeployAccount(t) => match t {
+                DeployAccountTransaction::V0V1(t) => t.transaction_hash,
+                DeployAccountTransaction::V3(t) => t.transaction_hash,
+            },
+            Transaction::Invoke(t) => match t {
+                InvokeTransaction::V0(t) => t.transaction_hash,
+                InvokeTransaction::V1(t) => t.transaction_hash,
+                InvokeTransaction::V3(t) => t.transaction_hash,
+            },
+            Transaction::L1Handler(t) => t.transaction_hash,
+        }
+    }
+}
+
+impl<'de> serde_with::DeserializeAs<'de, TxnWithHash<Felt>> for Transaction {
+    fn deserialize_as<D>(deserializer: D) -> Result<TxnWithHash<Felt>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        Self::deserialize(deserializer).map(Into::into)
+    }
+}
+
+impl From<Transaction> for TxnWithHash<Felt> {
+    fn from(value: Transaction) -> Self {
+        let transaction_hash = value.hash();
+        let txn = match value {
+            Transaction::Declare(DeclareTransaction::V0(DeclareTransactionV0V1 {
+                class_hash,
+                max_fee,
+                nonce: _,
+                sender_address,
+                signature,
+                transaction_hash: _,
+            })) => Txn::Declare(DeclareTxn::V0(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::DeclareTxnV0 {
+                    class_hash,
+                    max_fee,
+                    sender_address,
+                    signature,
+                },
+            )),
+            Transaction::Declare(DeclareTransaction::V1(DeclareTransactionV0V1 {
+                class_hash,
+                max_fee,
+                nonce,
+                sender_address,
+                signature,
+                transaction_hash: _,
+            })) => Txn::Declare(DeclareTxn::V1(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::DeclareTxnV1 {
+                    class_hash,
+                    max_fee,
+                    nonce,
+                    sender_address,
+                    signature,
+                },
+            )),
+            Transaction::Declare(DeclareTransaction::V2(DeclareTransactionV2 {
+                class_hash,
+                max_fee,
+                nonce,
+                sender_address,
+                signature,
+                transaction_hash: _,
+                compiled_class_hash,
+            })) => Txn::Declare(DeclareTxn::V2(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::DeclareTxnV2 {
+                    class_hash,
+                    max_fee,
+                    nonce,
+                    sender_address,
+                    signature,
+                    compiled_class_hash,
+                },
+            )),
+            Transaction::Declare(DeclareTransaction::V3(DeclareTransactionV3 {
+                class_hash,
+                nonce,
+                nonce_data_availability_mode,
+                fee_data_availability_mode,
+                resource_bounds,
+                tip,
+                paymaster_data,
+                sender_address,
+                signature,
+                transaction_hash: _,
+                compiled_class_hash,
+                account_deployment_data,
+            })) => Txn::Declare(DeclareTxn::V3(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::DeclareTxnV3 {
+                    account_deployment_data,
+                    class_hash,
+                    compiled_class_hash,
+                    fee_data_availability_mode: fee_data_availability_mode.into(),
+                    nonce,
+                    nonce_data_availability_mode: nonce_data_availability_mode.into(),
+                    paymaster_data,
+                    resource_bounds: resource_bounds.into(),
+                    sender_address,
+                    signature,
+                    tip: tip.to_hex_string(),
+                },
+            )),
+            Transaction::Deploy(DeployTransaction {
+                contract_address: _,
+                contract_address_salt,
+                class_hash,
+                constructor_calldata,
+                transaction_hash: _,
+                version,
+            }) => Txn::Deploy(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::DeployTxn {
+                    contract_address_salt,
+                    class_hash,
+                    constructor_calldata,
+                    version: version.0,
+                },
+            ),
+            Transaction::DeployAccount(DeployAccountTransaction::V0V1(
+                DeployAccountTransactionV0V1 {
+                    contract_address: _,
+                    transaction_hash: _,
+                    max_fee,
+                    version: _,
+                    signature,
+                    nonce,
+                    contract_address_salt,
+                    constructor_calldata,
+                    class_hash,
+                },
+            )) => Txn::DeployAccount(DeployAccountTxn::V1(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::DeployAccountTxnV1 {
+                    class_hash,
+                    constructor_calldata,
+                    contract_address_salt,
+                    max_fee,
+                    nonce,
+                    signature,
+                },
+            )),
+            Transaction::DeployAccount(DeployAccountTransaction::V3(
+                DeployAccountTransactionV3 {
+                    nonce,
+                    nonce_data_availability_mode,
+                    fee_data_availability_mode,
+                    resource_bounds,
+                    tip,
+                    paymaster_data,
+                    sender_address: _,
+                    signature,
+                    transaction_hash: _,
+                    version: _,
+                    contract_address_salt,
+                    constructor_calldata,
+                    class_hash,
+                },
+            )) => Txn::DeployAccount(DeployAccountTxn::V3(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::DeployAccountTxnV3 {
+                    class_hash,
+                    constructor_calldata,
+                    contract_address_salt,
+                    fee_data_availability_mode: fee_data_availability_mode.into(),
+                    nonce,
+                    nonce_data_availability_mode: nonce_data_availability_mode.into(),
+                    paymaster_data,
+                    resource_bounds: resource_bounds.into(),
+                    signature,
+                    tip,
+                },
+            )),
+            Transaction::Invoke(InvokeTransaction::V0(InvokeTransactionV0 {
+                calldata,
+                sender_address,
+                entry_point_selector,
+                max_fee,
+                signature,
+                transaction_hash: _,
+            })) => Txn::Invoke(InvokeTxn::V0(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::InvokeTxnV0 {
+                    calldata,
+                    contract_address: sender_address,
+                    entry_point_selector,
+                    max_fee,
+                    signature,
+                },
+            )),
+            Transaction::Invoke(InvokeTransaction::V1(InvokeTransactionV1 {
+                calldata,
+                sender_address,
+                max_fee,
+                signature,
+                nonce,
+                transaction_hash: _,
+            })) => Txn::Invoke(InvokeTxn::V1(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::InvokeTxnV1 {
+                    calldata,
+                    sender_address,
+                    max_fee,
+                    signature,
+                    nonce,
+                },
+            )),
+            Transaction::Invoke(InvokeTransaction::V3(InvokeTransactionV3 {
+                nonce,
+                nonce_data_availability_mode,
+                fee_data_availability_mode,
+                resource_bounds,
+                tip,
+                paymaster_data,
+                sender_address,
+                signature,
+                transaction_hash: _,
+                calldata,
+                account_deployment_data,
+            })) => Txn::Invoke(InvokeTxn::V3(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::InvokeTxnV3 {
+                    signature,
+                    nonce,
+                    nonce_data_availability_mode: nonce_data_availability_mode.into(),
+                    fee_data_availability_mode: fee_data_availability_mode.into(),
+                    resource_bounds: resource_bounds.into(),
+                    tip,
+                    paymaster_data,
+                    account_deployment_data,
+                    calldata,
+                    sender_address,
+                },
+            )),
+            Transaction::L1Handler(L1HandlerTransaction {
+                contract_address,
+                entry_point_selector,
+                nonce,
+                calldata,
+                transaction_hash: _,
+                // This should always be zero.
+                version,
+            }) => Txn::L1Handler(
+                starknet_types_rpc::v0_7_1::starknet_api_openrpc::L1HandlerTxn {
+                    nonce: u64::from_str_radix(&nonce.to_hex_string(), 16).unwrap_or_default(),
+                    version: version.0.to_hex_string(),
+                    function_call: starknet_types_rpc::v0_7_1::starknet_api_openrpc::FunctionCall {
+                        calldata,
+                        contract_address,
+                        entry_point_selector,
+                    },
+                },
+            ),
+        };
+        TxnWithHash {
+            transaction: txn,
+            transaction_hash,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -253,10 +531,30 @@ pub struct ResourceBounds {
     pub l2_gas: ResourceBound,
 }
 
+impl From<ResourceBounds>
+    for starknet_types_rpc::v0_7_1::starknet_api_openrpc::ResourceBoundsMapping
+{
+    fn from(value: ResourceBounds) -> Self {
+        Self {
+            l1_gas: value.l1_gas.into(),
+            l2_gas: value.l2_gas.into(),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq, Eq)]
 pub struct ResourceBound {
     pub max_amount: ResourceAmount,
     pub max_price_per_unit: ResourcePricePerUnit,
+}
+
+impl From<ResourceBound> for starknet_types_rpc::v0_7_1::starknet_api_openrpc::ResourceBounds {
+    fn from(value: ResourceBound) -> Self {
+        Self {
+            max_amount: value.max_amount,
+            max_price_per_unit: value.max_price_per_unit,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
@@ -272,44 +570,58 @@ pub struct DeployTransaction {
     pub version: TransactionVersion,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
+const fn transaction_version_zero() -> TransactionVersion {
+    TransactionVersion::ZERO
+}
+
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum DeployAccountTransaction {
     V0V1(DeployAccountTransactionV0V1),
     V3(DeployAccountTransactionV3),
 }
 
-// impl<'de> Deserialize<'de> for DeployAccountTransaction {
-//     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-//     where
-//         D: serde::Deserializer<'de>,
-//     {
-//         use serde::de;
+impl<'de> Deserialize<'de> for DeployAccountTransaction {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        use serde::de;
 
-//         #[serde_as]
-//         #[derive(Deserialize)]
-//         struct Version {
-//             #[serde(default = "transaction_version_zero")]
-//             pub version: TransactionVersion,
-//         }
+        #[serde_as]
+        #[derive(Deserialize)]
+        struct Version {
+            #[serde(default = "transaction_version_zero")]
+            pub version: TransactionVersion,
+        }
 
-//         let v = serde_json::Value::deserialize(deserializer)?;
-//         let version = Version::deserialize(&v).map_err(de::Error::custom)?;
+        let v = serde_json::Value::deserialize(deserializer)?;
+        let version = Version::deserialize(&v).map_err(de::Error::custom)?;
 
-//         match version.version {
-//             TransactionVersion::ZERO => Ok(Self::V0V1(
-//                 DeployAccountTransactionV0V1::deserialize(&v).map_err(de::Error::custom)?,
-//             )),
-//             TransactionVersion::ONE => Ok(Self::V0V1(
-//                 DeployAccountTransactionV0V1::deserialize(&v).map_err(de::Error::custom)?,
-//             )),
-//             TransactionVersion::THREE => Ok(Self::V3(
-//                 DeployAccountTransactionV3::deserialize(&v).map_err(de::Error::custom)?,
-//             )),
-//             _v => Err(de::Error::custom("version must be 0, 1 or 3")),
-//         }
-//     }
-// }
+        match version.version {
+            ver if ver == TransactionVersion::ZERO => Ok(Self::V0V1(
+                serde_json::from_value(v.clone()).map_err(de::Error::custom)?,
+            )),
+            ver if ver == TransactionVersion::ONE => Ok(Self::V0V1(
+                serde_json::from_value(v.clone()).map_err(de::Error::custom)?,
+            )),
+            ver if ver == TransactionVersion::THREE => Ok(Self::V3(
+                serde_json::from_value(v).map_err(de::Error::custom)?,
+            )),
+            _ => Err(de::Error::custom("version must be 0, 1, or 3")),
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Deserialize, Serialize, Default)]
+pub struct TransactionVersion(pub Felt);
+
+impl TransactionVersion {
+    pub const ZERO: Self = Self(Felt::ZERO);
+    pub const ONE: Self = Self(Felt::ONE);
+    pub const TWO: Self = Self(Felt::TWO);
+    pub const THREE: Self = Self(Felt::THREE);
+}
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub struct StarknetVersion(u8, u8, u8, u8);
