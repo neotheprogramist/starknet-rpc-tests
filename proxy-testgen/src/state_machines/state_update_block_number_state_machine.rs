@@ -1,8 +1,10 @@
 use crate::StateMachine;
 use crate::StateMachineResult;
 use anyhow::Result;
+use production_nodes_types::pathfinder_types::types::block_builder_input::TransactionHash;
 use production_nodes_types::pathfinder_types::types::block_hash::{
-    calculate_receipt_commitment, compute_final_hash,
+    calculate_event_commitment, calculate_receipt_commitment, calculate_transaction_commitment,
+    compute_final_hash,
 };
 use production_nodes_types::pathfinder_types::types::gateway_state_update::{
     BlockStateUpdate, StarknetVersion,
@@ -178,6 +180,28 @@ impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
                                         Err(_) => false,
                                     };
 
+                                    let valid_transaction_commitment =
+                                        match calculate_transaction_commitment(
+                                            &block_state_machine.clone().block.transactions,
+                                        ) {
+                                            std::result::Result::Ok(commitment) => {
+                                                commitment
+                                                    == block_state_machine
+                                                        .block
+                                                        .transaction_commitment
+                                            }
+                                            Err(_) => false,
+                                        };
+
+                                    let valid_event_commitment = match compute_event_commitment(
+                                        block_state_machine.clone().block.transaction_receipts,
+                                    ) {
+                                        std::result::Result::Ok(commitment) => {
+                                            commitment == block_state_machine.block.event_commitment
+                                        }
+                                        Err(_) => false,
+                                    };
+
                                     let valid_state_diff_commitment =
                                         compute_state_diff(
                                             block_state_machine.clone().state_update,
@@ -194,6 +218,8 @@ impl StateMachine for StateUpdateBlockNumberStateMachineWrapper {
 
                                     let valid_hashes = valid_receipt_commitment
                                         && valid_state_diff_commitment
+                                        && valid_event_commitment
+                                        && valid_transaction_commitment
                                         && is_valid_block_hash;
 
                                     if valid_hashes {
@@ -257,6 +283,15 @@ pub fn compute_receipt_commitment(
         .collect();
 
     calculate_receipt_commitment(&receipts)
+}
+
+pub fn compute_event_commitment(transaction_receipts: Vec<(Receipt, Vec<Event>)>) -> Result<Felt> {
+    let transaction_events: Vec<(TransactionHash, Vec<Event>)> = transaction_receipts
+        .into_iter()
+        .map(|(receipt, events)| (receipt.transaction_hash, events.to_owned()))
+        .collect();
+
+    calculate_event_commitment(&transaction_events)
 }
 
 impl StateUpdateBlockNumberStateMachineWrapper {

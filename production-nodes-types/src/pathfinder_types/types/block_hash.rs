@@ -1,6 +1,7 @@
 use std::io;
 
 use super::block::BlockHeaderData;
+use super::block_builder_input::TransactionHash;
 use super::header::{BlockHeader, L1DataAvailabilityMode};
 use crate::pathfinder_types::types::event::Event;
 use crate::pathfinder_types::types::hash::{FeltHash, PoseidonHash};
@@ -70,16 +71,6 @@ pub fn compute_final_hash(header: &BlockHeaderData) -> Result<Felt, io::Error> {
 
     let concat_counts = Felt::from_bytes_be_slice(concat_bytes.as_slice());
 
-    // let mut concat_counts = [0u8; 32];
-    // let mut writer = concat_counts.as_mut_slice();
-    // writer.write_all(&header.transaction_count.to_be_bytes())?;
-    // writer.write_all(&header.event_count.to_be_bytes())?;
-    // writer.write_all(&header.state_diff_length.to_be_bytes())?;
-    // writer.write_all(&[match header.l1_da_mode {
-    //     L1DataAvailabilityMode::Calldata => 0,
-    //     L1DataAvailabilityMode::Blob => 0b10000000,
-    // }])?;
-    // let concat_counts = Felt::from_bytes_be(&concat_counts);
     // Hash the block header.
     let data = vec![
         Felt::from_bytes_be_slice(b"STARKNET_BLOCK_HASH0"),
@@ -121,53 +112,6 @@ pub fn calculate_transaction_commitment(transactions: &[TxnWithHash<Felt>]) -> R
 
     calculate_commitment_root::<PoseidonHash>(final_hashes)
 }
-
-// pub fn calculate_receipt_commitment(receipts: &[ThinReceipt]) -> Result<Felt> {
-//     use rayon::prelude::*;
-
-//     let hashes: Vec<Felt> = receipts
-//         .par_iter()
-//         .map(|receipt| {
-//             // Gather all components of the hash into a single vector of Felts
-//             let mut data = vec![
-//                 receipt.transaction_hash,
-//                 receipt.actual_fee.into(),
-//                 // L2 to L1 message data
-//                 (receipt.l2_to_l1_messages.len() as u64).into(),
-//             ];
-
-//             for msg in &receipt.l2_to_l1_messages {
-//                 data.push(msg.from_address);
-//                 data.push(msg.to_address);
-//                 data.push((msg.payload.len() as u64).into());
-//                 data.extend(msg.payload.iter().copied());
-//             }
-
-//             // Revert reason hash
-//             let revert_reason_hash = match &receipt.revert_reason {
-//                 None => Felt::ZERO,
-//                 Some(reason) => {
-//                     let mut keccak = sha3::Keccak256::default();
-//                     keccak.update(reason.as_bytes());
-//                     let mut hashed_bytes: [u8; 32] = keccak.finalize().into();
-//                     hashed_bytes[0] &= 0b00000011_u8; // Discard the six MSBs
-//                     Felt::from_bytes_be(&hashed_bytes)
-//                 }
-//             };
-//             data.push(revert_reason_hash);
-
-//             // Execution resources
-//             data.push(Felt::ZERO); // L2 gas placeholder
-//             data.push(receipt.l1_gas.into()); // L1 gas consumed
-//             data.push(receipt.l1_data_gas.into()); // L1 data gas consumed
-
-//             // Compute the hash for the entire data vector
-//             Poseidon::hash_array(&data)
-//         })
-//         .collect();
-
-//     calculate_commitment_root::<PoseidonHash>(hashes)
-// }
 
 pub fn calculate_receipt_commitment(receipts: &[super::receipt::Receipt]) -> Result<Felt> {
     use rayon::prelude::*;
@@ -276,7 +220,9 @@ fn calculate_transaction_hash_with_signature(tx: &TxnWithHash<Felt>) -> Felt {
 /// The event commitment is the root of the Patricia Merkle tree with height 64
 /// constructed by adding the (event_index, event_hash) key-value pairs to the
 /// tree and computing the root hash.
-pub fn calculate_event_commitment(transaction_events: &Vec<(Felt, Vec<Event>)>) -> Result<Felt> {
+pub fn calculate_event_commitment(
+    transaction_events: &Vec<(TransactionHash, Vec<Event>)>,
+) -> Result<Felt> {
     use rayon::prelude::*;
 
     let event_hashes = transaction_events

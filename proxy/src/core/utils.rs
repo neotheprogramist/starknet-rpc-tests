@@ -52,13 +52,11 @@ async fn write_response_to_stream(
     response: reqwest::Response,
 ) -> Result<String, ProxyError> {
     let status = response.status();
-    let headers = response.headers().clone();
     let body_bytes = response.bytes().await?;
 
     let body = String::from_utf8_lossy(&body_bytes).to_string();
 
     info!("Response Status: {}", status);
-    info!("Response Headers: {:?}", headers);
     info!("Response Body: {}", body);
 
     if status.is_success() {
