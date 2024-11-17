@@ -1,4 +1,5 @@
 pub mod args;
+pub mod txn_hashes;
 pub mod txn_validation;
 use args::Args;
 use clap::Parser;
