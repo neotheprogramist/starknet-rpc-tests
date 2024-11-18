@@ -7,7 +7,10 @@ use crate::{
     utils::v7::{
         accounts::account::ConnectedAccount,
         contract::factory::ContractFactory,
-        endpoints::errors::{CallError, RpcError},
+        endpoints::{
+            errors::{CallError, RpcError},
+            utils::wait_for_sent_transaction,
+        },
         providers::provider::Provider,
     },
     RandomizableAccountsTrait, SetupableTrait,
@@ -47,6 +50,12 @@ impl SetupableTrait for TestSuiteContractCalls {
             .deploy_v3(vec![], Felt::from_bytes_be(&salt_buffer), true)
             .send()
             .await?;
+
+        wait_for_sent_transaction(
+            deployment_result.transaction_hash,
+            &setup_input.random_paymaster_account.random_accounts()?,
+        )
+        .await?;
 
         let deployment_receipt = setup_input
             .random_paymaster_account

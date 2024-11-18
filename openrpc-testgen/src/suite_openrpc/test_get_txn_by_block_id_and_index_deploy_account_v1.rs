@@ -118,7 +118,7 @@ impl RunnableTrait for TestCase {
             Txn::DeployAccount(DeployAccountTxn::V1(_)) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc get_transaction_by_block_id_and_index_deploy_account_v3 COMPATIBLE"
+                    "\n✓ Rpc get_transaction_by_block_id_and_index_deploy_account_v1 COMPATIBLE"
                         .green(),
                     "✓".green()
                 );
@@ -127,7 +127,7 @@ impl RunnableTrait for TestCase {
                 let error_message = format!("Unexpected transaction response type: {:?}", txn);
                 error!(
                     "{} {} {}",
-                    "✗ Rpc get_transaction_by_block_id_and_index_deploy_account_v3 INCOMPATIBLE:"
+                    "✗ Rpc get_transaction_by_block_id_and_index_deploy_account_v1 INCOMPATIBLE:"
                         .red(),
                     error_message,
                     "✗".red()

@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: openrpc-testgen-runner-pod
+spec:
+  containers:
+    - name: openrpc-testgen-runner
+      image: uacias/openrpc-testgen-runner:v0.0.5
+      command: ["/bin/sh", "-c", "sleep infinity"]
+  restartPolicy: Never

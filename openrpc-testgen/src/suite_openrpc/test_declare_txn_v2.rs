@@ -7,10 +7,11 @@ use crate::{
                 RunnerError,
             },
             errors::RpcError,
+            utils::wait_for_sent_transaction,
         },
         providers::provider::ProviderError,
     },
-    RunnableTrait,
+    RandomizableAccountsTrait, RunnableTrait,
 };
 use colored::Colorize;
 use std::{path::PathBuf, str::FromStr, sync::Arc};
@@ -34,7 +35,15 @@ impl RunnableTrait for TestCase {
             .send()
             .await
         {
-            Ok(result) => Ok(result.class_hash),
+            Ok(result) => {
+                wait_for_sent_transaction(
+                    result.transaction_hash,
+                    &test_input.random_paymaster_account.random_accounts()?,
+                )
+                .await?;
+
+                Ok(result.class_hash)
+            }
             Err(AccountError::Signing(sign_error)) => {
                 if sign_error.to_string().contains("is already declared") {
                     Ok(parse_class_hash_from_error(&sign_error.to_string())?)
@@ -58,7 +67,14 @@ impl RunnableTrait for TestCase {
             }
             Err(e) => {
                 let full_error_message = format!("{:?}", e);
-                Ok(extract_class_hash_from_error(&full_error_message)?)
+
+                if full_error_message.contains("is already declared") {
+                    Ok(extract_class_hash_from_error(&full_error_message)?)
+                } else {
+                    let full_error_message = format!("{:?}", e);
+
+                    panic!("err {:?}", full_error_message);
+                }
             }
         };
 

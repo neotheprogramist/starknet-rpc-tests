@@ -47,15 +47,23 @@ impl RunnableTrait for TestCase {
             PathBuf::from_str("target/dev/contracts_TestToken.compiled_contract_class.json")?,
         )
         .await?;
-
         // Declare and deploy erc20
+
         let declaration_hash = match test_input
             .random_paymaster_account
             .declare_v3(erc_20_flattened_sierra_class, erc_20_compiled_class_hash)
             .send()
             .await
         {
-            Ok(result) => Ok(result.class_hash),
+            Ok(result) => {
+                wait_for_sent_transaction(
+                    result.transaction_hash,
+                    &test_input.random_paymaster_account.random_accounts()?,
+                )
+                .await?;
+
+                Ok(result.class_hash)
+            }
             Err(AccountError::Signing(sign_error)) => {
                 if sign_error.to_string().contains("is already declared") {
                     Ok(parse_class_hash_from_error(&sign_error.to_string())?)
@@ -79,14 +87,22 @@ impl RunnableTrait for TestCase {
             }
             Err(e) => {
                 let full_error_message = format!("{:?}", e);
-                Ok(extract_class_hash_from_error(&full_error_message)?)
+
+                if full_error_message.contains("is already declared") {
+                    Ok(extract_class_hash_from_error(&full_error_message)?)
+                } else {
+                    let full_error_message = format!("{:?}", e);
+
+                    panic!("err {:?}", full_error_message);
+                }
             }
-        };
+        }?;
 
         let factory = ContractFactory::new(
-            declaration_hash?,
+            declaration_hash,
             test_input.random_paymaster_account.random_accounts()?,
         );
+
         let mut salt_buffer = [0u8; 32];
         let mut rng = StdRng::from_entropy();
         rng.fill_bytes(&mut salt_buffer[1..]);
@@ -141,11 +157,17 @@ impl RunnableTrait for TestCase {
             ],
         };
 
-        test_input
+        let res = test_input
             .random_paymaster_account
             .execute_v3(vec![erc20_mint_call])
             .send()
             .await?;
+
+        wait_for_sent_transaction(
+            res.transaction_hash,
+            &test_input.random_paymaster_account.random_accounts()?,
+        )
+        .await?;
 
         // Prepare erc20 transfer call
         let account_erc20_receiver_address =
@@ -176,11 +198,9 @@ impl RunnableTrait for TestCase {
 
         let hash = Poseidon::hash_array(outside_execution_cairo_serialized);
 
-        let starknet::core::crypto::ExtendedSignature { r, s, v: _ } = ecdsa_sign(
-            &Felt::from_hex("0x0000000000000000000000000000000071d7bb07b9a64f6f78ac4c816aff4da9")?, //paymaster pk
-            &hash,
-        )
-        .unwrap();
+        //paymaster pk
+        let starknet::core::crypto::ExtendedSignature { r, s, v: _ } =
+            ecdsa_sign(&test_input.paymaster_private_key, &hash).unwrap();
 
         let mut calldata_to_executable_account_call = outside_execution_cairo_serialized.clone();
         calldata_to_executable_account_call.push(Felt::from_dec_str("2")?);
@@ -223,7 +243,7 @@ impl RunnableTrait for TestCase {
                         .random_accounts()?
                         .address()],
                     contract_address: Felt::from_hex(
-                        "0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7",
+                        "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
                     )?,
                     entry_point_selector: get_selector_from_name("balance_of")?,
                 },
@@ -231,11 +251,17 @@ impl RunnableTrait for TestCase {
             )
             .await?;
 
-        test_input
+        let hash = test_input
             .random_paymaster_account
-            .execute_v1(vec![call_to_executable_account])
+            .execute_v3(vec![call_to_executable_account])
             .send()
             .await?;
+
+        wait_for_sent_transaction(
+            hash.transaction_hash,
+            &test_input.random_paymaster_account.random_accounts()?,
+        )
+        .await?;
 
         let exec_balance_after_transfer = test_input
             .random_executable_account
@@ -263,7 +289,7 @@ impl RunnableTrait for TestCase {
                         .random_accounts()?
                         .address()],
                     contract_address: Felt::from_hex(
-                        "0x49D36570D4E46F48E99674BD3FCC84644DDD6B96F7C741B1562B82F9E004DC7",
+                        "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
                     )?,
                     entry_point_selector: get_selector_from_name("balance_of")?,
                 },
@@ -285,6 +311,7 @@ impl RunnableTrait for TestCase {
             .await?;
 
         // Prepare assert data
+
         let receiver_balance_after_txn = felts_slice_to_biguint(receiver_balance_after_txn)?;
         let amount_to_transfer = felts_slice_to_biguint(amount_to_transfer)?;
 
@@ -303,6 +330,7 @@ impl RunnableTrait for TestCase {
 
         let paymaster_balance_after = felts_slice_to_biguint(paymaster_balance_after)?;
         let paymaster_balance_before = felts_slice_to_biguint(paymaster_balance_before)?;
+
         assert_result!(
             paymaster_balance_after < paymaster_balance_before,
             "Gas balance on paymaster account did not decrease after transaction."

@@ -38,7 +38,7 @@ impl RunnableTrait for TestCase {
         )
         .await?;
 
-        let transfer_amount = Felt::from_hex("0xffffffffffff")?;
+        let transfer_amount = Felt::from_hex("0xfffffffffffffff")?;
 
         let transfer_execution = test_input
             .random_paymaster_account

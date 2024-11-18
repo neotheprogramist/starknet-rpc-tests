@@ -4,7 +4,7 @@ metadata:
   name: pathfinder
 spec:
   serviceName: pathfinder
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: pathfinder
@@ -37,7 +37,7 @@ spec:
               mountPath: /usr/share/pathfinder/data
       containers:
         - name: pathfinder
-          image: docker.io/piotr439/pathfinder:eqlabs-certs
+          image: docker.io/eqlabs/pathfinder:v0.14.4
           ports:
             - containerPort: 80
             - containerPort: 9090

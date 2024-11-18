@@ -31,9 +31,10 @@ impl RunnableTrait for TestCase {
             Option::None,
             Some(test_input.account_class_hash),
         )
-        .await?;
+        .await
+        .unwrap();
 
-        let deploy_account_account_call = Call {
+        let deploy_account_call = Call {
             to: test_input.udc_address,
             selector: get_selector_from_name("deployContract")?,
             calldata: vec![
@@ -47,7 +48,7 @@ impl RunnableTrait for TestCase {
 
         let deploy_account_result = test_input
             .random_paymaster_account
-            .execute_v3(vec![deploy_account_account_call])
+            .execute_v3(vec![deploy_account_call])
             .send()
             .await?;
 

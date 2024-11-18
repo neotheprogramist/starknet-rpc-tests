@@ -13,7 +13,7 @@ members = [
   "production-nodes-types",
   "openrpc-testgen",
 
-  "openrpc-testgen-runner",
+  "openrpc-testgen-runner", "openrpc-minimal",
 ]
 
 [workspace.package]

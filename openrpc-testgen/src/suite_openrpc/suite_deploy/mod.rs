@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{BlockId, ClassAndTxnHash, DeclareTxn, EventFilterWithPageRequest, Txn};
+use tracing::info;
 
 use super::RandomSingleOwnerAccount;
 use crate::{
@@ -13,6 +14,7 @@ use crate::{
                 RunnerError,
             },
             errors::RpcError,
+            utils::wait_for_sent_transaction,
         },
         providers::provider::{Provider, ProviderError},
     },
@@ -23,7 +25,7 @@ pub mod suite_contract_calls;
 pub mod test_deploy_txn_v1;
 pub mod test_deploy_txn_v3;
 pub mod test_get_class;
-pub mod test_get_txn_by_block_id_and_index_deploy_v2;
+pub mod test_get_txn_by_block_id_and_index_deploy_v1;
 pub mod test_get_txn_by_block_id_and_index_deploy_v3;
 
 #[derive(Clone, Debug)]
@@ -50,7 +52,14 @@ impl SetupableTrait for TestSuiteDeploy {
             .send()
             .await
         {
-            Ok(result) => Ok(result),
+            Ok(result) => {
+                wait_for_sent_transaction(
+                    result.transaction_hash,
+                    &setup_input.random_paymaster_account.random_accounts()?,
+                )
+                .await?;
+                Ok(result)
+            }
             Err(AccountError::Signing(sign_error)) => {
                 if sign_error.to_string().contains("is already declared") {
                     Ok(ClassAndTxnHash {
@@ -80,66 +89,76 @@ impl SetupableTrait for TestSuiteDeploy {
             }
             Err(e) => {
                 let full_error_message = format!("{:?}", e);
-                let class_hash = extract_class_hash_from_error(&full_error_message)?;
 
-                let filter = EventFilterWithPageRequest {
-                    address: None,
-                    from_block: Some(BlockId::Number(0)),
-                    to_block: None,
-                    keys: None,
-                    chunk_size: 100,
-                    continuation_token: None,
-                };
+                if full_error_message.contains("is already declared") {
+                    let class_hash = extract_class_hash_from_error(&full_error_message)?;
 
-                let provider = setup_input.random_paymaster_account.provider();
-                let random_account_address = setup_input
-                    .random_paymaster_account
-                    .random_accounts()?
-                    .address();
+                    let filter = EventFilterWithPageRequest {
+                        address: None,
+                        from_block: Some(BlockId::Number(322421)),
+                        to_block: Some(BlockId::Number(322421)),
+                        keys: Some(vec![vec![]]),
+                        chunk_size: 100,
+                        continuation_token: None,
+                    };
 
-                let mut continuation_token = None;
-                let mut found_txn_hash = None;
+                    let provider = setup_input.random_paymaster_account.provider();
+                    let random_account_address = setup_input
+                        .random_paymaster_account
+                        .random_accounts()?
+                        .address();
 
-                loop {
-                    let mut current_filter = filter.clone();
-                    current_filter.continuation_token = continuation_token.clone();
+                    let mut continuation_token = None;
+                    let mut found_txn_hash = None;
 
-                    let events_chunk = provider.get_events(current_filter).await?;
-                    for event in events_chunk.events {
-                        if event.event.keys.contains(&random_account_address) {
-                            let txn_hash = event.transaction_hash;
+                    loop {
+                        let mut current_filter = filter.clone();
+                        current_filter.continuation_token = continuation_token.clone();
 
-                            let txn_details = provider.get_transaction_by_hash(txn_hash).await?;
+                        let events_chunk = provider.get_events(current_filter).await.unwrap();
 
-                            if let Txn::Declare(DeclareTxn::V3(declare_txn)) = txn_details {
-                                if declare_txn.class_hash == class_hash {
-                                    found_txn_hash = Some(txn_hash);
-                                    break;
+                        for event in events_chunk.events {
+                            if event.event.data.contains(&random_account_address) {
+                                let txn_hash = event.transaction_hash;
+
+                                let txn_details =
+                                    provider.get_transaction_by_hash(txn_hash).await?;
+
+                                if let Txn::Declare(DeclareTxn::V3(declare_txn)) = txn_details {
+                                    if declare_txn.class_hash == class_hash {
+                                        found_txn_hash = Some(txn_hash);
+                                        break;
+                                    }
                                 }
                             }
                         }
+
+                        if found_txn_hash.is_some() {
+                            break;
+                        }
+
+                        if let Some(token) = events_chunk.continuation_token {
+                            continuation_token = Some(token);
+                        } else {
+                            break;
+                        }
                     }
 
-                    if found_txn_hash.is_some() {
-                        break;
-                    }
-
-                    if let Some(token) = events_chunk.continuation_token {
-                        continuation_token = Some(token);
+                    if let Some(tx_hash) = found_txn_hash {
+                        Ok(ClassAndTxnHash {
+                            class_hash,
+                            transaction_hash: tx_hash,
+                        })
                     } else {
-                        break;
+                        info!("Transaction hash not found for the declared clas");
+                        Err(RpcError::RunnerError(RunnerError::AccountFailure(
+                            "Transaction hash not found for the declared class.".to_string(),
+                        )))
                     }
-                }
-
-                if let Some(tx_hash) = found_txn_hash {
-                    Ok(ClassAndTxnHash {
-                        class_hash,
-                        transaction_hash: tx_hash,
-                    })
                 } else {
-                    Err(RpcError::RunnerError(RunnerError::AccountFailure(
-                        "Transaction hash not found for the declared class.".to_string(),
-                    )))
+                    return Err(RpcError::AccountError(AccountError::Other(
+                        full_error_message,
+                    )));
                 }
             }
         }?;
