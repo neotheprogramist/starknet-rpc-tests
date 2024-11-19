@@ -4,7 +4,6 @@
 # accounts-file = "~/.starknet_accounts/starknet_open_zeppelin_accounts.json"
 # url = "http://127.0.0.1:5050"
 
-
 account = "sepolia_rich"
 accounts-file = "~/.starknet_accounts/starknet_open_zeppelin_accounts.json"
 url = "https://starknet-sepolia.g.alchemy.com/starknet/version/rpc/v0_7/-XuK5Z_YA43S7-3S4GaCB-Y0zgj__Ewg"

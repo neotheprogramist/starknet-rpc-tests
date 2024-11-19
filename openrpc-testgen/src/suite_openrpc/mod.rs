@@ -37,6 +37,7 @@ use crate::{
 pub mod suite_deploy;
 pub mod test_declare_txn_v2;
 pub mod test_declare_txn_v3;
+pub mod test_deploy_account_outside_execution;
 pub mod test_erc20_transfer;
 pub mod test_get_block_number;
 pub mod test_get_block_txn_count;

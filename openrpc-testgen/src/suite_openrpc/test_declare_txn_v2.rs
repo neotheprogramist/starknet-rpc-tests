@@ -14,6 +14,7 @@ use crate::{
     RandomizableAccountsTrait, RunnableTrait,
 };
 use colored::Colorize;
+
 use std::{path::PathBuf, str::FromStr, sync::Arc};
 use tracing::{error, info};
 
@@ -73,7 +74,9 @@ impl RunnableTrait for TestCase {
                 } else {
                     let full_error_message = format!("{:?}", e);
 
-                    panic!("err {:?}", full_error_message);
+                    return Err(RpcError::AccountError(AccountError::Other(
+                        full_error_message,
+                    )));
                 }
             }
         };

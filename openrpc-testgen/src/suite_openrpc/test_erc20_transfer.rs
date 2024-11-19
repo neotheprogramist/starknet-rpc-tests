@@ -152,7 +152,7 @@ impl RunnableTrait for TestCase {
                     .random_executable_account
                     .random_accounts()?
                     .address(),
-                Felt::from_hex("0x123")?,
+                Felt::from_hex("0x1234")?,
                 Felt::ZERO,
             ],
         };
@@ -189,7 +189,7 @@ impl RunnableTrait for TestCase {
                 .random_paymaster_account
                 .random_accounts()?
                 .address(),
-            nonce: Felt::ZERO,
+            nonce: Felt::ONE,
             calls: vec![erc20_transfer_call],
         };
 

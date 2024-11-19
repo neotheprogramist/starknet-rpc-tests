@@ -20,8 +20,8 @@ use starknet_types_rpc::{
     BlockId, BlockTag, TxnExecutionStatus, TxnFinalityAndExecutionStatus, TxnStatus,
 };
 use tokio::io::AsyncReadExt;
-use tracing::debug;
-use tracing::{error, warn};
+
+use tracing::{error, info, warn};
 use url::Url;
 
 use super::{declare_contract::RunnerError, errors::NonAsciiNameError};
@@ -77,7 +77,7 @@ pub async fn restart_devnet(url: Url) -> Result<(), RpcError> {
     let url = url.join("/restart")?;
     let response = client.post(url).send().await?;
     if response.status().is_success() {
-        debug!("Devnet restarted successfully.");
+        info!("Devnet restarted successfully.");
         Ok(())
     } else {
         error!("Failed to restart Devnet. Status: {}", response.status());
@@ -190,11 +190,17 @@ pub async fn wait_for_sent_transaction(
     let start_fetching = std::time::Instant::now();
     let wait_for = Duration::from_secs(60);
 
+    info!(
+        "⏳ Waiting for transaction: {:?} to be mined.",
+        transaction_hash
+    );
+
     loop {
         if start_fetching.elapsed() > wait_for {
-            return Err(RpcError::Timeout(
-                "Transaction not mined in 60 seconds.".to_string(),
-            ));
+            return Err(RpcError::Timeout(format!(
+                "Transaction {:?} not mined in 60 seconds.",
+                transaction_hash
+            )));
         }
 
         // Check transaction status
@@ -205,6 +211,10 @@ pub async fn wait_for_sent_transaction(
         {
             Ok(status) => status,
             Err(_e) => {
+                info!(
+                    "Error while checking status for transaction: {:?}. Retrying...",
+                    transaction_hash
+                );
                 tokio::time::sleep(Duration::from_secs(1)).await;
                 continue;
             }
@@ -216,8 +226,9 @@ pub async fn wait_for_sent_transaction(
                 execution_status: Some(TxnExecutionStatus::Succeeded),
                 ..
             } => {
-                debug!(
-                    "Transaction status: AcceptedOnL2 and Succeeded. Checking block inclusion..."
+                info!(
+                    "Transaction {:?} status: AcceptedOnL2 and Succeeded. Checking block inclusion...",
+                    transaction_hash
                 );
 
                 // Check if the transaction is in the pending block
@@ -245,22 +256,27 @@ pub async fn wait_for_sent_transaction(
                 };
 
                 if in_pending && !in_latest {
-                    debug!(
-                        "Transaction is in Pending block but not yet in Latest block. Retrying..."
+                    info!(
+                        "Transaction {:?} is in Pending block but not yet in Latest block. Retrying...",
+                        transaction_hash
                     );
-                    tokio::time::sleep(Duration::from_secs(1)).await;
+                    tokio::time::sleep(Duration::from_secs(2)).await;
                     continue;
                 }
 
                 if in_latest && !in_pending {
-                    debug!(
-                        "✅ Transaction confirmed in Latest block and not in Pending. Finishing..."
+                    info!(
+                        "✅ Transaction {:?} confirmed in Latest block and not in Pending. Finishing...",
+                        transaction_hash
                     );
                     return Ok(status);
                 }
 
-                debug!("Transaction is neither in Latest nor finalized. Retrying...");
-                tokio::time::sleep(Duration::from_secs(1)).await;
+                info!(
+                    "Transaction {:?} is neither in Latest nor finalized. Retrying...",
+                    transaction_hash
+                );
+                tokio::time::sleep(Duration::from_secs(2)).await;
                 continue;
             }
             TxnFinalityAndExecutionStatus {
@@ -268,19 +284,47 @@ pub async fn wait_for_sent_transaction(
                 execution_status: Some(TxnExecutionStatus::Reverted),
                 ..
             } => {
-                debug!("❌ Transaction reverted on L2. Stopping...");
+                info!(
+                    "❌ Transaction {:?} reverted on L2. Stopping...",
+                    transaction_hash
+                );
                 return Err(RpcError::TransactionFailed(transaction_hash.to_string()));
             }
             TxnFinalityAndExecutionStatus {
                 finality_status: TxnStatus::Rejected,
                 ..
             } => {
-                debug!("❌ Transaction rejected. Stopping...");
+                info!(
+                    "❌ Transaction {:?} rejected. Stopping...",
+                    transaction_hash
+                );
                 return Err(RpcError::TransactionRejected(transaction_hash.to_string()));
             }
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::Received,
+                ..
+            } => {
+                info!(
+                    "🛎️ Transaction {:?} received. Retrying...",
+                    transaction_hash
+                );
+                tokio::time::sleep(Duration::from_secs(2)).await;
+                continue;
+            }
+            TxnFinalityAndExecutionStatus {
+                finality_status: TxnStatus::AcceptedOnL1,
+                ..
+            } => {
+                info!("✅ Transaction acceoted on L1. Finishing...");
+                return Ok(status);
+            }
+
             _ => {
-                debug!("Transaction status not finalized. Retrying...");
-                tokio::time::sleep(Duration::from_secs(1)).await;
+                info!(
+                    "⏳ Transaction {} status not finalized. Retrying...",
+                    transaction_hash
+                );
+                tokio::time::sleep(Duration::from_secs(2)).await;
                 continue;
             }
         }

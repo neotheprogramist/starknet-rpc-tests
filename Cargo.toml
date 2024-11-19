@@ -12,8 +12,7 @@ members = [
   "proxy-testgen",
   "production-nodes-types",
   "openrpc-testgen",
-
-  "openrpc-testgen-runner", "openrpc-minimal",
+  "openrpc-testgen-runner",
 ]
 
 [workspace.package]

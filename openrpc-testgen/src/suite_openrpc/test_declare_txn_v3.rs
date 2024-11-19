@@ -76,7 +76,9 @@ impl RunnableTrait for TestCase {
                 } else {
                     let full_error_message = format!("{:?}", e);
 
-                    panic!("err {:?}", full_error_message);
+                    return Err(RpcError::AccountError(AccountError::Other(
+                        full_error_message,
+                    )));
                 }
             }
         };
