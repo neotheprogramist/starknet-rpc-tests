@@ -191,6 +191,31 @@ pub enum RecoverError {
     InvalidV,
 }
 
+impl fmt::Display for RecoverError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            RecoverError::InvalidMessageHash => {
+                write!(f, "The message hash is not in the valid range [0, 2^251).")
+            }
+            RecoverError::InvalidR => {
+                write!(f, "The 'r' value is not in the valid range [0, 2^251).")
+            }
+            RecoverError::InvalidS => {
+                write!(
+                    f,
+                    "The 's' value is not in the valid range [0, \
+                     0x0800000000000010ffffffffffffffffb781126dcae7b2321e66a241adc64d2f)."
+                )
+            }
+            RecoverError::InvalidV => {
+                write!(f, "The 'v' value is neither '0' nor '1'.")
+            }
+        }
+    }
+}
+
+impl StdError for RecoverError {}
+
 pub fn compute_hash_on_elements<'a, ESI, II>(data: II) -> Felt
 where
     ESI: ExactSizeIterator<Item = &'a Felt>,
