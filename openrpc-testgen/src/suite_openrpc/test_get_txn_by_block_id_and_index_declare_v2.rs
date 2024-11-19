@@ -10,7 +10,6 @@ use crate::{
             },
             errors::RpcError,
             utils::wait_for_sent_transaction,
-            utils::wait_for_sent_transaction,
         },
         providers::provider::{Provider, ProviderError},
     },
