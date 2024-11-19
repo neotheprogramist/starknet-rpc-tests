@@ -7,7 +7,7 @@ pub struct Args {
     pub file_path: PathBuf,
 
     #[arg(short, long, env)]
-    pub public_key: String,
+    pub public_key: Option<String>,
 
     #[arg(short, long, env)]
     pub chain_id: String,

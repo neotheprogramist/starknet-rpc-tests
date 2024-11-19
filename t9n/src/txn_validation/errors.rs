@@ -1,4 +1,4 @@
-use crypto_utils::curve::signer::VerifyError;
+use crypto_utils::curve::signer::{RecoverError, VerifyError};
 use serde_json;
 use std::num::ParseIntError;
 use thiserror::Error;
@@ -15,4 +15,6 @@ pub enum Error {
     ResourceNameError,
     #[error(transparent)]
     VerifyError(#[from] VerifyError),
+    #[error(transparent)]
+    RecoverError(#[from] RecoverError),
 }

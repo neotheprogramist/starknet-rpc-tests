@@ -6,7 +6,9 @@ build = "build.rs"
 
 [dependencies]
 anyhow = "1.0.75"
+base64 = "0.13.1"
 colored.workspace = true
+flate2 = { version = ">= 1.0.26, < 1.0.27" }
 num-bigint = "0.4.6"
 num-traits = "0.2.19"
 production-nodes-types = { path = "../production-nodes-types" }
@@ -18,3 +20,5 @@ starknet-types-core.workspace = true
 starknet-types-rpc.workspace = true
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 tracing.workspace = true
+thiserror.workspace = true
+t9n = { path = "../t9n" }
