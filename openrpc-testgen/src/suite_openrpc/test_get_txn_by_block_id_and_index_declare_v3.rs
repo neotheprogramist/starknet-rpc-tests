@@ -9,6 +9,7 @@ use crate::{
                 RunnerError,
             },
             errors::RpcError,
+            utils::wait_for_sent_transaction,
         },
         providers::provider::{Provider, ProviderError},
     },
@@ -40,6 +41,11 @@ impl RunnableTrait for TestCase {
             .await
         {
             Ok(result) => {
+                wait_for_sent_transaction(
+                    result.transaction_hash,
+                    &test_input.random_paymaster_account.random_accounts()?,
+                )
+                .await?;
                 let block_number = test_input
                     .random_paymaster_account
                     .provider()
