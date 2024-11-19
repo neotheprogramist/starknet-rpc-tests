@@ -9,6 +9,7 @@ use crate::{
                 RunnerError,
             },
             errors::RpcError,
+            utils::wait_for_sent_transaction,
         },
         providers::provider::{Provider, ProviderError},
     },
@@ -32,7 +33,6 @@ impl RunnableTrait for TestCase {
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_4_HelloStarknet.compiled_contract_class.json")?,
         )
         .await?;
-
         let (declaration_tx_hash, tx_block) = match test_input
             .random_paymaster_account
             .declare_v2(Arc::new(flattened_sierra_class), compiled_class_hash)
@@ -40,6 +40,11 @@ impl RunnableTrait for TestCase {
             .await
         {
             Ok(result) => {
+                wait_for_sent_transaction(
+                    result.transaction_hash,
+                    &test_input.random_paymaster_account.random_accounts()?,
+                )
+                .await?;
                 let block_number = test_input
                     .random_paymaster_account
                     .provider()
@@ -130,6 +135,7 @@ impl RunnableTrait for TestCase {
                             break;
                         }
                     }
+                    println!("xd8");
 
                     if let (Some(tx_hash), Some(block_number)) =
                         (found_txn_hash, found_block_number)
@@ -153,7 +159,7 @@ impl RunnableTrait for TestCase {
             .provider()
             .get_block_with_txs(BlockId::Number(tx_block))
             .await?;
-
+        println!("{:?}", block_with_txns);
         let txn_index: u64 = match block_with_txns {
             MaybePendingBlockWithTxs::Block(block_with_txs) => block_with_txs
                 .transactions
@@ -176,7 +182,6 @@ impl RunnableTrait for TestCase {
             .provider()
             .get_transaction_by_block_id_and_index(BlockId::Number(tx_block), txn_index)
             .await?;
-
         match txn {
             Txn::Declare(DeclareTxn::V2(_)) => {
                 info!(
@@ -196,7 +201,6 @@ impl RunnableTrait for TestCase {
                 return Err(RpcError::UnexpectedTxnType(error_message));
             }
         }
-
         Ok(Self {})
     }
 }
