@@ -13,7 +13,7 @@ use std::path::PathBuf;
 
 pub fn validate_txn_json(
     file_path: &PathBuf,
-    public_key: &str,
+    public_key: Option<&str>,
     chain_id: &str,
 ) -> SerdeResult<Value> {
     let file = File::open(file_path).map_err(|e| {
