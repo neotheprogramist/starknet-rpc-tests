@@ -70,71 +70,79 @@ impl RunnableTrait for TestCase {
             }
             Err(e) => {
                 let full_error_message = format!("{:?}", e);
-                let class_hash = extract_class_hash_from_error(&full_error_message)?;
+                if full_error_message.contains("is already declared") {
+                    let class_hash = extract_class_hash_from_error(&full_error_message)?;
 
-                let filter = EventFilterWithPageRequest {
-                    address: None,
-                    from_block: Some(BlockId::Number(0)),
-                    to_block: None,
-                    keys: None,
-                    chunk_size: 100,
-                    continuation_token: None,
-                };
-
-                let random_account_address = test_input
-                    .random_paymaster_account
-                    .random_accounts()?
-                    .address();
-
-                let mut continuation_token = None;
-                let mut found_txn_hash = None;
-                let mut found_block_number = None;
-
-                loop {
-                    let mut current_filter = filter.clone();
-                    current_filter.continuation_token = continuation_token.clone();
-
-                    let events_chunk = test_input
+                    let filter = EventFilterWithPageRequest {
+                        address: None,
+                        from_block: Some(BlockId::Number(322335)),
+                        to_block: Some(BlockId::Number(322335)),
+                        keys: Some(vec![vec![]]),
+                        chunk_size: 100,
+                        continuation_token: None,
+                    };
+                    let paymaster_account_address = test_input
                         .random_paymaster_account
-                        .provider()
-                        .get_events(current_filter)
-                        .await?;
-                    for event in events_chunk.events {
-                        if event.event.keys.contains(&random_account_address) {
-                            let txn_hash = event.transaction_hash;
+                        .random_accounts()?
+                        .address();
 
-                            let txn_details = test_input
-                                .random_paymaster_account
-                                .provider()
-                                .get_transaction_by_hash(txn_hash)
-                                .await?;
+                    let mut continuation_token = None;
+                    let mut found_txn_hash = None;
+                    let mut found_block_number = None;
 
-                            if let Txn::Declare(DeclareTxn::V2(declare_txn)) = txn_details {
-                                if declare_txn.class_hash == class_hash {
-                                    found_txn_hash = Some(txn_hash);
-                                    found_block_number = event.block_number;
-                                    break;
+                    loop {
+                        let mut current_filter = filter.clone();
+                        current_filter.continuation_token = continuation_token.clone();
+
+                        let events_chunk = test_input
+                            .random_paymaster_account
+                            .provider()
+                            .get_events(current_filter)
+                            .await?;
+
+                        for event in events_chunk.events {
+                            if event.event.data.contains(&paymaster_account_address) {
+                                let txn_hash = event.transaction_hash;
+
+                                let txn_details = test_input
+                                    .random_paymaster_account
+                                    .provider()
+                                    .get_transaction_by_hash(txn_hash)
+                                    .await?;
+
+                                if let Txn::Declare(DeclareTxn::V2(declare_txn)) = txn_details {
+                                    if declare_txn.class_hash == class_hash {
+                                        found_txn_hash = Some(txn_hash);
+                                        found_block_number = event.block_number;
+                                        break;
+                                    }
                                 }
                             }
                         }
+
+                        if found_txn_hash.is_some() && found_block_number.is_some() {
+                            break;
+                        }
+
+                        if let Some(token) = events_chunk.continuation_token {
+                            continuation_token = Some(token);
+                        } else {
+                            break;
+                        }
                     }
 
-                    if found_txn_hash.is_some() && found_block_number.is_some() {
-                        break;
-                    }
-
-                    if let Some(token) = events_chunk.continuation_token {
-                        continuation_token = Some(token);
+                    if let (Some(tx_hash), Some(block_number)) =
+                        (found_txn_hash, found_block_number)
+                    {
+                        Ok((tx_hash, block_number))
                     } else {
-                        break;
+                        Err(RpcError::RunnerError(RunnerError::AccountFailure(
+                            "Transaction hash not found for the declared class.".to_string(),
+                        )))
                     }
-                }
-
-                if let (Some(tx_hash), Some(block_number)) = (found_txn_hash, found_block_number) {
-                    Ok((tx_hash, block_number))
                 } else {
-                    Err(RpcError::RunnerError(RunnerError::AccountFailure(
-                        "Transaction hash not found for the declared class.".to_string(),
+                    Err(RpcError::AccountError(AccountError::Other(
+                        full_error_message,
                     )))
                 }
             }

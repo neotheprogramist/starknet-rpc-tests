@@ -1,5 +1,8 @@
 use crate::{
-    utils::v7::{contract::factory::ContractFactory, endpoints::errors::RpcError},
+    utils::v7::{
+        contract::factory::ContractFactory,
+        endpoints::{errors::RpcError, utils::wait_for_sent_transaction},
+    },
     RandomizableAccountsTrait, RunnableTrait,
 };
 use colored::Colorize;
@@ -26,6 +29,12 @@ impl RunnableTrait for TestCase {
             .deploy_v1(vec![], Felt::from_bytes_be(&salt_buffer), true)
             .send()
             .await;
+
+        wait_for_sent_transaction(
+            invoke_result.as_ref().unwrap().transaction_hash,
+            &test_input.random_paymaster_account.random_accounts()?,
+        )
+        .await?;
 
         match invoke_result {
             Ok(_) => {

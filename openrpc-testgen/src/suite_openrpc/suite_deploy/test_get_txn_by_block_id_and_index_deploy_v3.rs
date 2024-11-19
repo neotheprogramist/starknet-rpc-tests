@@ -88,24 +88,21 @@ impl RunnableTrait for TestCase {
             }) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v3  DEPLOY TXN COMPATIBLE"
-                        .green(),
+                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v3 OMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Txn::Invoke(InvokeTxn::V1(_)) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v3 INVOKEV1 COMPATIBLE"
-                        .green(),
+                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }
             Txn::Invoke(InvokeTxn::V3(_)) => {
                 info!(
                     "{} {}",
-                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v3 INVOKEV3 COMPATIBLE"
-                        .green(),
+                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v3 COMPATIBLE".green(),
                     "✓".green()
                 );
             }

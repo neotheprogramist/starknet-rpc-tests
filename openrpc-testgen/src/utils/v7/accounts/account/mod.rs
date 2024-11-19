@@ -406,6 +406,8 @@ pub enum AccountError<S> {
     ClassCompression(CompressProgramError),
     #[error("fee calculation overflow")]
     FeeOutOfRange,
+    #[error("Other {0}")]
+    Other(String),
 }
 
 impl<A> Account for &A

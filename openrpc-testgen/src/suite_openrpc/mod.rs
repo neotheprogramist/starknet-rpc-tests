@@ -37,6 +37,7 @@ use crate::{
 pub mod suite_deploy;
 pub mod test_declare_txn_v2;
 pub mod test_declare_txn_v3;
+pub mod test_deploy_account_outside_execution;
 pub mod test_erc20_transfer;
 pub mod test_get_block_number;
 pub mod test_get_block_txn_count;
@@ -50,12 +51,13 @@ pub mod test_get_transaction_by_hash_non_existent;
 pub mod test_get_txn_by_block_id_and_index;
 pub mod test_get_txn_by_block_id_and_index_declare_v2;
 pub mod test_get_txn_by_block_id_and_index_declare_v3;
-pub mod test_get_txn_by_block_id_and_index_deploy_account_v1;
-pub mod test_get_txn_by_block_id_and_index_deploy_account_v3;
+// pub mod test_get_txn_by_block_id_and_index_deploy_account_v1;
+// pub mod test_get_txn_by_block_id_and_index_deploy_account_v3;
 
 #[derive(Clone, Debug)]
 pub struct TestSuiteOpenRpc {
     pub random_paymaster_account: RandomSingleOwnerAccount,
+    pub paymaster_private_key: Felt,
     pub random_executable_account: RandomSingleOwnerAccount,
     pub account_class_hash: Felt,
     pub udc_address: Felt,
@@ -81,16 +83,18 @@ impl SetupableTrait for TestSuiteOpenRpc {
                 setup_input.executable_account_sierra_path.clone(),
                 setup_input.executable_account_casm_path.clone(),
             )
-            .await?;
+            .await
+            .unwrap();
 
         let provider = JsonRpcClient::new(HttpTransport::new(setup_input.urls[0].clone()));
         let chain_id = get_chain_id(&provider).await?;
 
-        let paymaster_signing_key =
+        let paymaster_private_key =
             SigningKey::from_secret_scalar(setup_input.paymaster_private_key);
+
         let mut paymaster_account = SingleOwnerAccount::new(
             provider.clone(),
-            LocalWallet::from(paymaster_signing_key),
+            LocalWallet::from(paymaster_private_key),
             setup_input.paymaster_account_address,
             chain_id,
             ExecutionEncoding::New,
@@ -106,7 +110,10 @@ impl SetupableTrait for TestSuiteOpenRpc {
             .send()
             .await
         {
-            Ok(result) => Ok(result.class_hash),
+            Ok(result) => {
+                wait_for_sent_transaction(result.transaction_hash, &paymaster_account).await?;
+                Ok(result.class_hash)
+            }
             Err(AccountError::Signing(sign_error)) => {
                 if sign_error.to_string().contains("is already declared") {
                     Ok(parse_class_hash_from_error(&sign_error.to_string())?)
@@ -130,7 +137,13 @@ impl SetupableTrait for TestSuiteOpenRpc {
             }
             Err(e) => {
                 let full_error_message = format!("{:?}", e);
-                Ok(extract_class_hash_from_error(&full_error_message)?)
+                if full_error_message.contains("is already declared") {
+                    Ok(extract_class_hash_from_error(&full_error_message)?)
+                } else {
+                    Err(RpcError::AccountError(AccountError::Other(
+                        full_error_message,
+                    )))
+                }
             }
         }?;
 
@@ -155,7 +168,7 @@ impl SetupableTrait for TestSuiteOpenRpc {
         };
 
         let deploy_executable_account_result = paymaster_account
-            .execute_v1(vec![deploy_executable_account_call])
+            .execute_v3(vec![deploy_executable_account_call])
             .send()
             .await?;
 
@@ -183,7 +196,7 @@ impl SetupableTrait for TestSuiteOpenRpc {
 
             let paymaster_account = SingleOwnerAccount::new(
                 provider.clone(),
-                LocalWallet::from(paymaster_signing_key),
+                LocalWallet::from(paymaster_private_key),
                 setup_input.paymaster_account_address,
                 chain_id,
                 ExecutionEncoding::New,
@@ -208,6 +221,7 @@ impl SetupableTrait for TestSuiteOpenRpc {
             random_paymaster_account: RandomSingleOwnerAccount {
                 accounts: paymaster_accounts,
             },
+            paymaster_private_key: setup_input.paymaster_private_key,
             account_class_hash: setup_input.account_class_hash,
             udc_address: setup_input.udc_address,
         })

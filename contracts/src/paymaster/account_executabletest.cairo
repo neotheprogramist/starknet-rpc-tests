@@ -9,7 +9,7 @@ pub trait IExecuteFromOutsideCallback<TContractState> {
 }
 
 #[starknet::contract(account)]
-mod ExecutableAccount {
+mod ExecutableAccountTest {
     use contracts::paymaster::interface::{OutsideExecution, OffChainMessageOutsideExecutionRev1};
     use core::ecdsa::check_ecdsa_signature;
     use starknet::{get_tx_info, get_caller_address, get_contract_address};

@@ -1,4 +1,6 @@
 use crate::utils::v7::accounts::account::Account;
+use crate::utils::v7::endpoints::utils::wait_for_sent_transaction;
+use crate::RandomizableAccountsTrait;
 use crate::{
     utils::v7::{
         accounts::call::Call,
@@ -23,13 +25,19 @@ impl RunnableTrait for TestCase {
             calldata: vec![Felt::from_hex("0x50")?],
         };
 
-        let invoke_increase_balance_result = test_input
+        let invoke_result = test_input
             .random_paymaster_account
             .execute_v1(vec![increase_balance_call])
             .send()
             .await;
 
-        match invoke_increase_balance_result {
+        wait_for_sent_transaction(
+            invoke_result.as_ref().unwrap().transaction_hash,
+            &test_input.random_paymaster_account.random_accounts()?,
+        )
+        .await?;
+
+        match invoke_result {
             Ok(_) => {
                 info!(
                     "{} {}",
