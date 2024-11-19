@@ -4,7 +4,7 @@ kind: Kustomization
 resources:
   - anvil
   - pathfinder
-  # - juno
-  # - papyrus
-  # - madara
-  # - proxy
+  - juno
+  - papyrus
+  - madara
+  - proxy
