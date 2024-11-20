@@ -72,7 +72,7 @@ fn process_module_directory(
 
     writeln!(
         file,
-        "// Auto-generated code for module `{}`\n",
+        "// Auto-generated code for module `{}`\nuse colored::Colorize;\n",
         module_name
     )
     .unwrap();
@@ -112,7 +112,13 @@ fn process_module_directory(
 
     writeln!(
         file,
-        "        let data = {}::{}::setup(input).await?;",
+        "        let data = match {}::{}::setup(input).await {{
+                Ok(data) => data,
+                Err(e) => {{
+                    tracing::error!(\"Setup failed with error: {{:?}}\", e);
+                    return Err(e);
+                }}
+            }};",
         module_prefix, struct_name
     )
     .unwrap();
@@ -120,8 +126,13 @@ fn process_module_directory(
     for test_name in test_cases {
         writeln!(
             file,
-            "        {}::{}::TestCase::run(&data).await?;",
-            module_prefix, test_name
+            "        if let Err(e) = {}::{}::TestCase::run(&data).await {{
+                        tracing::error!(
+                        \"{{}}\",
+                            format!(\"Test case {}/{} failed with error: {{:?}}\", e).red()
+                        )
+            }}",
+            module_prefix, test_name, "src", test_name
         )
         .unwrap();
     }

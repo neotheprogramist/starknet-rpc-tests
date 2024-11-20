@@ -33,7 +33,6 @@ impl RandomizableAccountsTrait for RandomSingleOwnerAccount {
         Ok(account)
     }
 }
-// TODO vec z wlasnoscia ze nie moze byc pusty, non zero vector
 impl RandomSingleOwnerAccount {
     pub fn new(
         accounts: Vec<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>>,
@@ -56,11 +55,13 @@ impl Account for RandomSingleOwnerAccount {
 
     fn address(&self) -> Felt {
         let random_account = self.random_accounts().unwrap();
+
         random_account.address()
     }
 
     fn chain_id(&self) -> Felt {
         let random_account = self.random_accounts().unwrap();
+
         random_account.chain_id()
     }
 
@@ -70,6 +71,7 @@ impl Account for RandomSingleOwnerAccount {
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
         let random_account = self.random_accounts().unwrap();
+
         random_account
             .sign_execution_v1(execution, query_only)
             .await
@@ -81,6 +83,7 @@ impl Account for RandomSingleOwnerAccount {
         _query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
         let random_account = self.random_accounts().unwrap();
+
         random_account
             .sign_execution_v3(execution, _query_only)
             .await
@@ -92,6 +95,7 @@ impl Account for RandomSingleOwnerAccount {
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
         let random_account = self.random_accounts().unwrap();
+
         random_account
             .sign_declaration_v2(declaration, query_only)
             .await
@@ -103,6 +107,7 @@ impl Account for RandomSingleOwnerAccount {
         query_only: bool,
     ) -> Result<Vec<Felt>, Self::SignError> {
         let random_account = self.random_accounts().unwrap();
+
         random_account
             .sign_declaration_v3(declaration, query_only)
             .await
@@ -110,6 +115,7 @@ impl Account for RandomSingleOwnerAccount {
 
     fn is_signer_interactive(&self) -> bool {
         let random_account = self.random_accounts().unwrap();
+
         random_account.is_signer_interactive()
     }
 }
@@ -117,6 +123,7 @@ impl Account for RandomSingleOwnerAccount {
 impl ExecutionEncoder for RandomSingleOwnerAccount {
     fn encode_calls(&self, calls: &[Call]) -> Vec<Felt> {
         let random_account = self.random_accounts().unwrap();
+
         random_account.encode_calls(calls)
     }
 }
@@ -131,11 +138,13 @@ impl ConnectedAccount for RandomSingleOwnerAccount {
 
     fn block_id(&self) -> BlockId<Felt> {
         let random_account = self.random_accounts().unwrap();
+
         random_account.block_id()
     }
 
     async fn get_nonce(&self) -> Result<Felt, ProviderError> {
         let random_account = self.random_accounts().unwrap();
+
         random_account.get_nonce().await
     }
 }

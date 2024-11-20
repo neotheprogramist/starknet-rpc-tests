@@ -115,7 +115,7 @@ impl SetupableTrait for TestSuiteDeploy {
                         let mut current_filter = filter.clone();
                         current_filter.continuation_token = continuation_token.clone();
 
-                        let events_chunk = provider.get_events(current_filter).await.unwrap();
+                        let events_chunk = provider.get_events(current_filter).await?;
 
                         for event in events_chunk.events {
                             if event.event.data.contains(&random_account_address) {

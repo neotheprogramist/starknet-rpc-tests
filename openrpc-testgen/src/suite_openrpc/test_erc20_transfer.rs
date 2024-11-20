@@ -47,7 +47,6 @@ impl RunnableTrait for TestCase {
             PathBuf::from_str("target/dev/contracts_TestToken.compiled_contract_class.json")?,
         )
         .await?;
-        // Declare and deploy erc20
 
         let declaration_hash = match test_input
             .random_paymaster_account
@@ -143,7 +142,6 @@ impl RunnableTrait for TestCase {
             }
         };
 
-        // Mint erc20 for the executable account
         let erc20_mint_call = Call {
             to: contract_address_erc20,
             selector: get_selector_from_name("mint")?,
@@ -169,7 +167,6 @@ impl RunnableTrait for TestCase {
         )
         .await?;
 
-        // Prepare erc20 transfer call
         let account_erc20_receiver_address =
             Felt::from_hex("0x78662e7352d062084b0010068b99288486c2d8b914f6e2a55ce945f8792c8b1")?;
         let amount_to_transfer = vec![Felt::from_hex("0x100")?, Felt::ZERO];
@@ -198,7 +195,6 @@ impl RunnableTrait for TestCase {
 
         let hash = Poseidon::hash_array(outside_execution_cairo_serialized);
 
-        //paymaster pk
         let starknet::core::crypto::ExtendedSignature { r, s, v: _ } =
             ecdsa_sign(&test_input.paymaster_private_key, &hash).unwrap();
 
@@ -216,7 +212,6 @@ impl RunnableTrait for TestCase {
             calldata: calldata_to_executable_account_call,
         };
 
-        // Get the balances before transfer
         let exec_balance_before_transfer = test_input
             .random_executable_account
             .provider()
