@@ -5,6 +5,7 @@ version.workspace = true
 
 [dependencies]
 auto_impl.workspace = true
+assert_matches.workspace = true
 cainome-cairo-serde-derive.workspace = true
 cainome-cairo-serde.workspace = true
 clap.workspace = true

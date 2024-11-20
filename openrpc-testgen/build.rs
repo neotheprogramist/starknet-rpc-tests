@@ -126,13 +126,23 @@ fn process_module_directory(
     for test_name in test_cases {
         writeln!(
             file,
-            "        if let Err(e) = {}::{}::TestCase::run(&data).await {{
-                        tracing::error!(
-                        \"{{}}\",
-                            format!(\"Test case {}/{} failed with error: {{:?}}\", e).red()
-                        )
-            }}",
-            module_prefix, test_name, "src", test_name
+            "        match {}::{}::TestCase::run(&data).await {{
+                Ok(test_case) => match test_case.result {{
+                    Ok(_) => tracing::info!(
+                        \"{{}}\", 
+                        \"✓ Test case src/{} completed successfully.\".green()
+                    ),
+                    Err(e) => tracing::error!(
+                        \"{{}}\", 
+                        format!(\"✗ Test case src/{} failed with error: {{:?}}\", e).red()
+                    ),
+                }},
+                Err(e) => tracing::error!(
+                    \"{{}}\", 
+                    format!(\"✗ Test case src/{} failed with runtime error: {{:?}}\", e).red()
+                ),
+}}",
+            module_prefix, test_name, test_name, test_name, test_name
         )
         .unwrap();
     }
