@@ -1,57 +1,45 @@
-# CHECKER
+# OpenRPC-TestGen
 
-To run this tool install
-[Rust](https://doc.rust-lang.org/cargo/getting-started/installation.html) and
-[Scarb](https://docs.swmansion.com/scarb/download.html)
+`openrpc-testgen` is a Rust library for creating and managing hierarchical test suites and cases for OpenRPC endpoints. It automates the discovery, registration, and execution of tests through a `build.rs` script and enables users to add custom tests easily.
 
-## Build
+## Quick Start
 
-`scarb build`
+1. **Add a Test Suite**:
 
-`cargo build`
+   - Create a directory under `src/` prefixed with `suite_` (e.g., `suite_example`).
+   - Add a `mod.rs` file with:
+     - A `TestSuite...` struct implementing `SetupableTrait`.
+     - An `include!` directive for the auto-generated code:
+       ```rust
+       include!(concat!(env!("OUT_DIR"), "/generated_tests_suite_example.rs"));
+       ```
 
-## Usage
+2. **Add Test Cases**:
 
-First of all install starknet-devnet with specified version
+   - Create files in the suite directory prefixed with `test_` (e.g., `test_case_one.rs`).
+   - Define a `TestCase` struct and implement `RunnableTrait`.
 
-```bash
-cargo install starknet-devnet --version 0.0.7
-```
+3. **Run the Suite**:
 
-Now run starknet-devnet
+   - Create a binary to execute the test suite. Example:
+     ```rust
+     #[tokio::main]
+     async fn main() {
+         let input = SetupInput { /* populate input */ };
+         TestSuiteOpenRpc::run(&input).await.unwrap();
+     }
+     ```
 
-```bash
-starknet-devnet --state-archive-capacity full --dump-on exit --dump-path dumpdir --seed 0
-```
+4. **Build and Run**:
+   - Build the project with `cargo build`.
+   - Execute the tests using the binary:
+     ```bash
+     cargo run -- <arguments>
+     ```
 
-After building the crate, you can use it to check the compatibility between the supported versions of Starknet Devnet.
+## Full Documentation
 
-```bash
-cargo run -p checker -- \
-    --url http://127.0.0.1:5050/ \
-    --l1-network-url <L1_NETWORK_URL> \
-    --sierra-path target/dev/contracts_contracts_sample_contract_1_HelloStarknet.contract_class.json \
-    --casm-path target/dev/contracts_contracts_sample_contract_1_HelloStarknet.compiled_contract_class.json \
-    --sierra-path-2 target/dev/contracts_contracts_sample_contract_2_HelloStarknet.contract_class.json \
-    --casm-path-2 target/dev/contracts_contracts_sample_contract_2_HelloStarknet.compiled_contract_class.json \
-    --devnet-tests \
-    --private-key <PRIVATE_KEY> \
-    --account-address <ACCOUNT_ADDRESS> \
-    --account-class-hash <ACCOUNT_CLASS_HASH> \
-    --erc20-strk-contract-address <ERC20_STRK_CONTRACT_ADDRESS> \
-    --erc20-eth-contract-address <ERC20_ETH_CONTRACT_ADDRESS> \
-    --amount-per-test <AMOUNT_PER_TEST> \
-    --version v7
-```
-
-**Note on L1 Network URL:**
-For the `--l1-network-url` parameter, you can use various Ethereum node providers:
-
-- Alchemy: `https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY`
-- Infura: `https://sepolia.infura.io/v3/YOUR_PROJECT_ID`
-- QuickNode: `https://YOUR_SUBDOMAIN.quiknode.pro/YOUR_API_KEY/`
-
-For more details, see [checker readme](./checker/README.md)
+For detailed information, refer to the [full README](./openrpc-testgen/readme.md).
 
 # t8n Tool
 
