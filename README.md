@@ -5,6 +5,7 @@
 ## Quick Start
 
 1. **Add a Test Suite**:
+
    - Create a directory under `src/` prefixed with `suite_` (e.g., `suite_example`).
    - Add a `mod.rs` file with:
      - A `TestSuite...` struct implementing `SetupableTrait`.
@@ -14,10 +15,12 @@
        ```
 
 2. **Add Test Cases**:
+
    - Create files in the suite directory prefixed with `test_` (e.g., `test_case_one.rs`).
    - Define a `TestCase` struct and implement `RunnableTrait`.
 
 3. **Run the Suite**:
+
    - Create a binary to execute the test suite. Example:
      ```rust
      #[tokio::main]

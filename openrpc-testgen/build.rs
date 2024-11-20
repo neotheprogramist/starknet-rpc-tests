@@ -129,10 +129,10 @@ fn process_module_directory(
             "        if let Err(e) = {}::{}::TestCase::run(&data).await {{
                         tracing::error!(
                         \"{{}}\",
-                            format!(\"Test case {}/{} failed with error: {{:?}}\", e).red()
+                            format!(\"Test case src/{} failed with error: {{:?}}\", e).red()
                         )
             }}",
-            module_prefix, test_name, "src", test_name
+            module_prefix, test_name, test_name
         )
         .unwrap();
     }

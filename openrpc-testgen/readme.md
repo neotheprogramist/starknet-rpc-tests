@@ -1,4 +1,3 @@
-
 # OpenRPC-TestGen
 
 `openrpc-testgen` is a Rust library designed to simplify the creation and management of test suites and test cases for OpenRPC endpoints. It enables users to extend its functionality by adding custom test suites and test cases while adhering to specific conventions enforced by the build system.
@@ -28,6 +27,7 @@ To add your custom test suites and cases, you need to follow certain conventions
 ### Directory and File Naming
 
 1. **Test Suite Directories**:
+
    - Each test suite directory **must** start with the prefix `suite_`.
      Example:
      ```
@@ -47,10 +47,12 @@ To add your custom test suites and cases, you need to follow certain conventions
 ### Test Suite Structure
 
 1. **Test Suite Definition**:
+
    - Define a `TestSuite...` struct in the `mod.rs` file of the suite directory, where `...` is a unique name.
    - Implement the `SetupableTrait` for the struct to handle any setup logic.
 
    Example:
+
    ```rust
    pub struct TestSuiteExample;
 
@@ -75,10 +77,12 @@ To add your custom test suites and cases, you need to follow certain conventions
 ### Test Case Structure
 
 1. **Test Case Definition**:
+
    - Each test case file must define a `TestCase` struct.
    - Implement the `RunnableTrait` for the `TestCase` struct to define the logic for running the test.
 
    Example:
+
    ```rust
    pub struct TestCase;
 
@@ -109,13 +113,14 @@ The script monitors changes in the `src/` directory using:
 
 ```rust
    println!("cargo:rerun-if-changed=src");
-   ```
+```
 
 ---
 
 ## Usage
 
 1. **Create a new test suite**:
+
    - Add a directory under `src/` with a `suite_` prefix (e.g., `suite_example`).
    - Add a `mod.rs` file to define the test suite:
      - Define a `TestSuite...` struct and implement the `SetupableTrait` for it.
@@ -125,15 +130,19 @@ The script monitors changes in the `src/` directory using:
        ```
 
 2. **Add test cases**:
+
    - Inside the suite directory, create files prefixed with `test_` (e.g., `test_case_one.rs`).
    - Each file must define a `TestCase` struct and implement the `RunnableTrait` to provide the logic for the test case.
 
 3. **Rebuild the project**:
+
    - Run `cargo build` to ensure the generated test code is updated.
 
 4. **Run test suites via a binary**:
-   - Create a binary that imports the `openrpc-testgen` crate and runs the desired test suite. 
+
+   - Create a binary that imports the `openrpc-testgen` crate and runs the desired test suite.
    - Example:
+
      ```rust
      use args::Args;
      use clap::Parser;
@@ -165,6 +174,7 @@ The script monitors changes in the `src/` directory using:
      ```
 
 5. **Run the binary**:
+
    - Execute the binary with the required arguments to run the test suite:
      ```bash
      cargo run -- <arguments>
@@ -178,6 +188,7 @@ The script monitors changes in the `src/` directory using:
 ## Example Directory Structure
 
 Here’s an example structure:
+
 ```
 src/
 ├── lib.rs
