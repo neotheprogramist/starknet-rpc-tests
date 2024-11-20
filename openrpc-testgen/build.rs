@@ -72,7 +72,7 @@ fn process_module_directory(
 
     writeln!(
         file,
-        "// Auto-generated code for module `{}`\n",
+        "// Auto-generated code for module `{}`\nuse colored::Colorize;\n",
         module_name
     )
     .unwrap();
@@ -127,10 +127,12 @@ fn process_module_directory(
         writeln!(
             file,
             "        if let Err(e) = {}::{}::TestCase::run(&data).await {{
-                tracing::error!(\"Test case {}::{} failed with error: {{:?}}\", e);
-                return Err(e);
+                        tracing::error!(
+                        \"{{}}\",
+                            format!(\"Test case {}/{} failed with error: {{:?}}\", e).red()
+                        )
             }}",
-            module_prefix, test_name, module_prefix, test_name
+            module_prefix, test_name, "src", test_name
         )
         .unwrap();
     }
