@@ -100,8 +100,10 @@ To add your custom test suites and cases, you need to follow certain conventions
    - Test cases are executed as part of their parent suite's `run` method. Ensure the `RunnableTrait` is implemented correctly.
 
 ---
+
 ### Adding a New Suite Feature
-1. **Modify `lib.rs` by adding:** 
+
+1. **Modify `lib.rs` by adding:**
    ```rust
    #[cfg(feature = "openrpc")]
    pub mod suite_openrpc;
