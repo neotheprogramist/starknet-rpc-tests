@@ -59,7 +59,7 @@ To add your custom test suites and cases, you need to follow certain conventions
    impl SetupableTrait for TestSuiteExample {
        type Input = SetupInput;
 
-       async fn setup(input: &Self::Input) -> Result<Self, RpcError> {
+       async fn setup(input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
            // Your setup logic here
            Ok(Self)
        }
@@ -89,7 +89,7 @@ To add your custom test suites and cases, you need to follow certain conventions
    impl RunnableTrait for TestCase {
        type Input = TestSuiteExample;
 
-       async fn run(input: &Self::Input) -> Result<(), RpcError> {
+       async fn run(input: &Self::Input) -> Result<(), OpenRpcTestGenError> {
            // Your test logic here
            Ok(())
        }
@@ -100,6 +100,20 @@ To add your custom test suites and cases, you need to follow certain conventions
    - Test cases are executed as part of their parent suite's `run` method. Ensure the `RunnableTrait` is implemented correctly.
 
 ---
+
+### Adding a New Suite Feature
+
+1. **Modify `lib.rs` by adding:**
+   ```rust
+   #[cfg(feature = "new_suite")]
+   pub mod new_suite;
+   ```
+2. **Update `cargo.toml`**
+
+   ```rust
+   [features]
+   new_suite = []
+   ```
 
 ## Auto-Generated Code
 
