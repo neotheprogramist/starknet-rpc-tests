@@ -21,9 +21,14 @@ version = "0.1.0"
 
 [workspace.dependencies]
 auto_impl = "1.2.0"
+anyhow = "1.0.89"
 assert_matches = "1.5.0"
+cainome = { git = "https://github.com/cartridge-gg/cainome", rev = "5c2616c273faca7700d2ba565503fcefb5b9d720", features = [
+  "abigen-rs",
+] }
 cainome-cairo-serde = { git = "https://github.com/neotheprogramist/cainome.git", rev = "7adc7d515b05d18d10e936b2be27b22811015917" }
 cainome-cairo-serde-derive = { git = "https://github.com/neotheprogramist/cainome.git", rev = "7adc7d515b05d18d10e936b2be27b22811015917" }
+cairo-lang-starknet-classes = "2.6.0"
 clap = { version = "4.5.16", features = ["derive", "env"] }
 clap_derive = "4.5.13"
 colored = "2.1.0"
