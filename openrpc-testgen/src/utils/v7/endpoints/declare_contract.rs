@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use crate::utils::v7::accounts::account::{Account, AccountError};
-use crate::utils::v7::contract::HashAndFlatten;
+use crate::utils::v7::contract::{self, HashAndFlatten};
 use crate::utils::v7::providers::provider::ProviderError;
 use crate::utils::v7::{
     accounts::single_owner::SingleOwnerAccount,
@@ -10,6 +10,11 @@ use crate::utils::v7::{
     providers::provider::Provider,
     signers::local_wallet::LocalWallet,
 };
+
+use std::fs::File;
+
+use cairo_lang_starknet_classes::casm_contract_class::CasmContractClass;
+use cairo_lang_starknet_classes::contract_class::ContractClass as CairoContractClass;
 
 use regex::Regex;
 use starknet_types_core::felt::Felt;
@@ -145,6 +150,43 @@ pub async fn get_compiled_contract(
     Ok((flattened_class, casm_class_hash))
 }
 
+pub fn prepare_contract_declaration_params(
+    artifact_path: &PathBuf,
+) -> Result<(ContractClass<Felt>, Felt), RunnerError> {
+    let flattened_class = get_flattened_class(artifact_path)?;
+    let compiled_class_hash = get_compiled_class_hash(artifact_path)?;
+    Ok((flattened_class, compiled_class_hash))
+}
+
+fn get_flattened_class(artifact_path: &PathBuf) -> Result<ContractClass<Felt>, RunnerError> {
+    let file = File::open(artifact_path).map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            RunnerError::ReadFileError("Artifact path not found".to_string())
+        } else {
+            RunnerError::ReadFileError(e.to_string())
+        }
+    })?;
+    let contract_artifact: SierraClass = serde_json::from_reader(&file)?;
+    Ok(contract_artifact.clone().flatten()?)
+}
+
+fn get_compiled_class_hash(artifact_path: &PathBuf) -> Result<Felt, RunnerError> {
+    let file = File::open(artifact_path).map_err(|e| {
+        if e.kind() == std::io::ErrorKind::NotFound {
+            RunnerError::ReadFileError("Artifact path not found".to_string())
+        } else {
+            RunnerError::ReadFileError(e.to_string())
+        }
+    })?;
+
+    let casm_contract_class: CairoContractClass = serde_json::from_reader(file)?;
+    let casm_contract =
+        CasmContractClass::from_contract_class(casm_contract_class, true, usize::MAX)?;
+    let res = serde_json::to_string_pretty(&casm_contract)?;
+    let compiled_class: CompiledClass = serde_json::from_str(&res)?;
+    Ok(compiled_class.class_hash()?)
+}
+
 #[derive(Debug, Error)]
 #[allow(dead_code)]
 pub enum RunnerError {
@@ -177,6 +219,17 @@ pub enum RunnerError {
 
     #[error(transparent)]
     Regex(#[from] regex::Error),
+
+    #[error(transparent)]
+    JsonError(#[from] contract::JsonError),
+
+    #[error(transparent)]
+    ComputeClassHashError(#[from] contract::ComputeClassHashError),
+
+    #[error(transparent)]
+    StarknetSierraCompilationError(
+        #[from] cairo_lang_starknet_classes::casm_contract_class::StarknetSierraCompilationError,
+    ),
 }
 
 #[derive(Debug, Error)]

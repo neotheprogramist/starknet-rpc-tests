@@ -6,7 +6,7 @@ use super::v7::{
         call::Call,
         single_owner::{SignError, SingleOwnerAccount},
     },
-    endpoints::errors::RpcError,
+    endpoints::errors::OpenRpcTestGenError,
     providers::{
         jsonrpc::{HttpTransport, JsonRpcClient},
         provider::ProviderError,
@@ -25,10 +25,11 @@ pub struct RandomSingleOwnerAccount {
 impl RandomizableAccountsTrait for RandomSingleOwnerAccount {
     fn random_accounts(
         &self,
-    ) -> Result<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>, RpcError> {
+    ) -> Result<SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>, OpenRpcTestGenError>
+    {
         let mut rng = thread_rng();
         let account = self.accounts.choose(&mut rng).cloned().ok_or_else(|| {
-            RpcError::EmptyUrlList("Accounts list is empty - no urls.".to_string())
+            OpenRpcTestGenError::EmptyUrlList("Accounts list is empty - no urls.".to_string())
         })?;
         Ok(account)
     }

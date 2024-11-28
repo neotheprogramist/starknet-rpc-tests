@@ -7,7 +7,7 @@ use crate::{
         },
         endpoints::{
             endpoints_functions::OutsideExecution,
-            errors::RpcError,
+            errors::OpenRpcTestGenError,
             utils::{get_selector_from_name, wait_for_sent_transaction},
         },
         providers::provider::Provider,
@@ -30,7 +30,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteOpenRpc;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let account_data = create_account(
             test_input.random_paymaster_account.provider(),
             AccountType::Oz,
@@ -123,16 +123,16 @@ impl RunnableTrait for TestCase {
                 .transactions
                 .iter()
                 .position(|tx| tx.transaction_hash == deploy_hash)
-                .ok_or_else(|| RpcError::TransactionNotFound(deploy_hash.to_string()))?
+                .ok_or_else(|| OpenRpcTestGenError::TransactionNotFound(deploy_hash.to_string()))?
                 .try_into()
-                .map_err(|_| RpcError::TransactionIndexOverflow)?,
+                .map_err(|_| OpenRpcTestGenError::TransactionIndexOverflow)?,
             MaybePendingBlockWithTxs::Pending(block_with_txs) => block_with_txs
                 .transactions
                 .iter()
                 .position(|tx| tx.transaction_hash == deploy_hash)
-                .ok_or_else(|| RpcError::TransactionNotFound(deploy_hash.to_string()))?
+                .ok_or_else(|| OpenRpcTestGenError::TransactionNotFound(deploy_hash.to_string()))?
                 .try_into()
-                .map_err(|_| RpcError::TransactionIndexOverflow)?,
+                .map_err(|_| OpenRpcTestGenError::TransactionIndexOverflow)?,
         };
 
         let txn = test_input
@@ -157,7 +157,7 @@ impl RunnableTrait for TestCase {
                     error_message,
                     "✗".red()
                 );
-                return Err(RpcError::UnexpectedTxnType(error_message));
+                return Err(OpenRpcTestGenError::UnexpectedTxnType(error_message));
             }
         }
 

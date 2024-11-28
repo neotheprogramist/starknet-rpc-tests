@@ -3,7 +3,7 @@ use thiserror::Error;
 
 use super::declare_contract::RunnerError;
 use crate::{
-    macros::errors::AssertionNoPanicError,
+    macros::macros_errors::AssertionNoPanicError,
     utils::{
         conversions::errors::ConversionsError,
         v7::{
@@ -18,7 +18,7 @@ use std::convert::Infallible;
 
 #[derive(Error, Debug)]
 #[allow(dead_code)]
-pub enum RpcError {
+pub enum OpenRpcTestGenError {
     #[error(transparent)]
     RequestError(#[from] reqwest::Error),
     #[error(transparent)]

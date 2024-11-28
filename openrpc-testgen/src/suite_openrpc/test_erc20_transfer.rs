@@ -14,7 +14,7 @@ use crate::{
                     parse_class_hash_from_error, RunnerError,
                 },
                 endpoints_functions::OutsideExecution,
-                errors::{CallError, RpcError},
+                errors::{CallError, OpenRpcTestGenError},
                 utils::{get_selector_from_name, wait_for_sent_transaction},
             },
             providers::provider::{Provider, ProviderError},
@@ -41,7 +41,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteOpenRpc;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let (erc_20_flattened_sierra_class, erc_20_compiled_class_hash) = get_compiled_contract(
             PathBuf::from_str("target/dev/contracts_TestToken.contract_class.json")?,
             PathBuf::from_str("target/dev/contracts_TestToken.compiled_contract_class.json")?,
@@ -67,10 +67,12 @@ impl RunnableTrait for TestCase {
                 if sign_error.to_string().contains("is already declared") {
                     Ok(parse_class_hash_from_error(&sign_error.to_string())?)
                 } else {
-                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                        "Transaction execution error: {}",
-                        sign_error
-                    ))))
+                    Err(OpenRpcTestGenError::RunnerError(
+                        RunnerError::AccountFailure(format!(
+                            "Transaction execution error: {}",
+                            sign_error
+                        )),
+                    ))
                 }
             }
 
@@ -78,10 +80,12 @@ impl RunnableTrait for TestCase {
                 if starkneterror.to_string().contains("is already declared") {
                     Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
                 } else {
-                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                        "Transaction execution error: {}",
-                        starkneterror
-                    ))))
+                    Err(OpenRpcTestGenError::RunnerError(
+                        RunnerError::AccountFailure(format!(
+                            "Transaction execution error: {}",
+                            starkneterror
+                        )),
+                    ))
                 }
             }
             Err(e) => {
@@ -134,11 +138,15 @@ impl RunnableTrait for TestCase {
                 {
                     *contract_address
                 } else {
-                    return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                    return Err(OpenRpcTestGenError::CallError(
+                        CallError::UnexpectedReceiptType,
+                    ));
                 }
             }
             _ => {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         };
 
@@ -313,7 +321,7 @@ impl RunnableTrait for TestCase {
         assert_result!(
             receiver_balance_after_txn == amount_to_transfer,
             "Balances do not match"
-        )?;
+        );
 
         let exec_balance_after_transfer = felts_slice_to_biguint(exec_balance_after_transfer)?;
         let exec_balance_before_transfer = felts_slice_to_biguint(exec_balance_before_transfer)?;
@@ -321,7 +329,7 @@ impl RunnableTrait for TestCase {
         assert_result!(
             exec_balance_before_transfer == exec_balance_after_transfer + amount_to_transfer,
             "Token balance on executable account did not decrease by the transfer amount."
-        )?;
+        );
 
         let paymaster_balance_after = felts_slice_to_biguint(paymaster_balance_after)?;
         let paymaster_balance_before = felts_slice_to_biguint(paymaster_balance_before)?;
@@ -329,7 +337,7 @@ impl RunnableTrait for TestCase {
         assert_result!(
             paymaster_balance_after < paymaster_balance_before,
             "Gas balance on paymaster account did not decrease after transaction."
-        )?;
+        );
 
         info!(
             "{} {}",

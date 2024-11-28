@@ -1,6 +1,6 @@
 use crate::{
     utils::v7::{
-        accounts::account::ConnectedAccount, endpoints::errors::RpcError,
+        accounts::account::ConnectedAccount, endpoints::errors::OpenRpcTestGenError,
         providers::provider::Provider,
     },
     RunnableTrait,
@@ -16,7 +16,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteOpenRpc;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let erc20_eth_address =
             Felt::from_hex("049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7")?;
         let key: Felt =

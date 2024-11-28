@@ -13,7 +13,7 @@ use crate::{
                 extract_class_hash_from_error, get_compiled_contract, parse_class_hash_from_error,
                 RunnerError,
             },
-            errors::RpcError,
+            errors::OpenRpcTestGenError,
             utils::wait_for_sent_transaction,
         },
         providers::provider::{Provider, ProviderError},
@@ -38,7 +38,7 @@ pub struct TestSuiteDeploy {
 impl SetupableTrait for TestSuiteDeploy {
     type Input = super::TestSuiteOpenRpc;
 
-    async fn setup(setup_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let (flattened_sierra_class, compiled_class_hash) =
             get_compiled_contract(
                 PathBuf::from_str("target/dev/contracts_contracts_sample_contract_3_HelloStarknet.contract_class.json")?,
@@ -67,10 +67,12 @@ impl SetupableTrait for TestSuiteDeploy {
                         transaction_hash: Felt::ZERO,
                     })
                 } else {
-                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                        "Transaction execution error: {}",
-                        sign_error
-                    ))))
+                    Err(OpenRpcTestGenError::RunnerError(
+                        RunnerError::AccountFailure(format!(
+                            "Transaction execution error: {}",
+                            sign_error
+                        )),
+                    ))
                 }
             }
 
@@ -81,10 +83,12 @@ impl SetupableTrait for TestSuiteDeploy {
                         transaction_hash: Felt::ZERO,
                     })
                 } else {
-                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                        "Transaction execution error: {}",
-                        starkneterror
-                    ))))
+                    Err(OpenRpcTestGenError::RunnerError(
+                        RunnerError::AccountFailure(format!(
+                            "Transaction execution error: {}",
+                            starkneterror
+                        )),
+                    ))
                 }
             }
             Err(e) => {
@@ -151,12 +155,14 @@ impl SetupableTrait for TestSuiteDeploy {
                         })
                     } else {
                         info!("Transaction hash not found for the declared clas");
-                        Err(RpcError::RunnerError(RunnerError::AccountFailure(
-                            "Transaction hash not found for the declared class.".to_string(),
-                        )))
+                        Err(OpenRpcTestGenError::RunnerError(
+                            RunnerError::AccountFailure(
+                                "Transaction hash not found for the declared class.".to_string(),
+                            ),
+                        ))
                     }
                 } else {
-                    return Err(RpcError::AccountError(AccountError::Other(
+                    return Err(OpenRpcTestGenError::AccountError(AccountError::Other(
                         full_error_message,
                     )));
                 }
