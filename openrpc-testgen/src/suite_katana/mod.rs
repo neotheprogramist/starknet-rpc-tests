@@ -22,7 +22,7 @@ use crate::{
                     extract_class_hash_from_error, get_compiled_contract,
                     parse_class_hash_from_error, RunnerError,
                 },
-                errors::RpcError,
+                errors::OpenRpcTestGenError,
                 utils::{get_selector_from_name, wait_for_sent_transaction},
             },
             providers::{
@@ -35,8 +35,11 @@ use crate::{
     SetupableTrait,
 };
 
-pub mod declaring_already_existing_class;
-
+pub mod test_declaring_already_existing_class;
+// pub mod test_get_blocks_from_hash;
+// pub mod test_get_blocks_from_num;
+pub mod test_declare_and_deploy_contract;
+pub mod test_estimate_fee;
 #[derive(Clone, Debug)]
 pub struct TestSuiteKatana {
     pub random_paymaster_account: RandomSingleOwnerAccount,
@@ -60,7 +63,7 @@ pub struct SetupInput {
 impl SetupableTrait for TestSuiteKatana {
     type Input = SetupInput;
 
-    async fn setup(setup_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let (executable_account_flattened_sierra_class, executable_account_compiled_class_hash) =
             get_compiled_contract(
                 setup_input.executable_account_sierra_path.clone(),
@@ -101,10 +104,12 @@ impl SetupableTrait for TestSuiteKatana {
                 if sign_error.to_string().contains("is already declared") {
                     Ok(parse_class_hash_from_error(&sign_error.to_string())?)
                 } else {
-                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                        "Transaction execution error: {}",
-                        sign_error
-                    ))))
+                    Err(OpenRpcTestGenError::RunnerError(
+                        RunnerError::AccountFailure(format!(
+                            "Transaction execution error: {}",
+                            sign_error
+                        )),
+                    ))
                 }
             }
 
@@ -112,10 +117,12 @@ impl SetupableTrait for TestSuiteKatana {
                 if starkneterror.to_string().contains("is already declared") {
                     Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
                 } else {
-                    Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                        "Transaction execution error: {}",
-                        starkneterror
-                    ))))
+                    Err(OpenRpcTestGenError::RunnerError(
+                        RunnerError::AccountFailure(format!(
+                            "Transaction execution error: {}",
+                            starkneterror
+                        )),
+                    ))
                 }
             }
             Err(e) => {
@@ -123,7 +130,7 @@ impl SetupableTrait for TestSuiteKatana {
                 if full_error_message.contains("is already declared") {
                     Ok(extract_class_hash_from_error(&full_error_message)?)
                 } else {
-                    Err(RpcError::AccountError(AccountError::Other(
+                    Err(OpenRpcTestGenError::AccountError(AccountError::Other(
                         full_error_message,
                     )))
                 }
@@ -212,7 +219,4 @@ impl SetupableTrait for TestSuiteKatana {
 }
 
 #[cfg(not(feature = "rust-analyzer"))]
-include!(concat!(
-    env!("OUT_DIR"),
-    "/generated_tests_suite_katana.rs"
-));
+include!(concat!(env!("OUT_DIR"), "/generated_tests_suite_katana.rs"));
