@@ -2,7 +2,7 @@ use crate::{
     utils::v7::{
         accounts::account::ConnectedAccount,
         contract::factory::ContractFactory,
-        endpoints::{errors::RpcError, utils::wait_for_sent_transaction},
+        endpoints::{errors::OpenRpcTestGenError, utils::wait_for_sent_transaction},
         providers::provider::Provider,
     },
     RandomizableAccountsTrait, RunnableTrait,
@@ -19,7 +19,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteDeploy;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let factory = ContractFactory::new(
             test_input.declaration_result.class_hash,
             test_input.random_paymaster_account.random_accounts()?,
@@ -58,19 +58,23 @@ impl RunnableTrait for TestCase {
                 .iter()
                 .position(|tx| tx.transaction_hash == invoke_result.transaction_hash)
                 .ok_or_else(|| {
-                    RpcError::TransactionNotFound(invoke_result.transaction_hash.to_string())
+                    OpenRpcTestGenError::TransactionNotFound(
+                        invoke_result.transaction_hash.to_string(),
+                    )
                 })?
                 .try_into()
-                .map_err(|_| RpcError::TransactionIndexOverflow)?,
+                .map_err(|_| OpenRpcTestGenError::TransactionIndexOverflow)?,
             MaybePendingBlockWithTxs::Pending(block_with_txs) => block_with_txs
                 .transactions
                 .iter()
                 .position(|tx| tx.transaction_hash == invoke_result.transaction_hash)
                 .ok_or_else(|| {
-                    RpcError::TransactionNotFound(invoke_result.transaction_hash.to_string())
+                    OpenRpcTestGenError::TransactionNotFound(
+                        invoke_result.transaction_hash.to_string(),
+                    )
                 })?
                 .try_into()
-                .map_err(|_| RpcError::TransactionIndexOverflow)?,
+                .map_err(|_| OpenRpcTestGenError::TransactionIndexOverflow)?,
         };
 
         let txn = test_input
@@ -114,7 +118,7 @@ impl RunnableTrait for TestCase {
                     error_message,
                     "✗".red()
                 );
-                return Err(RpcError::UnexpectedTxnType(error_message));
+                return Err(OpenRpcTestGenError::UnexpectedTxnType(error_message));
             }
         }
 

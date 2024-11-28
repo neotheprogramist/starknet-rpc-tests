@@ -47,7 +47,7 @@ use crate::utils::v7::{
 
 use super::{
     declare_contract::{parse_class_hash_from_error, RunnerError},
-    errors::RpcError,
+    errors::OpenRpcTestGenError,
     utils::{
         get_compiled_contract, get_selector_from_name, setup_generated_account, validate_inputs,
         wait_for_sent_transaction,
@@ -65,7 +65,7 @@ pub async fn invoke_contract_erc20_transfer(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<Felt, RpcError> {
+) -> Result<Felt, OpenRpcTestGenError> {
     let (executable_account_flattened_sierra_class, executable_account_compiled_class_hash) =
         get_compiled_contract(
             "target/dev/contracts_MyAccount.contract_class.json",
@@ -120,10 +120,12 @@ pub async fn invoke_contract_erc20_transfer(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -131,10 +133,12 @@ pub async fn invoke_contract_erc20_transfer(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -201,10 +205,12 @@ pub async fn invoke_contract_erc20_transfer(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -212,10 +218,12 @@ pub async fn invoke_contract_erc20_transfer(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -261,11 +269,15 @@ pub async fn invoke_contract_erc20_transfer(
             {
                 *contract_address
             } else {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         }
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
 
@@ -369,7 +381,7 @@ pub async fn add_declare_transaction_v2(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<Felt, RpcError> {
+) -> Result<Felt, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -454,10 +466,12 @@ pub async fn add_declare_transaction_v2(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -465,16 +479,17 @@ pub async fn add_declare_transaction_v2(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
-        Err(e) => Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-            "Account error: {}",
-            e
-        )))),
+        Err(e) => Err(OpenRpcTestGenError::RunnerError(
+            RunnerError::AccountFailure(format!("Account error: {}", e)),
+        )),
     }
 }
 
@@ -489,7 +504,7 @@ pub async fn add_declare_transaction_v3(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<Felt, RpcError> {
+) -> Result<Felt, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -575,10 +590,12 @@ pub async fn add_declare_transaction_v3(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -586,16 +603,17 @@ pub async fn add_declare_transaction_v3(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
-        Err(e) => Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-            "Account error: {}",
-            e
-        )))),
+        Err(e) => Err(OpenRpcTestGenError::RunnerError(
+            RunnerError::AccountFailure(format!("Account error: {}", e)),
+        )),
     }
 }
 
@@ -610,7 +628,7 @@ pub async fn add_invoke_transaction_v1(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
+) -> Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -690,10 +708,12 @@ pub async fn add_invoke_transaction_v1(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -701,10 +721,12 @@ pub async fn add_invoke_transaction_v1(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -740,7 +762,7 @@ pub async fn add_invoke_transaction_v3(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
+) -> Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -820,10 +842,12 @@ pub async fn add_invoke_transaction_v3(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -831,10 +855,12 @@ pub async fn add_invoke_transaction_v3(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
 
@@ -870,7 +896,7 @@ pub async fn invoke_contract_v1(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
+) -> Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -950,10 +976,12 @@ pub async fn invoke_contract_v1(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -961,10 +989,12 @@ pub async fn invoke_contract_v1(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -1009,11 +1039,15 @@ pub async fn invoke_contract_v1(
             {
                 *contract_address
             } else {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         }
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
 
@@ -1038,7 +1072,7 @@ pub async fn invoke_contract_v3(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
+) -> Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -1118,10 +1152,12 @@ pub async fn invoke_contract_v3(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -1129,10 +1165,12 @@ pub async fn invoke_contract_v3(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -1176,11 +1214,15 @@ pub async fn invoke_contract_v3(
             {
                 *contract_address
             } else {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         }
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
 
@@ -1194,21 +1236,21 @@ pub async fn invoke_contract_v3(
     Ok(call_contract_fn_result)
 }
 
-pub async fn block_number(url: Url) -> Result<u64, RpcError> {
+pub async fn block_number(url: Url) -> Result<u64, OpenRpcTestGenError> {
     let rpc_client = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     match rpc_client.block_number().await {
         Ok(block_number) => Ok(block_number),
-        Err(e) => Err(RpcError::ProviderError(e)),
+        Err(e) => Err(OpenRpcTestGenError::ProviderError(e)),
     }
 }
 
-pub async fn chain_id(url: Url) -> Result<Felt, RpcError> {
+pub async fn chain_id(url: Url) -> Result<Felt, OpenRpcTestGenError> {
     let rpc_client = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     match rpc_client.chain_id().await {
         Ok(chain_id) => Ok(chain_id),
-        Err(e) => Err(RpcError::ProviderError(e)),
+        Err(e) => Err(OpenRpcTestGenError::ProviderError(e)),
     }
 }
 
@@ -1223,7 +1265,7 @@ pub async fn call(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<Vec<Felt>, RpcError> {
+) -> Result<Vec<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -1303,10 +1345,12 @@ pub async fn call(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -1314,10 +1358,12 @@ pub async fn call(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -1360,11 +1406,15 @@ pub async fn call(
             {
                 *contract_address
             } else {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         }
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
 
@@ -1393,7 +1443,7 @@ pub async fn estimate_message_fee(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<FeeEstimate<Felt>, RpcError> {
+) -> Result<FeeEstimate<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -1473,10 +1523,12 @@ pub async fn estimate_message_fee(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -1484,10 +1536,12 @@ pub async fn estimate_message_fee(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -1530,11 +1584,15 @@ pub async fn estimate_message_fee(
             {
                 *contract_address
             } else {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         }
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
 
@@ -1553,7 +1611,7 @@ pub async fn estimate_message_fee(
     Ok(estimate)
 }
 
-pub async fn get_block_transaction_count(url: Url) -> Result<u64, RpcError> {
+pub async fn get_block_transaction_count(url: Url) -> Result<u64, OpenRpcTestGenError> {
     let client = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let count = client
         .get_block_transaction_count(BlockId::Tag(BlockTag::Latest))
@@ -1561,7 +1619,9 @@ pub async fn get_block_transaction_count(url: Url) -> Result<u64, RpcError> {
     Ok(count)
 }
 
-pub async fn get_block_with_tx_hashes(url: Url) -> Result<BlockWithTxHashes<Felt>, RpcError> {
+pub async fn get_block_with_tx_hashes(
+    url: Url,
+) -> Result<BlockWithTxHashes<Felt>, OpenRpcTestGenError> {
     let client = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let block = client
@@ -1571,7 +1631,7 @@ pub async fn get_block_with_tx_hashes(url: Url) -> Result<BlockWithTxHashes<Felt
     let response = match block {
         MaybePendingBlockWithTxHashes::Block(block) => block,
         _ => {
-            return Err(RpcError::Other(
+            return Err(OpenRpcTestGenError::Other(
                 "unexpected block response type".to_string(),
             ));
         }
@@ -1579,7 +1639,7 @@ pub async fn get_block_with_tx_hashes(url: Url) -> Result<BlockWithTxHashes<Felt
     Ok(response)
 }
 
-pub async fn get_block_with_txs(url: Url) -> Result<BlockWithTxs<Felt>, RpcError> {
+pub async fn get_block_with_txs(url: Url) -> Result<BlockWithTxs<Felt>, OpenRpcTestGenError> {
     let client = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let block = client
@@ -1589,7 +1649,7 @@ pub async fn get_block_with_txs(url: Url) -> Result<BlockWithTxs<Felt>, RpcError
     let block = match block {
         MaybePendingBlockWithTxs::Block(block) => block,
         _ => {
-            return Err(RpcError::Other(
+            return Err(OpenRpcTestGenError::Other(
                 "unexpected block response type".to_string(),
             ));
         }
@@ -1598,7 +1658,7 @@ pub async fn get_block_with_txs(url: Url) -> Result<BlockWithTxs<Felt>, RpcError
     Ok(block)
 }
 
-pub async fn get_state_update(url: Url) -> Result<StateUpdate<Felt>, RpcError> {
+pub async fn get_state_update(url: Url) -> Result<StateUpdate<Felt>, OpenRpcTestGenError> {
     let client = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let state: MaybePendingStateUpdate<Felt> = client
@@ -1608,7 +1668,7 @@ pub async fn get_state_update(url: Url) -> Result<StateUpdate<Felt>, RpcError> {
     let state = match state {
         MaybePendingStateUpdate::Block(state) => state,
         _ => {
-            return Err(RpcError::Other(
+            return Err(OpenRpcTestGenError::Other(
                 "unexpected block response type".to_string(),
             ));
         }
@@ -1620,7 +1680,7 @@ pub async fn get_state_update(url: Url) -> Result<StateUpdate<Felt>, RpcError> {
 pub async fn get_storage_at(
     url: Url,
     erc20_eth_contract_address: Option<Felt>,
-) -> Result<Felt, RpcError> {
+) -> Result<Felt, OpenRpcTestGenError> {
     let client = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let erc20_eth_address = match erc20_eth_contract_address {
         Some(address) => address,
@@ -1646,7 +1706,7 @@ pub async fn get_transaction_status_succeeded(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<TxnStatus, RpcError> {
+) -> Result<TxnStatus, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -1726,10 +1786,12 @@ pub async fn get_transaction_status_succeeded(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -1737,10 +1799,12 @@ pub async fn get_transaction_status_succeeded(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -1776,7 +1840,9 @@ pub async fn get_transaction_status_succeeded(
         TxnReceipt::Deploy(receipt) => receipt.common_receipt_properties.transaction_hash,
         TxnReceipt::Invoke(receipt) => receipt.common_receipt_properties.transaction_hash,
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
 
@@ -1784,14 +1850,16 @@ pub async fn get_transaction_status_succeeded(
     match status.finality_status {
         TxnStatus::AcceptedOnL2 => match status.execution_status {
             Some(TxnExecutionStatus::Succeeded) => Ok(TxnStatus::AcceptedOnL2),
-            Some(TxnExecutionStatus::Reverted) => Err(RpcError::TxnExecutionStatus(
+            Some(TxnExecutionStatus::Reverted) => Err(OpenRpcTestGenError::TxnExecutionStatus(
                 "Execution reverted".to_string(),
             )),
-            None => Err(RpcError::TxnExecutionStatus(
+            None => Err(OpenRpcTestGenError::TxnExecutionStatus(
                 "Execution status is None".to_string(),
             )),
         },
-        _ => Err(RpcError::Other("unexpected transaction status".to_string())),
+        _ => Err(OpenRpcTestGenError::Other(
+            "unexpected transaction status".to_string(),
+        )),
     }
 }
 
@@ -1806,7 +1874,7 @@ pub async fn get_transaction_by_hash_invoke(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<InvokeTxnV1<Felt>, RpcError> {
+) -> Result<InvokeTxnV1<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -1886,10 +1954,12 @@ pub async fn get_transaction_by_hash_invoke(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -1897,10 +1967,12 @@ pub async fn get_transaction_by_hash_invoke(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -1938,7 +2010,7 @@ pub async fn get_transaction_by_hash_invoke(
     let txn = match txn {
         Txn::Invoke(InvokeTxn::V1(tx)) => tx,
         _ => {
-            return Err(RpcError::UnexpectedTxnType(
+            return Err(OpenRpcTestGenError::UnexpectedTxnType(
                 "Unexpected txn type".to_string(),
             ));
         }
@@ -1955,7 +2027,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
+) -> Result<DeployAccountTxnV3<Felt>, OpenRpcTestGenError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
         create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
@@ -2016,7 +2088,7 @@ pub async fn get_transaction_by_hash_deploy_acc(
     let txn = match txn {
         Txn::DeployAccount(DeployAccountTxn::V3(tx)) => tx,
         _ => {
-            return Err(RpcError::UnexpectedTxnType(
+            return Err(OpenRpcTestGenError::UnexpectedTxnType(
                 "Unexpected txn type".to_string(),
             ));
         }
@@ -2033,7 +2105,7 @@ pub async fn get_transaction_by_block_id_and_index(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<Txn<Felt>, RpcError> {
+) -> Result<Txn<Felt>, OpenRpcTestGenError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
     let create_acc_data =
         create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await?;
@@ -2124,14 +2196,14 @@ pub async fn get_transaction_by_block_id_and_index(
         }),
         _ => {
             let error_message = format!("Unexpected transaction response type: {:?}", txn);
-            return Err(RpcError::UnexpectedTxnType(error_message));
+            return Err(OpenRpcTestGenError::UnexpectedTxnType(error_message));
         }
     };
 
     Ok(txn)
 }
 
-pub async fn get_transaction_by_hash_non_existent_tx(url: Url) -> Result<(), RpcError> {
+pub async fn get_transaction_by_hash_non_existent_tx(url: Url) -> Result<(), OpenRpcTestGenError> {
     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 
     let err = provider
@@ -2140,8 +2212,8 @@ pub async fn get_transaction_by_hash_non_existent_tx(url: Url) -> Result<(), Rpc
 
     match err {
         Err(ProviderError::StarknetError(StarknetError::TransactionHashNotFound)) => Ok(()),
-        Err(e) => Err(RpcError::ProviderError(e)),
-        Ok(_) => Err(RpcError::Other(
+        Err(e) => Err(OpenRpcTestGenError::ProviderError(e)),
+        Ok(_) => Err(OpenRpcTestGenError::Other(
             "Transaction unexpectedly found".to_string(),
         )),
     }
@@ -2158,7 +2230,7 @@ pub async fn get_transaction_receipt(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<InvokeTxnReceipt<Felt>, RpcError> {
+) -> Result<InvokeTxnReceipt<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -2238,10 +2310,12 @@ pub async fn get_transaction_receipt(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -2249,10 +2323,12 @@ pub async fn get_transaction_receipt(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -2296,11 +2372,15 @@ pub async fn get_transaction_receipt(
             {
                 *contract_address
             } else {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         }
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
 
@@ -2319,7 +2399,9 @@ pub async fn get_transaction_receipt(
 
     match receipt {
         TxnReceipt::Invoke(receipt) => Ok(receipt),
-        _ => Err(RpcError::CallError(CallError::UnexpectedReceiptType)),
+        _ => Err(OpenRpcTestGenError::CallError(
+            CallError::UnexpectedReceiptType,
+        )),
     }
 }
 
@@ -2334,7 +2416,7 @@ pub async fn get_transaction_receipt(
 //     erc20_strk_contract_address: Option<Felt>,
 //     erc20_eth_contract_address: Option<Felt>,
 //     amount_per_test: Option<Felt>,
-// ) -> Result<(), RpcError> {
+// ) -> Result<(), OpenRpcTestGenError> {
 //     let provider = JsonRpcClient::new(HttpTransport::new(url.clone()));
 //     let create_acc_data =
 //         match create_account(&provider, AccountType::Oz, Option::None, account_class_hash).await {
@@ -2428,16 +2510,16 @@ pub async fn get_transaction_receipt(
 //             }
 //             Anonymous::Successful(_) => {
 //                 info!("successful");
-//                 Err(RpcError::CallError(CallError::UnexpectedExecutionResult))
+//                 Err(OpenRpcTestGenError::CallError(CallError::UnexpectedExecutionResult))
 //             }
 //             _ => {
 //                 info!("other");
-//                 Err(RpcError::CallError(CallError::UnexpectedExecutionResult))
+//                 Err(OpenRpcTestGenError::CallError(CallError::UnexpectedExecutionResult))
 //             }
 //         },
 //         _ => {
 //             info!("Unexpected response type TxnReceipt: {:?}", receipt);
-//             Err(RpcError::CallError(CallError::UnexpectedReceiptType))
+//             Err(OpenRpcTestGenError::CallError(CallError::UnexpectedReceiptType))
 //         }
 //     }
 // }
@@ -2453,7 +2535,7 @@ pub async fn get_class(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<ContractClass<Felt>, RpcError> {
+) -> Result<ContractClass<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -2533,10 +2615,12 @@ pub async fn get_class(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -2544,10 +2628,12 @@ pub async fn get_class(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -2575,7 +2661,7 @@ pub async fn get_class_hash_at(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<Felt, RpcError> {
+) -> Result<Felt, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -2655,10 +2741,12 @@ pub async fn get_class_hash_at(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -2666,10 +2754,12 @@ pub async fn get_class_hash_at(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -2712,11 +2802,15 @@ pub async fn get_class_hash_at(
             {
                 *contract_address
             } else {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         }
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
     let contract_class_hash = account
@@ -2738,7 +2832,7 @@ pub async fn get_class_at(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<ContractClass<Felt>, RpcError> {
+) -> Result<ContractClass<Felt>, OpenRpcTestGenError> {
     let (flattened_sierra_class, compiled_class_hash) =
         get_compiled_contract(sierra_path, casm_path).await?;
 
@@ -2818,10 +2912,12 @@ pub async fn get_class_at(
             if sign_error.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&sign_error.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    sign_error
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        sign_error
+                    )),
+                ))
             }
         }
 
@@ -2829,10 +2925,12 @@ pub async fn get_class_at(
             if starkneterror.to_string().contains("is already declared") {
                 Ok(parse_class_hash_from_error(&starkneterror.to_string())?)
             } else {
-                Err(RpcError::RunnerError(RunnerError::AccountFailure(format!(
-                    "Transaction execution error: {}",
-                    starkneterror
-                ))))
+                Err(OpenRpcTestGenError::RunnerError(
+                    RunnerError::AccountFailure(format!(
+                        "Transaction execution error: {}",
+                        starkneterror
+                    )),
+                ))
             }
         }
         Err(e) => {
@@ -2875,11 +2973,15 @@ pub async fn get_class_at(
             {
                 *contract_address
             } else {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         }
         _ => {
-            return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+            return Err(OpenRpcTestGenError::CallError(
+                CallError::UnexpectedReceiptType,
+            ));
         }
     };
 

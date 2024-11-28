@@ -5,7 +5,7 @@ use crate::RandomizableAccountsTrait;
 use crate::{
     utils::v7::{
         accounts::call::Call,
-        endpoints::{errors::RpcError, utils::get_selector_from_name},
+        endpoints::{errors::OpenRpcTestGenError, utils::get_selector_from_name},
     },
     RunnableTrait,
 };
@@ -20,7 +20,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteContractCalls;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let increase_balance_call = Call {
             to: test_input.deployed_contract_address,
             selector: get_selector_from_name("increase_balance")?,

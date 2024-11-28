@@ -1,7 +1,7 @@
 use crate::utils::v7::accounts::account::ConnectedAccount;
 use crate::utils::v7::endpoints::errors::CallError;
 use crate::utils::v7::providers::provider::Provider;
-use crate::{utils::v7::endpoints::errors::RpcError, RunnableTrait};
+use crate::{utils::v7::endpoints::errors::OpenRpcTestGenError, RunnableTrait};
 use colored::Colorize;
 use starknet_types_rpc::TxnReceipt;
 use tracing::{error, info};
@@ -12,12 +12,14 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteContractCalls;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let tx_hash = match &test_input.deployment_receipt {
             TxnReceipt::Deploy(receipt) => receipt.common_receipt_properties.transaction_hash,
             TxnReceipt::Invoke(receipt) => receipt.common_receipt_properties.transaction_hash,
             _ => {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         };
 

@@ -16,10 +16,10 @@ use super::{deploy::DeployAccountVersion, structs::WaitForTx};
 
 // Cairo string of "STARKNET_CONTRACT_ADDRESS"
 const CONTRACT_ADDRESS_PREFIX: Felt = Felt::from_raw([
-    3829237882463328880,
-    17289941567720117366,
-    8635008616843941496,
     533439743893157637,
+    8635008616843941496,
+    17289941567720117366,
+    3829237882463328880,
 ]);
 
 /// Computes the target contract address of a "native" contract deployment. Use

@@ -8,7 +8,7 @@ use crate::{
         accounts::account::ConnectedAccount,
         contract::factory::ContractFactory,
         endpoints::{
-            errors::{CallError, RpcError},
+            errors::{CallError, OpenRpcTestGenError},
             utils::wait_for_sent_transaction,
         },
         providers::provider::Provider,
@@ -37,7 +37,7 @@ pub struct TestSuiteContractCalls {
 impl SetupableTrait for TestSuiteContractCalls {
     type Input = super::TestSuiteDeploy;
 
-    async fn setup(setup_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn setup(setup_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let factory = ContractFactory::new(
             setup_input.declaration_result.class_hash,
             setup_input.random_paymaster_account.random_accounts()?,
@@ -74,11 +74,15 @@ impl SetupableTrait for TestSuiteContractCalls {
                 {
                     *contract_address
                 } else {
-                    return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                    return Err(OpenRpcTestGenError::CallError(
+                        CallError::UnexpectedReceiptType,
+                    ));
                 }
             }
             _ => {
-                return Err(RpcError::CallError(CallError::UnexpectedReceiptType));
+                return Err(OpenRpcTestGenError::CallError(
+                    CallError::UnexpectedReceiptType,
+                ));
             }
         };
 

@@ -8,7 +8,7 @@ use crate::{
             account::ConnectedAccount,
             creation::create::{create_account, AccountType},
         },
-        endpoints::{errors::RpcError, utils::get_selector_from_name},
+        endpoints::{errors::OpenRpcTestGenError, utils::get_selector_from_name},
         providers::provider::Provider,
         signers::key_pair::SigningKey,
     },
@@ -24,7 +24,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteOpenRpc;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let created_account_data = create_account(
             test_input.random_paymaster_account.provider(),
             AccountType::Oz,

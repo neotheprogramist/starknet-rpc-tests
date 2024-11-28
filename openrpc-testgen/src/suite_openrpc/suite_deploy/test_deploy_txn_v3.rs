@@ -1,7 +1,7 @@
 use crate::{
     utils::v7::{
         contract::factory::ContractFactory,
-        endpoints::{errors::RpcError, utils::wait_for_sent_transaction},
+        endpoints::{errors::OpenRpcTestGenError, utils::wait_for_sent_transaction},
     },
     RandomizableAccountsTrait, RunnableTrait,
 };
@@ -16,7 +16,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteDeploy;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let factory = ContractFactory::new(
             test_input.declaration_result.class_hash,
             test_input.random_paymaster_account.random_accounts()?,

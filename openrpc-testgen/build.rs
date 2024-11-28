@@ -99,7 +99,7 @@ fn process_module_directory(
 
     writeln!(
         file,
-        "    async fn run(input: &Self::Input) -> Result<Self, crate::utils::v7::endpoints::errors::RpcError> {{"
+        "    async fn run(input: &Self::Input) -> Result<Self, crate::utils::v7::endpoints::errors::OpenRpcTestGenError> {{"
     )
     .unwrap();
 
@@ -126,13 +126,18 @@ fn process_module_directory(
     for test_name in test_cases {
         writeln!(
             file,
-            "        if let Err(e) = {}::{}::TestCase::run(&data).await {{
-                        tracing::error!(
-                        \"{{}}\",
-                            format!(\"Test case src/{} failed with error: {{:?}}\", e).red()
-                        )
-            }}",
-            module_prefix, test_name, test_name
+            "        match {}::{}::TestCase::run(&data).await {{
+                Ok(_) => tracing::info!(
+                    \"{{}}\", 
+                    \"✓ Test case src/{} completed successfully.\".green()
+                ),
+
+                Err(e) => tracing::error!(
+                    \"{{}}\", 
+                    format!(\"✗ Test case src/{} failed with runtime error: {{:?}}\", e).red()
+                ),
+        }}",
+            module_prefix, test_name, test_name, test_name
         )
         .unwrap();
     }
@@ -163,7 +168,7 @@ fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
     let mut nested_suites = Vec::new();
 
     for line in content.lines() {
-        if line.trim_start().starts_with("pub mod ") {
+        if line.trim_start().starts_with("pub mod test_") {
             let parts: Vec<&str> = line.split_whitespace().collect();
             if parts.len() >= 3 {
                 let mod_name = parts[2].trim_end_matches(';').to_string();

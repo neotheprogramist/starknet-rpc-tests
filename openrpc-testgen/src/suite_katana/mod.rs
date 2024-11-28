@@ -34,26 +34,14 @@ use crate::{
     },
     SetupableTrait,
 };
-pub mod suite_deploy;
-pub mod test_declare_txn_v2;
-pub mod test_declare_txn_v3;
-pub mod test_deploy_account_outside_execution;
-pub mod test_erc20_transfer;
-pub mod test_get_block_number;
-pub mod test_get_block_txn_count;
-pub mod test_get_block_with_tx_hashes;
-pub mod test_get_block_with_txs;
-pub mod test_get_chain_id;
-pub mod test_get_state_update;
-pub mod test_get_storage_at;
-pub mod test_get_transaction_by_hash;
-pub mod test_get_transaction_by_hash_non_existent;
-pub mod test_get_txn_by_block_id_and_index;
-// pub mod test_get_txn_by_block_id_and_index_deploy_account_v1;
-// pub mod test_get_txn_by_block_id_and_index_deploy_account_v3;
 
+pub mod test_declaring_already_existing_class;
+// pub mod test_get_blocks_from_hash;
+// pub mod test_get_blocks_from_num;
+pub mod test_declare_and_deploy_contract;
+pub mod test_estimate_fee;
 #[derive(Clone, Debug)]
-pub struct TestSuiteOpenRpc {
+pub struct TestSuiteKatana {
     pub random_paymaster_account: RandomSingleOwnerAccount,
     pub paymaster_private_key: Felt,
     pub random_executable_account: RandomSingleOwnerAccount,
@@ -72,7 +60,7 @@ pub struct SetupInput {
     pub udc_address: Felt,
 }
 
-impl SetupableTrait for TestSuiteOpenRpc {
+impl SetupableTrait for TestSuiteKatana {
     type Input = SetupInput;
 
     async fn setup(setup_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
@@ -231,7 +219,4 @@ impl SetupableTrait for TestSuiteOpenRpc {
 }
 
 #[cfg(not(feature = "rust-analyzer"))]
-include!(concat!(
-    env!("OUT_DIR"),
-    "/generated_tests_suite_openrpc.rs"
-));
+include!(concat!(env!("OUT_DIR"), "/generated_tests_suite_katana.rs"));

@@ -4,9 +4,13 @@ edition.workspace = true
 version.workspace = true
 
 [dependencies]
+anyhow.workspace = true
+assert_matches.workspace = true
 auto_impl.workspace = true
+cainome.workspace = true
 cainome-cairo-serde-derive.workspace = true
 cainome-cairo-serde.workspace = true
+cairo-lang-starknet-classes.workspace = true
 clap.workspace = true
 colored.workspace = true
 crypto-bigint.workspace = true
@@ -33,3 +37,5 @@ url.workspace = true
 [features]
 no_unknown_fields = []
 rust-analyzer = []
+katana = []
+openrpc = []

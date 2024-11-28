@@ -1,6 +1,6 @@
 use crate::{
     utils::v7::{
-        accounts::account::ConnectedAccount, endpoints::errors::RpcError,
+        accounts::account::ConnectedAccount, endpoints::errors::OpenRpcTestGenError,
         providers::provider::Provider,
     },
     RunnableTrait,
@@ -15,7 +15,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteOpenRpc;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let state_update = test_input
             .random_paymaster_account
             .provider()

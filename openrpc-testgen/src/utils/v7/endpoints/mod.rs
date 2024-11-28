@@ -15,7 +15,7 @@ use endpoints_functions::{
     get_transaction_receipt, get_transaction_status_succeeded, invoke_contract_erc20_transfer,
     invoke_contract_v1, invoke_contract_v3,
 };
-use errors::RpcError;
+use errors::OpenRpcTestGenError;
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{
     v0_7_1::{
@@ -33,7 +33,7 @@ pub struct Rpc {
 }
 
 impl Rpc {
-    pub fn new(url: Url) -> Result<Self, RpcError> {
+    pub fn new(url: Url) -> Result<Self, OpenRpcTestGenError> {
         Ok(Self { url })
     }
     pub fn set_url(&mut self, new_url: Url) {
@@ -54,7 +54,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<Felt, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn add_declare_transaction_v2(
@@ -67,7 +67,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
+    ) -> impl std::future::Future<Output = Result<Felt, OpenRpcTestGenError>> + Send;
 
     #[allow(clippy::too_many_arguments)]
     fn add_declare_transaction_v3(
@@ -80,7 +80,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<Felt, RpcError>> + Send;
+    ) -> impl std::future::Future<Output = Result<Felt, OpenRpcTestGenError>> + Send;
 
     #[allow(clippy::too_many_arguments)]
     fn add_invoke_transaction_v1(
@@ -93,7 +93,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn add_invoke_transaction_v3(
@@ -106,7 +106,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn invoke_contract_v1(
@@ -119,7 +119,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn invoke_contract_v3(
@@ -132,11 +132,11 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError>>;
 
-    fn block_number(&self) -> impl std::future::Future<Output = Result<u64, RpcError>>;
+    fn block_number(&self) -> impl std::future::Future<Output = Result<u64, OpenRpcTestGenError>>;
 
-    fn chain_id(&self) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
+    fn chain_id(&self) -> impl std::future::Future<Output = Result<Felt, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn call(
@@ -149,7 +149,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<Vec<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<Vec<Felt>, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn estimate_message_fee(
@@ -162,28 +162,28 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<FeeEstimate<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<FeeEstimate<Felt>, OpenRpcTestGenError>>;
 
     fn get_block_transaction_count(
         &self,
-    ) -> impl std::future::Future<Output = Result<u64, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<u64, OpenRpcTestGenError>>;
 
     fn get_block_with_tx_hashes(
         &self,
-    ) -> impl std::future::Future<Output = Result<BlockWithTxHashes<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<BlockWithTxHashes<Felt>, OpenRpcTestGenError>>;
 
     fn get_block_with_txs(
         &self,
-    ) -> impl std::future::Future<Output = Result<BlockWithTxs<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<BlockWithTxs<Felt>, OpenRpcTestGenError>>;
 
     fn get_state_update(
         &self,
-    ) -> impl std::future::Future<Output = Result<StateUpdate<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<StateUpdate<Felt>, OpenRpcTestGenError>>;
 
     fn get_storage_at(
         &self,
         erc20_eth_contract_address: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<Felt, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_status_succeeded(
@@ -196,7 +196,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<TxnStatus, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<TxnStatus, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_by_hash_invoke(
@@ -209,7 +209,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<InvokeTxnV1<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<InvokeTxnV1<Felt>, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_by_hash_deploy_acc(
@@ -220,7 +220,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<DeployAccountTxnV3<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<DeployAccountTxnV3<Felt>, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_by_block_id_and_index(
@@ -231,11 +231,11 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<Txn<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<Txn<Felt>, OpenRpcTestGenError>>;
 
     fn get_transaction_by_hash_non_existent_tx(
         &self,
-    ) -> impl std::future::Future<Output = Result<(), RpcError>>;
+    ) -> impl std::future::Future<Output = Result<(), OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_transaction_receipt(
@@ -248,7 +248,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<InvokeTxnReceipt<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<InvokeTxnReceipt<Felt>, OpenRpcTestGenError>>;
 
     // TODO: fix that
     // async fn get_transaction_receipt_revert(
@@ -262,7 +262,7 @@ pub trait RpcEndpoints {
     //     erc20_strk_contract_address: Option<Felt>,
     //     erc20_eth_contract_address: Option<Felt>,
     //     amount_per_test: Option<Felt>,
-    // ) -> Result<(), RpcError>;
+    // ) -> Result<(), OpenRpcTestGenError>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_class(
@@ -275,7 +275,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<ContractClass<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<ContractClass<Felt>, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_class_hash_at(
@@ -288,7 +288,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<Felt, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<Felt, OpenRpcTestGenError>>;
 
     #[allow(clippy::too_many_arguments)]
     fn get_class_at(
@@ -301,7 +301,7 @@ pub trait RpcEndpoints {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> impl std::future::Future<Output = Result<ContractClass<Felt>, RpcError>>;
+    ) -> impl std::future::Future<Output = Result<ContractClass<Felt>, OpenRpcTestGenError>>;
 }
 
 impl RpcEndpoints for Rpc {
@@ -315,7 +315,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Felt, RpcError> {
+    ) -> Result<Felt, OpenRpcTestGenError> {
         invoke_contract_erc20_transfer(
             self.url.clone(),
             sierra_path,
@@ -340,7 +340,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Felt, RpcError> {
+    ) -> Result<Felt, OpenRpcTestGenError> {
         add_declare_transaction_v2(
             self.url.clone(),
             sierra_path,
@@ -365,7 +365,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Felt, RpcError> {
+    ) -> Result<Felt, OpenRpcTestGenError> {
         add_declare_transaction_v3(
             self.url.clone(),
             sierra_path,
@@ -390,7 +390,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
+    ) -> Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError> {
         add_invoke_transaction_v1(
             self.url.clone(),
             sierra_path,
@@ -415,7 +415,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
+    ) -> Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError> {
         add_invoke_transaction_v3(
             self.url.clone(),
             sierra_path,
@@ -440,7 +440,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
+    ) -> Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError> {
         invoke_contract_v1(
             self.url.clone(),
             sierra_path,
@@ -465,7 +465,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<AddInvokeTransactionResult<Felt>, RpcError> {
+    ) -> Result<AddInvokeTransactionResult<Felt>, OpenRpcTestGenError> {
         invoke_contract_v3(
             self.url.clone(),
             sierra_path,
@@ -480,11 +480,11 @@ impl RpcEndpoints for Rpc {
         .await
     }
 
-    async fn block_number(&self) -> Result<u64, RpcError> {
+    async fn block_number(&self) -> Result<u64, OpenRpcTestGenError> {
         block_number(self.url.clone()).await
     }
 
-    async fn chain_id(&self) -> Result<Felt, RpcError> {
+    async fn chain_id(&self) -> Result<Felt, OpenRpcTestGenError> {
         chain_id(self.url.clone()).await
     }
 
@@ -498,7 +498,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Vec<Felt>, RpcError> {
+    ) -> Result<Vec<Felt>, OpenRpcTestGenError> {
         call(
             self.url.clone(),
             sierra_path,
@@ -523,7 +523,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<FeeEstimate<Felt>, RpcError> {
+    ) -> Result<FeeEstimate<Felt>, OpenRpcTestGenError> {
         estimate_message_fee(
             self.url.clone(),
             sierra_path,
@@ -538,19 +538,21 @@ impl RpcEndpoints for Rpc {
         .await
     }
 
-    async fn get_block_transaction_count(&self) -> Result<u64, RpcError> {
+    async fn get_block_transaction_count(&self) -> Result<u64, OpenRpcTestGenError> {
         get_block_transaction_count(self.url.clone()).await
     }
 
-    async fn get_block_with_tx_hashes(&self) -> Result<BlockWithTxHashes<Felt>, RpcError> {
+    async fn get_block_with_tx_hashes(
+        &self,
+    ) -> Result<BlockWithTxHashes<Felt>, OpenRpcTestGenError> {
         get_block_with_tx_hashes(self.url.clone()).await
     }
 
-    async fn get_block_with_txs(&self) -> Result<BlockWithTxs<Felt>, RpcError> {
+    async fn get_block_with_txs(&self) -> Result<BlockWithTxs<Felt>, OpenRpcTestGenError> {
         get_block_with_txs(self.url.clone()).await
     }
 
-    async fn get_state_update(&self) -> Result<StateUpdate<Felt>, RpcError> {
+    async fn get_state_update(&self) -> Result<StateUpdate<Felt>, OpenRpcTestGenError> {
         get_state_update(self.url.clone()).await
     }
 
@@ -558,7 +560,7 @@ impl RpcEndpoints for Rpc {
         &self,
 
         erc20_eth_contract_address: Option<Felt>,
-    ) -> Result<starknet_types_core::felt::Felt, RpcError> {
+    ) -> Result<starknet_types_core::felt::Felt, OpenRpcTestGenError> {
         get_storage_at(self.url.clone(), erc20_eth_contract_address).await
     }
 
@@ -573,7 +575,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<TxnStatus, RpcError> {
+    ) -> Result<TxnStatus, OpenRpcTestGenError> {
         get_transaction_status_succeeded(
             self.url.clone(),
             sierra_path,
@@ -598,7 +600,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<InvokeTxnV1<Felt>, RpcError> {
+    ) -> Result<InvokeTxnV1<Felt>, OpenRpcTestGenError> {
         get_transaction_by_hash_invoke(
             self.url.clone(),
             sierra_path,
@@ -621,7 +623,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<DeployAccountTxnV3<Felt>, RpcError> {
+    ) -> Result<DeployAccountTxnV3<Felt>, OpenRpcTestGenError> {
         get_transaction_by_hash_deploy_acc(
             self.url.clone(),
             account_class_hash,
@@ -642,7 +644,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Txn<Felt>, RpcError> {
+    ) -> Result<Txn<Felt>, OpenRpcTestGenError> {
         get_transaction_by_block_id_and_index(
             self.url.clone(),
             account_class_hash,
@@ -655,7 +657,7 @@ impl RpcEndpoints for Rpc {
         .await
     }
 
-    async fn get_transaction_by_hash_non_existent_tx(&self) -> Result<(), RpcError> {
+    async fn get_transaction_by_hash_non_existent_tx(&self) -> Result<(), OpenRpcTestGenError> {
         get_transaction_by_hash_non_existent_tx(self.url.clone()).await
     }
 
@@ -670,7 +672,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<InvokeTxnReceipt<Felt>, RpcError> {
+    ) -> Result<InvokeTxnReceipt<Felt>, OpenRpcTestGenError> {
         get_transaction_receipt(
             self.url.clone(),
             sierra_path,
@@ -696,7 +698,7 @@ impl RpcEndpoints for Rpc {
     //     erc20_strk_contract_address: Option<Felt>,
     //     erc20_eth_contract_address: Option<Felt>,
     //     amount_per_test: Option<Felt>,
-    // ) -> Result<(), RpcError> {
+    // ) -> Result<(), OpenRpcTestGenError> {
     //     get_transaction_receipt_revert(
     //         url.clone(),
     //         sierra_path,
@@ -722,7 +724,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<ContractClass<Felt>, RpcError> {
+    ) -> Result<ContractClass<Felt>, OpenRpcTestGenError> {
         get_class(
             self.url.clone(),
             sierra_path,
@@ -748,7 +750,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<Felt, RpcError> {
+    ) -> Result<Felt, OpenRpcTestGenError> {
         get_class_hash_at(
             self.url.clone(),
             sierra_path,
@@ -774,7 +776,7 @@ impl RpcEndpoints for Rpc {
         erc20_strk_contract_address: Option<Felt>,
         erc20_eth_contract_address: Option<Felt>,
         amount_per_test: Option<Felt>,
-    ) -> Result<ContractClass<Felt>, RpcError> {
+    ) -> Result<ContractClass<Felt>, OpenRpcTestGenError> {
         get_class_at(
             self.url.clone(),
             sierra_path,
@@ -803,7 +805,7 @@ pub async fn test_rpc_endpoints_v0_0_7(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<(), RpcError> {
+) -> Result<(), OpenRpcTestGenError> {
     info!("{}", "⌛ Testing Rpc V7 endpoints -- START ⌛".yellow());
 
     let rpc = Rpc::new(url.clone())?;

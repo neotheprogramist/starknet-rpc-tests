@@ -10,7 +10,7 @@ use crate::utils::v7::signers::local_wallet::LocalWallet;
 use crate::utils::v7::{
     accounts::account::{normalize_address, starknet_keccak},
     contract::{CompiledClass, HashAndFlatten, SierraClass},
-    endpoints::errors::RpcError,
+    endpoints::errors::OpenRpcTestGenError,
 };
 use reqwest::Client;
 use starknet_types_core::felt::Felt;
@@ -72,7 +72,7 @@ pub async fn get_compiled_contract(
     Ok((flattened_class, casm_class_hash))
 }
 
-pub async fn restart_devnet(url: Url) -> Result<(), RpcError> {
+pub async fn restart_devnet(url: Url) -> Result<(), OpenRpcTestGenError> {
     let client = Client::new();
     let url = url.join("/restart")?;
     let response = client.post(url).send().await?;
@@ -81,7 +81,7 @@ pub async fn restart_devnet(url: Url) -> Result<(), RpcError> {
         Ok(())
     } else {
         error!("Failed to restart Devnet. Status: {}", response.status());
-        Err(RpcError::RequestError(
+        Err(OpenRpcTestGenError::RequestError(
             response.error_for_status().unwrap_err(),
         ))
     }
@@ -120,7 +120,7 @@ pub fn validate_inputs(
     erc20_strk_contract_address: Option<Felt>,
     erc20_eth_contract_address: Option<Felt>,
     amount_per_test: Option<Felt>,
-) -> Result<(Felt, Felt, Felt, Felt, Felt), RpcError> {
+) -> Result<(Felt, Felt, Felt, Felt, Felt), OpenRpcTestGenError> {
     match (
         account_address,
         private_key,
@@ -137,7 +137,7 @@ pub fn validate_inputs(
         ) => {
             if amount_per_test <= Felt::ZERO {
                 warn!("Amount per test must be greater than zero");
-                return Err(RpcError::InvalidInput(
+                return Err(OpenRpcTestGenError::InvalidInput(
                     "Amount per test must be greater than zero".to_string(),
                 ));
             };
@@ -151,31 +151,31 @@ pub fn validate_inputs(
         }
         (None, _, _, _, _) => {
             warn!("Account address is required");
-            Err(RpcError::InvalidInput(
+            Err(OpenRpcTestGenError::InvalidInput(
                 "Account address is required".to_string(),
             ))
         }
         (_, None, _, _, _) => {
             warn!("Private key is required to fund generated account");
-            Err(RpcError::InvalidInput(
+            Err(OpenRpcTestGenError::InvalidInput(
                 "Private key is required".to_string(),
             ))
         }
         (_, _, None, _, _) => {
             warn!("ERC20 STRK contract address is required");
-            Err(RpcError::InvalidInput(
+            Err(OpenRpcTestGenError::InvalidInput(
                 "ERC20 STRK contract address is required".to_string(),
             ))
         }
         (_, _, _, None, _) => {
             warn!("ERC20 ETH contract address is required");
-            Err(RpcError::InvalidInput(
+            Err(OpenRpcTestGenError::InvalidInput(
                 "ERC20 ETH contract address is required".to_string(),
             ))
         }
         (_, _, _, _, None) => {
             warn!("Amount per test is required");
-            Err(RpcError::InvalidInput(
+            Err(OpenRpcTestGenError::InvalidInput(
                 "Amount per test is required".to_string(),
             ))
         }
@@ -186,7 +186,7 @@ use starknet_types_rpc::MaybePendingBlockWithTxHashes;
 pub async fn wait_for_sent_transaction(
     transaction_hash: Felt,
     user_passed_account: &SingleOwnerAccount<JsonRpcClient<HttpTransport>, LocalWallet>,
-) -> Result<TxnFinalityAndExecutionStatus, RpcError> {
+) -> Result<TxnFinalityAndExecutionStatus, OpenRpcTestGenError> {
     let start_fetching = std::time::Instant::now();
     let wait_for = Duration::from_secs(60);
 
@@ -197,7 +197,7 @@ pub async fn wait_for_sent_transaction(
 
     loop {
         if start_fetching.elapsed() > wait_for {
-            return Err(RpcError::Timeout(format!(
+            return Err(OpenRpcTestGenError::Timeout(format!(
                 "Transaction {:?} not mined in 60 seconds.",
                 transaction_hash
             )));
@@ -288,7 +288,9 @@ pub async fn wait_for_sent_transaction(
                     "❌ Transaction {:?} reverted on L2. Stopping...",
                     transaction_hash
                 );
-                return Err(RpcError::TransactionFailed(transaction_hash.to_string()));
+                return Err(OpenRpcTestGenError::TransactionFailed(
+                    transaction_hash.to_string(),
+                ));
             }
             TxnFinalityAndExecutionStatus {
                 finality_status: TxnStatus::Rejected,
@@ -298,7 +300,9 @@ pub async fn wait_for_sent_transaction(
                     "❌ Transaction {:?} rejected. Stopping...",
                     transaction_hash
                 );
-                return Err(RpcError::TransactionRejected(transaction_hash.to_string()));
+                return Err(OpenRpcTestGenError::TransactionRejected(
+                    transaction_hash.to_string(),
+                ));
             }
             TxnFinalityAndExecutionStatus {
                 finality_status: TxnStatus::Received,
@@ -337,7 +341,7 @@ pub async fn setup_generated_account(
     erc20_strk_contract_address: Felt,
     amount_per_test: Felt,
     create_acc_data_address: Felt,
-) -> Result<(), RpcError> {
+) -> Result<(), OpenRpcTestGenError> {
     user_passed_account.set_block_id(BlockId::Tag(BlockTag::Pending));
 
     let transfer_execution = user_passed_account

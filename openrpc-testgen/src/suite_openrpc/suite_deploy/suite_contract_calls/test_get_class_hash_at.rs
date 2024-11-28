@@ -1,6 +1,6 @@
 use crate::utils::v7::accounts::account::ConnectedAccount;
 use crate::utils::v7::providers::provider::Provider;
-use crate::{utils::v7::endpoints::errors::RpcError, RunnableTrait};
+use crate::{utils::v7::endpoints::errors::OpenRpcTestGenError, RunnableTrait};
 use colored::Colorize;
 use starknet_types_rpc::{BlockId, BlockTag};
 use tracing::{error, info};
@@ -11,7 +11,7 @@ pub struct TestCase {}
 impl RunnableTrait for TestCase {
     type Input = super::TestSuiteContractCalls;
 
-    async fn run(test_input: &Self::Input) -> Result<Self, RpcError> {
+    async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let contract_class_hash = test_input
             .random_paymaster_account
             .provider()
