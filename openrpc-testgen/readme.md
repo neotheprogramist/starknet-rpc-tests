@@ -105,14 +105,14 @@ To add your custom test suites and cases, you need to follow certain conventions
 
 1. **Modify `lib.rs` by adding:**
    ```rust
-   #[cfg(feature = "openrpc")]
-   pub mod suite_openrpc;
+   #[cfg(feature = "new_suite")]
+   pub mod new_suite;
    ```
 2. **Update `cargo.toml`**
 
    ```rust
    [features]
-   openrpc = []
+   new_suite = []
    ```
 
 ## Auto-Generated Code
