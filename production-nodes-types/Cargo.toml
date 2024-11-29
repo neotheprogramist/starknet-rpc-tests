@@ -10,7 +10,7 @@ blockifier = { git = "https://github.com/neotheprogramist/blockifier.git", branc
 ] }
 bincode = "2.0.0-rc.3"
 bitvec = "1.0.1"
-crypto-utils = { git = "https://github.com/neotheprogramist/starknet-rpc-tests.git", branch = "tmp/sybilla" }
+crypto-utils = { git = "https://github.com/neotheprogramist/starknet-rpc-tests.git", rev = "824a4c294d5040f73fd576d0ed17ba85439fc593" }
 fake = { version = "2.8.0", features = ["derive"] }
 indexmap = "2.3.0"
 num-bigint = "0.4.4"
