@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use clap::Parser;
 use starknet_types_core::felt::Felt;
 use url::Url;
@@ -23,20 +21,6 @@ pub struct Args {
 
     #[arg(long, env, help = "Universal Deployer Contract address")]
     pub udc_address: Felt,
-
-    #[arg(
-        long,
-        env,
-        help = "Path to sierra of Executable Account contract (necessary to delegate fee payment to paymaster)"
-    )]
-    pub executable_account_sierra_path: PathBuf,
-
-    #[arg(
-        long,
-        env,
-        help = "Path to casm of Executable Account contract (necessary to delegate fee payment to paymaster)"
-    )]
-    pub executable_account_casm_path: PathBuf,
 
     #[arg(long, env, help = "Class hash of account contract")]
     pub account_class_hash: Felt,
