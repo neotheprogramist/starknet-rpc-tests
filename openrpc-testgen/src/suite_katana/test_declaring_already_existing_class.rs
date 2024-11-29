@@ -28,14 +28,11 @@ impl RunnableTrait for TestCase {
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_2_HelloStarknet.compiled_contract_class.json")?,
         )
         .await?;
-        let provider = test_input
-            .random_paymaster_account
-            .random_accounts()?
-            .provider()
-            .clone();
+        let account = test_input.random_paymaster_account.random_accounts()?;
 
-        let declare_res = test_input
-            .random_paymaster_account
+        let provider = account.provider().clone();
+
+        let declare_res = account
             .declare_v2(
                 Arc::new(flattened_sierra_class.clone()),
                 compiled_class_hash,
@@ -45,11 +42,7 @@ impl RunnableTrait for TestCase {
 
         let (transaction_hash, class_hash) = (declare_res.transaction_hash, declare_res.class_hash);
 
-        wait_for_sent_transaction(
-            transaction_hash,
-            &test_input.random_paymaster_account.random_accounts()?,
-        )
-        .await?;
+        wait_for_sent_transaction(transaction_hash, &account).await?;
 
         let get_class = provider
             .clone()
@@ -59,8 +52,7 @@ impl RunnableTrait for TestCase {
 
         assert_result!(get_class);
 
-        let declare_result = test_input
-            .random_paymaster_account
+        let declare_result = account
             .declare_v2(
                 Arc::new(flattened_sierra_class.clone()),
                 compiled_class_hash,

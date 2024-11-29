@@ -66,4 +66,3 @@ impl RunnableTrait for TestCase {
         Ok(Self {})
     }
 }
-

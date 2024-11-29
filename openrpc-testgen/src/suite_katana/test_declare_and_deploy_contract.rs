@@ -32,11 +32,9 @@ impl RunnableTrait for TestCase {
         let (flattened_sierra_class, compiled_class_hash) =
             prepare_contract_declaration_params(&path)?;
 
-        let provider = test_input
-            .random_paymaster_account
-            .random_accounts()?
-            .provider()
-            .clone();
+        let account = test_input.random_paymaster_account.random_accounts()?;
+
+        let provider = account.provider().clone();
 
         let declare_res = test_input
             .random_paymaster_account
@@ -49,11 +47,7 @@ impl RunnableTrait for TestCase {
 
         let (transaction_hash, class_hash) = (declare_res.transaction_hash, declare_res.class_hash);
 
-        wait_for_sent_transaction(
-            transaction_hash,
-            &test_input.random_paymaster_account.random_accounts()?,
-        )
-        .await?;
+        wait_for_sent_transaction(transaction_hash, &account).await?;
 
         let get_class_ok = provider
             .clone()

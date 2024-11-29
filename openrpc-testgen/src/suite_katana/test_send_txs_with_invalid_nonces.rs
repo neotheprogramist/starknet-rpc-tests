@@ -39,8 +39,7 @@ impl RunnableTrait for TestCase {
             calldata: vec![Felt::from_hex("0x50")?],
         };
 
-        let res = test_input
-            .random_paymaster_account
+        let res = account
             .execute_v1(vec![increase_balance_call.clone()])
             .max_fee(fee)
             .send()
@@ -60,8 +59,7 @@ impl RunnableTrait for TestCase {
         //  transaction with nonce < account nonce.
         let old_nonce = valid_nonce - Felt::ONE;
 
-        let res = test_input
-            .random_paymaster_account
+        let res = account
             .execute_v1(vec![increase_balance_call.clone()])
             .max_fee(fee)
             .nonce(old_nonce)
@@ -83,8 +81,7 @@ impl RunnableTrait for TestCase {
 
         let curr_nonce = valid_nonce;
 
-        let res = test_input
-            .random_paymaster_account
+        let res = account
             .execute_v1(vec![increase_balance_call.clone()])
             .max_fee(fee)
             .nonce(curr_nonce)
@@ -109,8 +106,7 @@ impl RunnableTrait for TestCase {
         // invalid with nonce mismatch error.
         let new_nonce = Felt::from_hex_unchecked("0x100");
 
-        let res = test_input
-            .random_paymaster_account
+        let res = account
             .execute_v1(vec![increase_balance_call.clone()])
             .max_fee(fee)
             .nonce(new_nonce)

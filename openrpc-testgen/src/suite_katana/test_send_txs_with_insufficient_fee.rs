@@ -31,8 +31,7 @@ impl RunnableTrait for TestCase {
             calldata: vec![Felt::from_hex("0x50")?],
         };
 
-        let res = test_input
-            .random_paymaster_account
+        let res = account
             .execute_v1(vec![increase_balance_call])
             .max_fee(Felt::TWO)
             .send()
@@ -53,10 +52,4 @@ impl RunnableTrait for TestCase {
 
         Ok(Self {})
     }
-}
-
-pub fn split_felt(felt: Felt) -> (Felt, Felt) {
-    let low: Felt = (felt.to_biguint() & Felt::from(u128::MAX).to_biguint()).into();
-    let high = felt.to_biguint() >> 128;
-    (low, Felt::from(high))
 }

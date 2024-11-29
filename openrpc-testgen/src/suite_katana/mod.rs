@@ -44,13 +44,15 @@ pub mod test_declaring_already_existing_class;
 // pub mod test_get_blocks_from_hash;
 // pub mod test_get_blocks_from_num;
 
+pub mod test_concurrent_transactions_submissions;
 pub mod test_declare_and_deploy_contract;
 pub mod test_ensure_validator_have_valid_state;
 pub mod test_estimate_fee;
 pub mod test_send_txs_with_insufficient_fee;
+pub mod test_send_txs_with_invalid_nonces;
 pub mod test_send_txs_with_invalid_signature;
 pub mod test_v3_transactions;
-pub mod test_send_txs_with_invalid_nonces;
+
 #[derive(Clone, Debug)]
 pub struct TestSuiteKatana {
     pub random_paymaster_account: RandomSingleOwnerAccount,
