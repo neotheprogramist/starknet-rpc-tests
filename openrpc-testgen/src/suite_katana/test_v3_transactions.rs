@@ -1,10 +1,7 @@
 use crate::{
     assert_eq_result,
     utils::v7::{
-        accounts::{
-            account::Account,
-            call::Call,
-        },
+        accounts::{account::Account, call::Call},
         endpoints::{
             errors::OpenRpcTestGenError,
             utils::{get_selector_from_name, wait_for_sent_transaction},
@@ -15,7 +12,6 @@ use crate::{
 
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::TxnExecutionStatus;
-
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}

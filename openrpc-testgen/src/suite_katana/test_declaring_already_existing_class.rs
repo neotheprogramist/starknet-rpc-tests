@@ -24,8 +24,8 @@ impl RunnableTrait for TestCase {
     type Input = super::TestSuiteKatana;
     async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let (flattened_sierra_class, compiled_class_hash) = get_compiled_contract(
-            PathBuf::from_str("target/dev/contracts_contracts_sample_contract_1_HelloStarknet.contract_class.json")?,
-            PathBuf::from_str("target/dev/contracts_contracts_sample_contract_1_HelloStarknet.compiled_contract_class.json")?,
+            PathBuf::from_str("target/dev/contracts_contracts_sample_contract_2_HelloStarknet.contract_class.json")?,
+            PathBuf::from_str("target/dev/contracts_contracts_sample_contract_2_HelloStarknet.compiled_contract_class.json")?,
         )
         .await?;
         let provider = test_input
@@ -65,7 +65,7 @@ impl RunnableTrait for TestCase {
                 Arc::new(flattened_sierra_class.clone()),
                 compiled_class_hash,
             )
-            .max_fee(Felt::ONE) //TODO: without max_fee diffrent error type than ClassAlreadyDeclared Provider(StarknetError(TransactionExecutionError(TransactionExecutionErrorData
+            .max_fee(Felt::ZERO) //TODO: without max_fee diffrent error type than ClassAlreadyDeclared starknet devnet: Provider(StarknetError(TransactionExecutionError(TransactionExecutionErrorData
             .send()
             .await;
 

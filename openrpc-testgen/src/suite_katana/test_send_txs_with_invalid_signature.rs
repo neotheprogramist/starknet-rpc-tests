@@ -67,8 +67,3 @@ impl RunnableTrait for TestCase {
     }
 }
 
-pub fn split_felt(felt: Felt) -> (Felt, Felt) {
-    let low: Felt = (felt.to_biguint() & Felt::from(u128::MAX).to_biguint()).into();
-    let high = felt.to_biguint() >> 128;
-    (low, Felt::from(high))
-}
