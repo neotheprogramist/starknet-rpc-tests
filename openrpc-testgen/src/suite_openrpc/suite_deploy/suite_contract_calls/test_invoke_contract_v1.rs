@@ -1,6 +1,6 @@
 use crate::utils::v7::accounts::account::Account;
 use crate::utils::v7::endpoints::utils::wait_for_sent_transaction;
-use crate::RandomizableAccountsTrait;
+use crate::{assert_result, RandomizableAccountsTrait};
 use crate::{
     utils::v7::{
         accounts::call::Call,
@@ -8,9 +8,7 @@ use crate::{
     },
     RunnableTrait,
 };
-use colored::Colorize;
 use starknet_types_core::felt::Felt;
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -37,23 +35,9 @@ impl RunnableTrait for TestCase {
         )
         .await?;
 
-        match invoke_result {
-            Ok(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc invoke_contract_v1 COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Err(e) => {
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc invoke_contract_v1 INCOMPATIBLE:".red(),
-                    e.to_string().red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = invoke_result.is_ok();
+
+        assert_result!(result);
 
         Ok(Self {})
     }

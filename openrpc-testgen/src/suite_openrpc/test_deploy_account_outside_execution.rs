@@ -1,4 +1,5 @@
 use crate::{
+    assert_matches_result,
     utils::v7::{
         accounts::{
             account::{Account, ConnectedAccount},
@@ -15,14 +16,12 @@ use crate::{
     RandomizableAccountsTrait, RunnableTrait,
 };
 use cainome_cairo_serde::CairoSerde;
-use colored::Colorize;
 use starknet::core::crypto::ecdsa_sign;
 use starknet_types_core::{
     felt::Felt,
     hash::{Poseidon, StarkHash},
 };
 use starknet_types_rpc::{BlockId, BlockTag, InvokeTxn, MaybePendingBlockWithTxs, Txn};
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -141,25 +140,7 @@ impl RunnableTrait for TestCase {
             .get_transaction_by_block_id_and_index(BlockId::Number(block_number), txn_index)
             .await?;
 
-        match txn {
-            Txn::Invoke(InvokeTxn::V3(_)) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc deploy_account_outside_execution COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            _ => {
-                let error_message = format!("Unexpected transaction response type: {:?}", txn);
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc deploy_account_outside_execution INCOMPATIBLE:".red(),
-                    error_message,
-                    "✗".red()
-                );
-                return Err(OpenRpcTestGenError::UnexpectedTxnType(error_message));
-            }
-        }
+        assert_matches_result!(txn, Txn::Invoke(InvokeTxn::V3(_)));
 
         Ok(Self {})
     }

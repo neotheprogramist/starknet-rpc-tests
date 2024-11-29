@@ -1,13 +1,12 @@
 use crate::{
+    assert_result,
     utils::v7::{
         accounts::account::ConnectedAccount, endpoints::errors::OpenRpcTestGenError,
         providers::provider::Provider,
     },
     RunnableTrait,
 };
-use colored::Colorize;
 use starknet_types_rpc::BlockId;
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -35,23 +34,9 @@ impl RunnableTrait for TestCase {
             .get_transaction_by_block_id_and_index(BlockId::Hash(block_hash), block_txn_count - 1)
             .await;
 
-        match txn {
-            Ok(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc get_transaction_by_block_id_and_index COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Err(e) => {
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc get_transaction_by_block_id_and_index INCOMPATIBLE:".red(),
-                    e.to_string().red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = txn.is_ok();
+
+        assert_result!(result);
 
         Ok(Self {})
     }

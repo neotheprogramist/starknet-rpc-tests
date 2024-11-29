@@ -23,7 +23,6 @@ use crate::{
     RandomizableAccountsTrait, RunnableTrait,
 };
 use cainome_cairo_serde::CairoSerde;
-use colored::Colorize;
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 use starknet::core::crypto::ecdsa_sign;
 use starknet_types_core::{
@@ -33,7 +32,6 @@ use starknet_types_core::{
 use starknet_types_rpc::{BlockId, BlockTag, FunctionCall, TxnReceipt};
 use std::path::PathBuf;
 use std::str::FromStr;
-use tracing::info;
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -337,12 +335,6 @@ impl RunnableTrait for TestCase {
         assert_result!(
             paymaster_balance_after < paymaster_balance_before,
             "Gas balance on paymaster account did not decrease after transaction."
-        );
-
-        info!(
-            "{} {}",
-            "\n✓ Rpc test_erc20_transfer COMPATIBLE".green(),
-            "✓".green()
         );
 
         Ok(Self {})

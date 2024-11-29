@@ -1,12 +1,11 @@
+use crate::assert_result;
 use crate::utils::v7::accounts::account::ConnectedAccount;
 use crate::utils::v7::providers::provider::Provider;
 use crate::{
     utils::v7::endpoints::{errors::OpenRpcTestGenError, utils::get_selector_from_name},
     RunnableTrait,
 };
-use colored::Colorize;
 use starknet_types_rpc::{BlockId, BlockTag, MsgFromL1};
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -29,23 +28,9 @@ impl RunnableTrait for TestCase {
             )
             .await;
 
-        match estimate {
-            Ok(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc estimate_message_fee COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Err(e) => {
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc estimate_message_fee INCOMPATIBLE:".red(),
-                    e.to_string().red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = estimate.is_ok();
+
+        assert_result!(result);
 
         Ok(Self {})
     }

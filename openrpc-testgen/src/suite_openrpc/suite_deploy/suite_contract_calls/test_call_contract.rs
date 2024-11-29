@@ -1,7 +1,7 @@
 use crate::utils::v7::accounts::account::{Account, ConnectedAccount};
 use crate::utils::v7::endpoints::utils::wait_for_sent_transaction;
 use crate::utils::v7::providers::provider::Provider;
-use crate::RandomizableAccountsTrait;
+use crate::{assert_result, RandomizableAccountsTrait};
 use crate::{
     utils::v7::{
         accounts::call::Call,
@@ -9,10 +9,8 @@ use crate::{
     },
     RunnableTrait,
 };
-use colored::Colorize;
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{BlockId, BlockTag, FunctionCall};
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -52,23 +50,9 @@ impl RunnableTrait for TestCase {
             )
             .await;
 
-        match balance {
-            Ok(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc call_contract COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Err(e) => {
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc call_contract INCOMPATIBLE:".red(),
-                    e.to_string().red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = balance.is_ok();
+
+        assert_result!(result);
 
         Ok(Self {})
     }

@@ -7,11 +7,9 @@ use crate::{
     },
     RandomizableAccountsTrait, RunnableTrait,
 };
-use colored::Colorize;
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{BlockId, DeployTxn, InvokeTxn, MaybePendingBlockWithTxs, Txn};
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -88,33 +86,15 @@ impl RunnableTrait for TestCase {
             .await?;
 
         match txn {
-            Txn::Invoke(InvokeTxn::V1(_)) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v1 COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
+            Txn::Invoke(InvokeTxn::V1(_)) => {}
             Txn::Deploy(DeployTxn {
                 class_hash: _,
                 constructor_calldata: _,
                 contract_address_salt: _,
                 version: _,
-            }) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc test_get_txn_by_block_id_and_index_deploy_v1 COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
+            }) => {}
             _ => {
                 let error_message = format!("Unexpected transaction response type: {:?}", txn);
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc test_get_txn_by_block_id_and_index_deploy_v1 INCOMPATIBLE:".red(),
-                    error_message,
-                    "✗".red()
-                );
                 return Err(OpenRpcTestGenError::UnexpectedTxnType(error_message));
             }
         }

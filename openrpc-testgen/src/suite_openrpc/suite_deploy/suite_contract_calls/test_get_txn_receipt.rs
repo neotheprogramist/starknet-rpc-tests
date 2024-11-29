@@ -1,12 +1,11 @@
+use crate::assert_result;
 use crate::utils::v7::accounts::account::{Account, ConnectedAccount};
 use crate::utils::v7::accounts::call::Call;
 use crate::utils::v7::endpoints::utils::{get_selector_from_name, wait_for_sent_transaction};
 use crate::utils::v7::providers::provider::Provider;
 use crate::RandomizableAccountsTrait;
 use crate::{utils::v7::endpoints::errors::OpenRpcTestGenError, RunnableTrait};
-use colored::Colorize;
 use starknet_types_core::felt::Felt;
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -39,23 +38,9 @@ impl RunnableTrait for TestCase {
             .get_transaction_receipt(result.transaction_hash)
             .await;
 
-        match receipt {
-            Ok(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc get_transaction_receipt COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Err(e) => {
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc get_transaction_receipt INCOMPATIBLE:".red(),
-                    e.to_string().red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = receipt.is_ok();
+
+        assert_result!(result);
 
         Ok(Self {})
     }
