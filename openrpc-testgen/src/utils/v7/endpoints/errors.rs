@@ -51,6 +51,8 @@ pub enum OpenRpcTestGenError {
     AssertNoPanic(#[from] AssertionNoPanicError),
     #[error(transparent)]
     Conversions(#[from] ConversionsError),
+    #[error(transparent)]
+    JoinError(#[from] tokio::task::JoinError),
     #[error("Unexpected block type {0}")]
     UnexpectedBlockResponseType(String),
     #[error("Unexpected txn type {0}")]
