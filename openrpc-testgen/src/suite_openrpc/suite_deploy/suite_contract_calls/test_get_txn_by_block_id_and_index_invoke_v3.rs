@@ -1,3 +1,4 @@
+use crate::assert_matches_result;
 use crate::utils::v7::accounts::account::Account;
 use crate::{
     utils::v7::{
@@ -10,10 +11,8 @@ use crate::{
     },
     RandomizableAccountsTrait, RunnableTrait,
 };
-use colored::Colorize;
 use starknet_types_core::felt::Felt;
 use starknet_types_rpc::{BlockId, InvokeTxn, MaybePendingBlockWithTxs, Txn};
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -84,25 +83,7 @@ impl RunnableTrait for TestCase {
             .get_transaction_by_block_id_and_index(BlockId::Number(block_number), txn_index)
             .await?;
 
-        match txn {
-            Txn::Invoke(InvokeTxn::V3(_)) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc test_get_txn_by_block_id_and_index_invoke_v3 COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            _ => {
-                let error_message = format!("Unexpected transaction response type: {:?}", txn);
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc test_get_txn_by_block_id_and_index_invoke_v3 INCOMPATIBLE:".red(),
-                    error_message,
-                    "✗".red()
-                );
-                return Err(OpenRpcTestGenError::UnexpectedTxnType(error_message));
-            }
-        }
+        assert_matches_result!(txn, Txn::Invoke(InvokeTxn::V3(_)));
 
         Ok(Self {})
     }

@@ -1,13 +1,12 @@
 use crate::{
+    assert_result,
     utils::v7::{
         accounts::account::ConnectedAccount, endpoints::errors::OpenRpcTestGenError,
         providers::provider::Provider,
     },
     RunnableTrait,
 };
-use colored::Colorize;
 use starknet_types_core::felt::Felt;
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -22,22 +21,9 @@ impl RunnableTrait for TestCase {
             .get_transaction_by_hash(Felt::from_hex("0xdeadbeef")?)
             .await;
 
-        match txn {
-            Err(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc get_transaction_by_hash_non_existent COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Ok(_) => {
-                error!(
-                    "{} {}",
-                    "✗ Rpc get_transaction_by_hash_non_existent INCOMPATIBLE:".red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = txn.is_err();
+
+        assert_result!(result);
 
         Ok(Self {})
     }

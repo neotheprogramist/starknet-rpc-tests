@@ -1,7 +1,7 @@
 use crate::utils::v7::accounts::account::Account;
 use crate::utils::v7::accounts::call::Call;
 use crate::utils::v7::endpoints::utils::wait_for_sent_transaction;
-use crate::RandomizableAccountsTrait;
+use crate::{assert_result, RandomizableAccountsTrait};
 use crate::{
     utils::v7::{
         accounts::{
@@ -14,9 +14,7 @@ use crate::{
     },
     RunnableTrait,
 };
-use colored::Colorize;
 use starknet_types_core::felt::Felt;
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -64,23 +62,9 @@ impl RunnableTrait for TestCase {
             .get_transaction_by_hash(deploy_account_result.transaction_hash)
             .await;
 
-        match txn {
-            Ok(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc get_transaction_by_hash COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Err(e) => {
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc get_transaction_by_hash INCOMPATIBLE:".red(),
-                    e.to_string().red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = txn.is_ok();
+
+        assert_result!(result);
 
         Ok(Self {})
     }

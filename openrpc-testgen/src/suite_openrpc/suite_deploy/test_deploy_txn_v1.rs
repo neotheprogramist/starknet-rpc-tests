@@ -1,14 +1,13 @@
 use crate::{
+    assert_result,
     utils::v7::{
         contract::factory::ContractFactory,
         endpoints::{errors::OpenRpcTestGenError, utils::wait_for_sent_transaction},
     },
     RandomizableAccountsTrait, RunnableTrait,
 };
-use colored::Colorize;
 use rand::{rngs::StdRng, RngCore, SeedableRng};
 use starknet_types_core::felt::Felt;
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -36,23 +35,9 @@ impl RunnableTrait for TestCase {
         )
         .await?;
 
-        match invoke_result {
-            Ok(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc add_deploy_transaction_v1 COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Err(e) => {
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc add_transaction_deploy_v1 INCOMPATIBLE:".red(),
-                    e.to_string().red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = invoke_result.is_ok();
+
+        assert_result!(result);
 
         Ok(Self {})
     }

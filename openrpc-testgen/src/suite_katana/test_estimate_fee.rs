@@ -29,13 +29,9 @@ impl RunnableTrait for TestCase {
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_3_HelloStarknet.compiled_contract_class.json")?,
         )
         .await?;
-        let provider = test_input
-            .random_paymaster_account
-            .random_accounts()?
-            .provider()
-            .clone();
 
         let account = test_input.random_paymaster_account.random_accounts()?;
+        let provider = account.provider().clone();
 
         // send a valid transaction first to increment the nonce (so that we can test nonce < current
         // nonce later)
@@ -50,11 +46,7 @@ impl RunnableTrait for TestCase {
         let (transaction_hash, _class_hash) =
             (declare_res.transaction_hash, declare_res.class_hash);
 
-        wait_for_sent_transaction(
-            transaction_hash,
-            &test_input.random_paymaster_account.random_accounts()?,
-        )
-        .await?;
+        wait_for_sent_transaction(transaction_hash, &account).await?;
 
         let factory = ContractFactory::new(
             declare_res.class_hash,

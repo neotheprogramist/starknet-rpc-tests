@@ -1,12 +1,11 @@
 use crate::{
+    assert_result,
     utils::v7::{
         accounts::account::ConnectedAccount, endpoints::errors::OpenRpcTestGenError,
         providers::provider::Provider,
     },
     RunnableTrait,
 };
-use colored::Colorize;
-use tracing::{error, info};
 
 #[derive(Clone, Debug)]
 pub struct TestCase {}
@@ -21,23 +20,9 @@ impl RunnableTrait for TestCase {
             .chain_id()
             .await;
 
-        match chain_id {
-            Ok(_) => {
-                info!(
-                    "{} {}",
-                    "\n✓ Rpc get_chain_id COMPATIBLE".green(),
-                    "✓".green()
-                );
-            }
-            Err(e) => {
-                error!(
-                    "{} {} {}",
-                    "✗ Rpc get_chain_id INCOMPATIBLE:".red(),
-                    e.to_string().red(),
-                    "✗".red()
-                );
-            }
-        }
+        let result = chain_id.is_ok();
+
+        assert_result!(result);
 
         Ok(Self {})
     }
