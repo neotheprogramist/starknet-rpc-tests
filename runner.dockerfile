@@ -31,6 +31,10 @@ COPY Cargo.toml Cargo.lock ./
 # Kopiowanie reszty projektu
 COPY . .
 
+RUN scarb build && cargo build
+
+RUN cargo build --release --bin openrpc-testgen-runner --features katana
+
 # Budowanie aplikacji
 WORKDIR /usr/src/starknet-rpc-tests/openrpc-testgen-runner
 ENV CARGO_TARGET_DIR=/usr/src/starknet-rpc-tests/openrpc-testgen-runner/target
@@ -47,6 +51,9 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
+COPY --from=builder /usr/src/starknet-rpc-tests/target /usr/src/starknet-rpc-tests/target
+
+
 # Kopiowanie skompilowanego pliku binarnego
 COPY --from=builder /usr/src/starknet-rpc-tests/openrpc-testgen-runner/target/release/openrpc-testgen-runner /usr/local/bin/openrpc-testgen-runner
 
@@ -54,7 +61,8 @@ COPY --from=builder /usr/src/starknet-rpc-tests/openrpc-testgen-runner/target/re
 WORKDIR /app
 
 # Domyślny punkt wejścia
-ENTRYPOINT ["/usr/local/bin/openrpc-testgen-runner"]
+# ENTRYPOINT ["/usr/local/bin/openrpc-testgen-runner"]
+ENTRYPOINT ["/bin/bash"]
 
 # Opcjonalnie, możesz dodać argumenty do aplikacji (np. --help)
 # CMD ["--help"]
