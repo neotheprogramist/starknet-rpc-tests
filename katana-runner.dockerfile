@@ -1,11 +1,13 @@
-# Build Stage
-FROM rust:latest AS builder
+FROM rust:1.82.0-slim-bookworm 
 
 RUN apt-get update && apt-get install -y \
     curl \
+    libssl-dev \
     git \
     bash \
+    make \
     unzip \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.14.1
@@ -20,4 +22,5 @@ COPY Cargo.toml Cargo.lock ./
 
 COPY . .
 
-RUN scarb build && cargo build --release --features katana
+RUN scarb build && cargo build --release --features katana 
+
