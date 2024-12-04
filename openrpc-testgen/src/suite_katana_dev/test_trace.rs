@@ -73,6 +73,9 @@ impl RunnableTrait for TestCase {
             assert_matches_result!(trace, TransactionTrace::Invoke(_));
         }
 
+        // Generate new block for the pending transactions.
+        dev_client.generate_block().await?;
+
         Ok(Self {})
     }
 }

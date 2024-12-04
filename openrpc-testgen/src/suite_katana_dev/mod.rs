@@ -42,6 +42,7 @@ use crate::{
 };
 
 pub mod test_trace;
+pub mod test_block_traces;
 
 #[derive(Clone, Debug)]
 pub struct TestSuiteKatanaDev {
