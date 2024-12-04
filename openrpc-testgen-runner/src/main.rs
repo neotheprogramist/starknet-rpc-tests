@@ -3,6 +3,7 @@ use clap::Parser;
 #[allow(unused_imports)]
 use openrpc_testgen::{
     suite_katana::{SetupInput as SetupInputKatana, TestSuiteKatana},
+    suite_katana_dev::{SetupInput as SetupInputKatanaDev, TestSuiteKatanaDev},
     suite_openrpc::{SetupInput, TestSuiteOpenRpc},
     RunnableTrait,
 };
@@ -44,5 +45,19 @@ async fn main() {
         };
 
         let _ = TestSuiteKatana::run(&suite_katana_input).await;
+    }
+    #[cfg(feature = "katana_dev")]
+    {
+        let suite_katana_input = SetupInputKatanaDev {
+            urls: args.urls.clone(),
+            paymaster_account_address: args.paymaster_account_address,
+            paymaster_private_key: args.paymaster_private_key,
+            udc_address: args.udc_address,
+            executable_account_sierra_path: args.executable_account_sierra_path.clone(),
+            executable_account_casm_path: args.executable_account_casm_path.clone(),
+            account_class_hash: args.account_class_hash,
+        };
+
+        let _ = TestSuiteKatanaDev::run(&suite_katana_input).await;
     }
 }
