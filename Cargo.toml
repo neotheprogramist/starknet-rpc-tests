@@ -35,7 +35,7 @@ indexmap = "2.2.5"
 lambdaworks-math = { version = "0.7.0", default-features = false }
 num-bigint = { version = "0.4", features = ["serde"], default-features = false }
 openrpc-checker = { path = "./openrpc-checker" }
-pathfinder-types = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "70bd8ad21c702abb51a7598ef4aab8064cf8eec0" }
+pathfinder-types = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "3ee4325a72481e526b7c4fa0592ad822a391658b" }
 rand = "0.8.5"
 regex = "1.10.6"
 reqwest = { version = "0.12.7", features = ["json", "blocking"] }
@@ -54,7 +54,7 @@ starknet-types-core = { version = "0.1.6", default-features = false, features = 
   "hash",
   "curve",
 ] }
-starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "70bd8ad21c702abb51a7598ef4aab8064cf8eec0" }
+starknet-types-rpc = { git = "https://github.com/neotheprogramist/types-rs.git", rev = "3ee4325a72481e526b7c4fa0592ad822a391658b" }
 thiserror = "1.0.63"
 tokio = { version = "1.39.3", features = ["full"] }
 tracing = "0.1.40"
