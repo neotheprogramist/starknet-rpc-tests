@@ -68,8 +68,6 @@ pub struct SetupInput {
     pub urls: Vec<Url>,
     pub paymaster_account_address: Felt,
     pub paymaster_private_key: Felt,
-    pub executable_account_sierra_path: PathBuf,
-    pub executable_account_casm_path: PathBuf,
     pub account_class_hash: Felt,
     pub udc_address: Felt,
 }
@@ -80,8 +78,10 @@ impl SetupableTrait for TestSuiteKatana {
     async fn setup(setup_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let (executable_account_flattened_sierra_class, executable_account_compiled_class_hash) =
             get_compiled_contract(
-                setup_input.executable_account_sierra_path.clone(),
-                setup_input.executable_account_casm_path.clone(),
+                PathBuf::from_str("target/dev/contracts_ExecutableAccount.contract_class.json")?,
+                PathBuf::from_str(
+                    "target/dev/contracts_ExecutableAccount.compiled_contract_class.json",
+                )?,
             )
             .await
             .unwrap();
