@@ -39,4 +39,5 @@ url.workspace = true
 no_unknown_fields = []
 rust-analyzer = []
 katana = []
+katana_dev = []
 openrpc = []

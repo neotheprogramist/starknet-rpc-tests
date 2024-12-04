@@ -9,6 +9,8 @@ use utils::v7::{
 pub mod macros;
 #[cfg(feature = "katana")]
 pub mod suite_katana;
+#[cfg(feature = "katana_dev")]
+pub mod suite_katana_dev;
 #[cfg(feature = "openrpc")]
 pub mod suite_openrpc;
 
