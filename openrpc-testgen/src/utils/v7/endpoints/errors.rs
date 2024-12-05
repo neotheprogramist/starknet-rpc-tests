@@ -14,7 +14,7 @@ use crate::{
     },
 };
 use core::fmt::{Display, Formatter, Result};
-use std::convert::Infallible;
+use std::{convert::Infallible, num::ParseIntError};
 
 #[derive(Error, Debug)]
 #[allow(dead_code)]
@@ -27,6 +27,8 @@ pub enum OpenRpcTestGenError {
     RunnerError(#[from] RunnerError),
     #[error(transparent)]
     CreationError(#[from] CreationError),
+    #[error(transparent)]
+    ContinuationTokenError(#[from] ContinuationTokenError),
     #[error(transparent)]
     MintError(#[from] MintError),
     #[error(transparent)]
@@ -75,6 +77,14 @@ pub enum OpenRpcTestGenError {
     TransactionIndexOverflow,
     #[error("Unexpected error occured: {0}")]
     Other(String),
+}
+
+#[derive(PartialEq, Eq, Debug, Error)]
+pub enum ContinuationTokenError {
+    #[error("Invalid data")]
+    InvalidToken,
+    #[error(transparent)]
+    ParseFailed(#[from] ParseIntError),
 }
 
 #[derive(Error, Debug)]

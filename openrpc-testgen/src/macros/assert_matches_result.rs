@@ -67,4 +67,38 @@ macro_rules! assert_matches_result {
             )?,
         }
     };
+    ($e:expr, $($pat:pat_param)|+ => $block:block) => {
+        match $e {
+            $($pat)|+ => {
+                $block
+            },
+            ref e => {
+                Err(
+                    $crate::macros::macros_errors::AssertionNoPanicError::AssertionNoPanicFailed(
+                        format!(
+                            "assertion failed: `{:?}` does not match `{}`",
+                            e, stringify!($($pat)|+)
+                        )
+                    )
+                )?
+            }
+        }
+    };
+    ($e:expr, $($pat:pat_param)|+ if $cond:expr => $block:block) => {
+        match $e {
+            $($pat)|+ if $cond => {
+                $block
+            },
+            ref e => {
+                Err(
+                    $crate::macros::macros_errors::AssertionNoPanicError::AssertionNoPanicFailed(
+                        format!(
+                            "assertion failed: `{:?}` does not match `{}` when condition `{}` is true",
+                            e, stringify!($($pat)|+), stringify!($cond)
+                        )
+                    )
+                )?
+            }
+        }
+    };
 }
