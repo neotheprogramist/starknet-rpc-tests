@@ -13,10 +13,10 @@ tokio.workspace = true
 openrpc-testgen = { path = "../openrpc-testgen", features = [
   "openrpc",
   "katana",
-  "katana_dev",
+  "katana_no_mining",
 ] }
 
 [features]
 katana = []
-katana_dev = []
+katana_no_mining = []
 openrpc = []

@@ -3,7 +3,7 @@ use clap::Parser;
 #[allow(unused_imports)]
 use openrpc_testgen::{
     suite_katana::{SetupInput as SetupInputKatana, TestSuiteKatana},
-    suite_katana_dev::{SetupInput as SetupInputKatanaDev, TestSuiteKatanaDev},
+    suite_katana_no_mining::{SetupInput as SetupInputKatanaNoMining, TestSuiteKatanaNoMining},
     suite_openrpc::{SetupInput, TestSuiteOpenRpc},
     RunnableTrait,
 };
@@ -46,9 +46,9 @@ async fn main() {
 
         let _ = TestSuiteKatana::run(&suite_katana_input).await;
     }
-    #[cfg(feature = "katana_dev")]
+    #[cfg(feature = "katana_no_mining")]
     {
-        let suite_katana_input = SetupInputKatanaDev {
+        let suite_katana_input = SetupInputKatanaNoMining {
             urls: args.urls.clone(),
             paymaster_account_address: args.paymaster_account_address,
             paymaster_private_key: args.paymaster_private_key,
@@ -58,6 +58,6 @@ async fn main() {
             account_class_hash: args.account_class_hash,
         };
 
-        let _ = TestSuiteKatanaDev::run(&suite_katana_input).await;
+        let _ = TestSuiteKatanaNoMining::run(&suite_katana_input).await;
     }
 }
