@@ -40,12 +40,10 @@ use crate::{
     RandomizableAccountsTrait, SetupableTrait,
 };
 
-pub mod test_declaring_already_existing_class;
-// pub mod test_get_blocks_from_hash;
-// pub mod test_get_blocks_from_num;
-
 pub mod test_concurrent_transactions_submissions;
 pub mod test_declare_and_deploy_contract;
+pub mod test_declaring_already_existing_class;
+pub mod test_deploy_accout;
 pub mod test_ensure_validator_have_valid_state;
 pub mod test_estimate_fee;
 pub mod test_send_txs_with_insufficient_fee;
