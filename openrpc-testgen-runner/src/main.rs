@@ -49,8 +49,6 @@ async fn main() {
             paymaster_account_address: args.paymaster_account_address,
             paymaster_private_key: args.paymaster_private_key,
             udc_address: args.udc_address,
-            executable_account_sierra_path: args.executable_account_sierra_path.clone(),
-            executable_account_casm_path: args.executable_account_casm_path.clone(),
             account_class_hash: args.account_class_hash,
         };
 
