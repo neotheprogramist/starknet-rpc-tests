@@ -29,14 +29,14 @@ impl RunnableTrait for TestCase {
         let chain_id = get_chain_id(&provider).await?;
 
         let account_invalid = SingleOwnerAccount::new(
-            account.provider(),
+            account.provider().clone(),
             LocalWallet::from(SigningKey::from_random()),
             account.address(),
             chain_id,
             ExecutionEncoding::New,
         );
         // initial sender's account nonce. use to assert how the txs validity change the account nonce.
-        let initial_nonce = account.get_nonce().await?;
+        let initial_nonce = account_invalid.get_nonce().await?;
 
         let increase_balance_call = Call {
             to: test_input.deployed_contract_address,
@@ -60,7 +60,9 @@ impl RunnableTrait for TestCase {
                 StarknetError::ValidationFailure(_)
             ))
         );
-        let nonce = account.get_nonce().await?;
+
+        // nonce shouldn't change for an invalid tx.
+        let nonce = account_invalid.get_nonce().await?;
         assert_eq_result!(nonce, initial_nonce);
 
         Ok(Self {})

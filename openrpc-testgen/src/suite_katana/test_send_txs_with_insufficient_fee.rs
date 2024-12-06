@@ -31,8 +31,11 @@ impl RunnableTrait for TestCase {
             calldata: vec![Felt::from_hex("0x50")?],
         };
 
+        // -----------------------------------------------------------------------
+        //  transaction with low max fee (underpriced).
+
         let res = account
-            .execute_v1(vec![increase_balance_call])
+            .execute_v1(vec![increase_balance_call.clone()])
             .max_fee(Felt::TWO)
             .send()
             .await;
@@ -50,6 +53,30 @@ impl RunnableTrait for TestCase {
             "Nonce shouldn't change in fee-enabled mode"
         );
 
+        // -----------------------------------------------------------------------
+        //  transaction with insufficient balance.
+
+        let fee = Felt::from(DEFAULT_PREFUNDED_ACCOUNT_BALANCE + 1);
+
+        let res = account
+            .execute_v1(vec![increase_balance_call])
+            .max_fee(fee)
+            .send()
+            .await;
+
+        assert_matches_result!(
+            res.unwrap_err(),
+            AccountError::Provider(ProviderError::StarknetError(
+                StarknetError::InsufficientAccountBalance
+            ))
+        );
+        // nonce shouldn't change for an invalid tx.
+        let nonce = account.get_nonce().await?;
+        assert_eq_result!(
+            nonce,
+            initial_nonce,
+            "Nonce shouldn't change in fee-enabled mode"
+        );
         Ok(Self {})
     }
 }
