@@ -1,14 +1,16 @@
 use crate::{
-    assert_eq_result, assert_matches_result,
+    assert_eq_result,
     utils::v7::{
         accounts::{
-            account::{Account, AccountError, ConnectedAccount},
+            account::{Account, ConnectedAccount},
             call::Call,
             creation::helpers::get_chain_id,
             single_owner::{ExecutionEncoding, SingleOwnerAccount},
         },
-        endpoints::{errors::OpenRpcTestGenError, utils::get_selector_from_name},
-        providers::{jsonrpc::StarknetError, provider::ProviderError},
+        endpoints::{
+            errors::OpenRpcTestGenError,
+            utils::{get_selector_from_name, wait_for_sent_transaction},
+        },
         signers::{key_pair::SigningKey, local_wallet::LocalWallet},
     },
     RandomizableAccountsTrait, RunnableTrait,
@@ -20,7 +22,7 @@ use starknet_types_core::felt::Felt;
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = super::TestSuiteKatana;
+    type Input = super::TestSuiteKatanaNoAccountValidation;
     async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let account = test_input.random_paymaster_account.random_accounts()?;
 
@@ -54,16 +56,11 @@ impl RunnableTrait for TestCase {
             .send()
             .await;
 
-        assert_matches_result!(
-            res.unwrap_err(),
-            AccountError::Provider(ProviderError::StarknetError(
-                StarknetError::ValidationFailure(_)
-            ))
-        );
+        wait_for_sent_transaction(res?.transaction_hash, &account_invalid).await?;
 
-        // nonce shouldn't change for an invalid tx.
+        // nonce should be incremented by 1 after a valid tx.
         let nonce = account_invalid.get_nonce().await?;
-        assert_eq_result!(nonce, initial_nonce);
+        assert_eq_result!(initial_nonce + 1, nonce);
 
         Ok(Self {})
     }

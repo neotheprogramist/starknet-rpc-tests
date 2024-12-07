@@ -39,5 +39,7 @@ url.workspace = true
 no_unknown_fields = []
 rust-analyzer = []
 katana = []
+katana_no_fee = []
+katana_no_account_validation = []
 katana_no_mining = []
 openrpc = []

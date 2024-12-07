@@ -34,11 +34,17 @@ pub enum OpenRpcTestGenError {
     #[error(transparent)]
     SignError(#[from] SignError),
     #[error(transparent)]
+    GetPublicKeyError(#[from] crate::utils::v7::signers::local_wallet::Infallible),
+    #[error(transparent)]
     AccountError_(
         #[from] AccountError<crate::utils::v7::accounts::single_owner::SignError<SignError>>,
     ),
     #[error(transparent)]
     AccountError(#[from] AccountError<SignError>),
+    #[error(transparent)]
+    AccountFactoryError(
+        #[from] crate::utils::v7::accounts::factory::AccountFactoryError<SignError>,
+    ),
     #[error(transparent)]
     ProviderError(#[from] ProviderError),
     #[error(transparent)]

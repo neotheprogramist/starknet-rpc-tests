@@ -2,11 +2,13 @@ use crate::{
     assert_eq_result, assert_matches_result,
     utils::v7::{
         accounts::{
-            account::{Account, AccountError, ConnectedAccount},
+            account::{Account, ConnectedAccount},
             call::Call,
         },
-        endpoints::{errors::OpenRpcTestGenError, utils::get_selector_from_name},
-        providers::{jsonrpc::StarknetError, provider::ProviderError},
+        endpoints::{
+            errors::OpenRpcTestGenError,
+            utils::{get_selector_from_name, wait_for_sent_transaction},
+        },
     },
     RandomizableAccountsTrait, RunnableTrait,
 };
@@ -19,7 +21,7 @@ pub const DEFAULT_PREFUNDED_ACCOUNT_BALANCE: u128 = 10 * u128::pow(10, 21);
 pub struct TestCase {}
 
 impl RunnableTrait for TestCase {
-    type Input = super::TestSuiteKatana;
+    type Input = super::TestSuiteKatanaNoFee;
     async fn run(test_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
         let account = test_input.random_paymaster_account.random_accounts()?;
 
@@ -40,17 +42,18 @@ impl RunnableTrait for TestCase {
             .send()
             .await;
 
-        assert_matches_result!(
-            res.unwrap_err(),
-            AccountError::Provider(ProviderError::StarknetError(
-                StarknetError::InsufficientMaxFee
-            ))
-        );
+        // In no fee mode, the transaction resources (ie max fee) is totally ignored. So doesn't
+        // matter what value is set, the transaction will always be executed successfully.
+        assert_matches_result!(res, Ok(tx) => {
+            let tx_hash = tx.transaction_hash;
+            assert_matches_result!(wait_for_sent_transaction(tx_hash, &account).await, Ok(_));
+        });
+
         let nonce = account.get_nonce().await?;
         assert_eq_result!(
+            initial_nonce + 1,
             nonce,
-            initial_nonce,
-            "Nonce shouldn't change in fee-enabled mode"
+            "Nonce should change in fee-disabled mode"
         );
 
         // -----------------------------------------------------------------------
@@ -64,19 +67,19 @@ impl RunnableTrait for TestCase {
             .send()
             .await;
 
-        assert_matches_result!(
-            res.unwrap_err(),
-            AccountError::Provider(ProviderError::StarknetError(
-                StarknetError::InsufficientAccountBalance
-            ))
-        );
-        // nonce shouldn't change for an invalid tx.
+        // in no fee mode, account balance is ignored. as long as the max fee (aka resources) is
+        // enough to at least run the account validation, the tx should be accepted.
+        // Wait for the transaction to be accepted
+        wait_for_sent_transaction(res?.transaction_hash, &account).await?;
+
+        // nonce should be incremented by 1 after a valid tx.
         let nonce = account.get_nonce().await?;
         assert_eq_result!(
+            initial_nonce + 2,
             nonce,
-            initial_nonce,
-            "Nonce shouldn't change in fee-enabled mode"
+            "Nonce should change in fee-disabled mode"
         );
+
         Ok(Self {})
     }
 }

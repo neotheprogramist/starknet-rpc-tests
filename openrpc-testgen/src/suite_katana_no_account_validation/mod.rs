@@ -41,13 +41,11 @@ use crate::{
     },
     RandomizableAccountsTrait, SetupableTrait,
 };
-pub mod test_block_traces;
-pub mod test_get_events_no_pending;
-pub mod test_get_events_with_pending;
-pub mod test_trace;
+
+pub mod test_send_txs_with_invalid_signature;
 
 #[derive(Clone, Debug)]
-pub struct TestSuiteKatanaNoMining {
+pub struct TestSuiteKatanaNoAccountValidation {
     pub random_paymaster_account: RandomSingleOwnerAccount,
     pub paymaster_private_key: Felt,
     pub random_executable_account: RandomSingleOwnerAccount,
@@ -66,7 +64,7 @@ pub struct SetupInput {
     pub udc_address: Felt,
 }
 
-impl SetupableTrait for TestSuiteKatanaNoMining {
+impl SetupableTrait for TestSuiteKatanaNoAccountValidation {
     type Input = SetupInput;
 
     async fn setup(setup_input: &Self::Input) -> Result<Self, OpenRpcTestGenError> {
@@ -595,5 +593,5 @@ impl fmt::Display for ContinuationToken {
 #[cfg(not(feature = "rust-analyzer"))]
 include!(concat!(
     env!("OUT_DIR"),
-    "/generated_tests_suite_katana_no_mining.rs"
+    "/generated_tests_suite_katana_no_account_validation.rs"
 ));
