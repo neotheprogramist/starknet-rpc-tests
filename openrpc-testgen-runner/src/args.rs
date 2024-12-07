@@ -24,4 +24,14 @@ pub struct Args {
 
     #[arg(long, env, help = "Class hash of account contract")]
     pub account_class_hash: Felt,
+
+    #[arg(short, long, value_enum)]
+    pub suite: Vec<Suite>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, clap::ValueEnum)]
+pub enum Suite {
+    OpenRpc,
+    Katana,
+    KatanaNoMining,
 }
