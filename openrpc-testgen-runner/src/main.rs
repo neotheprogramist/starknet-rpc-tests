@@ -3,6 +3,10 @@ use clap::Parser;
 #[allow(unused_imports)]
 use openrpc_testgen::{
     suite_katana::{SetupInput as SetupInputKatana, TestSuiteKatana},
+    suite_katana_no_account_validation::{
+        SetupInput as SetupInputKatanaNoAccountValidation, TestSuiteKatanaNoAccountValidation,
+    },
+    suite_katana_no_fee::{SetupInput as SetupInputKatanaNoFee, TestSuiteKatanaNoFee},
     suite_katana_no_mining::{SetupInput as SetupInputKatanaNoMining, TestSuiteKatanaNoMining},
     suite_openrpc::{SetupInput, TestSuiteOpenRpc},
     RunnableTrait,
@@ -77,6 +81,52 @@ async fn main() {
                 #[cfg(not(feature = "katana_no_mining"))]
                 {
                     error!("Feature 'katana_no_mining' not enabled during compilation phase.");
+                }
+            }
+            Suite::KatanaNoFee => {
+                #[cfg(feature = "katana_no_fee")]
+                {
+                    let suite_katana_no_fee_input = SetupInputKatanaNoFee {
+                        urls: args.urls.clone(),
+                        paymaster_account_address: args.paymaster_account_address.clone(),
+                        paymaster_private_key: args.paymaster_private_key.clone(),
+                        udc_address: args.udc_address.clone(),
+                        account_class_hash: args.account_class_hash.clone(),
+                    };
+                    if let Err(e) = TestSuiteKatanaNoFee::run(&suite_katana_no_fee_input).await {
+                        error!("Error while running TestSuiteKatanaNoFee: {}", e);
+                    }
+                }
+                #[cfg(not(feature = "katana_no_fee"))]
+                {
+                    error!("Feature 'katana_no_fee' not enabled during compilation phase.");
+                }
+            }
+            Suite::KatanaNoAccountValidation => {
+                #[cfg(feature = "katana_no_account_validation")]
+                {
+                    let suite_katana_no_account_validation_input =
+                        SetupInputKatanaNoAccountValidation {
+                            urls: args.urls.clone(),
+                            paymaster_account_address: args.paymaster_account_address.clone(),
+                            paymaster_private_key: args.paymaster_private_key.clone(),
+                            udc_address: args.udc_address.clone(),
+                            account_class_hash: args.account_class_hash.clone(),
+                        };
+                    if let Err(e) = TestSuiteKatanaNoAccountValidation::run(
+                        &suite_katana_no_account_validation_input,
+                    )
+                    .await
+                    {
+                        error!(
+                            "Error while running TestSuiteKatanaNoAccountValidation: {}",
+                            e
+                        );
+                    }
+                }
+                #[cfg(not(feature = "katana_no_account_validation"))]
+                {
+                    error!("Feature 'katana_no_account_validation' not enabled during compilation phase.");
                 }
             }
         }

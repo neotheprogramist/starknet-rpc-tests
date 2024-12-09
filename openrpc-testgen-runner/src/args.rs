@@ -34,4 +34,6 @@ pub enum Suite {
     OpenRpc,
     Katana,
     KatanaNoMining,
+    KatanaNoFee,
+    KatanaNoAccountValidation,
 }
