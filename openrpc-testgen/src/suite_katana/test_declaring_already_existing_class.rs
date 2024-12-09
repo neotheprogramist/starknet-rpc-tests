@@ -28,10 +28,11 @@ impl RunnableTrait for TestCase {
             PathBuf::from_str("target/dev/contracts_contracts_sample_contract_2_HelloStarknet.compiled_contract_class.json")?,
         )
         .await?;
-        let account = test_input.random_paymaster_account.random_accounts()?;
 
+        let account = test_input.random_paymaster_account.random_accounts()?;
         let provider = account.provider().clone();
 
+        // Declare the class for the first time.
         let declare_res = account
             .declare_v2(
                 Arc::new(flattened_sierra_class.clone()),
@@ -44,6 +45,7 @@ impl RunnableTrait for TestCase {
 
         wait_for_sent_transaction(transaction_hash, &account).await?;
 
+        // check that the class is actually declared
         let get_class = provider
             .clone()
             .get_class(BlockId::Tag(BlockTag::Pending), class_hash)
@@ -51,6 +53,15 @@ impl RunnableTrait for TestCase {
             .is_ok();
 
         assert_result!(get_class);
+
+        // -----------------------------------------------------------------------
+        // Declaring the same class again should fail with a ClassAlreadyDeclared error
+
+        // We set max fee manually to avoid perfoming fee estimation as we just want to test that the
+        // pool validation will reject the tx.
+        //
+        // The value of the max fee is also irrelevant here, as the validator will only perform static
+        // checks and will not run the account's validation.
 
         let declare_result = account
             .declare_v2(

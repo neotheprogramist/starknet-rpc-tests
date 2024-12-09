@@ -28,6 +28,8 @@ impl RunnableTrait for TestCase {
 
         let chain_id = get_chain_id(&provider).await?;
 
+        // starknet-rs doesn't provide a way to manually set the signatures so instead we create an
+        // account with random signer to simulate invalid signatures.
         let account_invalid = SingleOwnerAccount::new(
             account.provider().clone(),
             LocalWallet::from(SigningKey::from_random()),
