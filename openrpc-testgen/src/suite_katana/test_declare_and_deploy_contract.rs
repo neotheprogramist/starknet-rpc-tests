@@ -1,5 +1,5 @@
 use crate::{
-    assert_eq_result, assert_result,
+    assert_eq_result, assert_matches_result, assert_result,
     utils::v7::{
         accounts::{
             account::{Account, ConnectedAccount},
@@ -16,7 +16,7 @@ use crate::{
     RandomizableAccountsTrait, RunnableTrait,
 };
 use starknet_types_core::felt::Felt;
-use starknet_types_rpc::{BlockId, BlockTag};
+use starknet_types_rpc::{BlockId, BlockTag, DeclareTxnReceipt, TxnReceipt};
 
 use std::{path::PathBuf, sync::Arc};
 
@@ -46,9 +46,13 @@ impl RunnableTrait for TestCase {
             .await?;
 
         let (transaction_hash, class_hash) = (declare_res.transaction_hash, declare_res.class_hash);
-
         wait_for_sent_transaction(transaction_hash, &account).await?;
 
+        // check that the tx is executed successfully and return the correct receipt
+        let receipt = provider.get_transaction_receipt(transaction_hash).await?;
+        assert_matches_result!(receipt, TxnReceipt::Declare(DeclareTxnReceipt { .. }));
+
+        // check that the class is actually declared
         let get_class_ok = provider
             .clone()
             .get_class(BlockId::Tag(BlockTag::Pending), class_hash)
