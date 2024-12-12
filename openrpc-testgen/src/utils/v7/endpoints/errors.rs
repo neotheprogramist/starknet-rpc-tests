@@ -14,7 +14,7 @@ use crate::{
     },
 };
 use core::fmt::{Display, Formatter, Result};
-use std::{convert::Infallible, num::ParseIntError};
+use std::{collections::HashMap, convert::Infallible, num::ParseIntError};
 
 #[derive(Error, Debug)]
 #[allow(dead_code)]
@@ -83,6 +83,10 @@ pub enum OpenRpcTestGenError {
     TransactionIndexOverflow,
     #[error("Unexpected error occured: {0}")]
     Other(String),
+    #[error("One or more tests failed: {failed_tests:?}")]
+    TestSuiteFailure {
+        failed_tests: HashMap<String, String>,
+    },
 }
 
 #[derive(PartialEq, Eq, Debug, Error)]
