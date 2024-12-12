@@ -17,13 +17,14 @@ pub mod args;
 
 #[tokio::main]
 #[allow(unused_variables)]
+#[allow(unused_mut)]
 async fn main() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
 
     let args = Args::parse();
-    let failed_tests: HashMap<String, HashMap<String, String>> = HashMap::new(); // Suite -> {TestName -> ErrorMessage}
+    let mut failed_tests: HashMap<String, HashMap<String, String>> = HashMap::new(); // Suite -> {TestName -> ErrorMessage}
 
     for suite in args.suite {
         match suite {

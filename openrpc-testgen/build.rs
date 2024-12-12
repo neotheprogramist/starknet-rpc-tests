@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::env;
 use std::fs::{self, read_to_string, File};
 use std::io::Write;
