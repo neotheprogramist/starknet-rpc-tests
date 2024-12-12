@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::env;
 use std::fs::{self, read_to_string, File};
 use std::io::Write;
@@ -73,7 +72,7 @@ fn process_module_directory(
 
     writeln!(
         file,
-        "// Auto-generated code for module `{}`\nuse colored::Colorize;\nuse std::collections::HashMap;\n",
+        "// Auto-generated code for module `{}`\nuse colored::Colorize;\n",
         module_name
     )
     .unwrap();
@@ -113,19 +112,11 @@ fn process_module_directory(
 
     writeln!(
         file,
-        "        let mut failed_tests: HashMap<String, String> = HashMap::new();"
-    )
-    .unwrap();
-
-    writeln!(
-        file,
         "        let data = match {}::{}::setup(input).await {{
                 Ok(data) => data,
                 Err(e) => {{
                     tracing::error!(\"Setup failed with error: {{:?}}\", e);
-                    return Err(crate::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure {{
-                        failed_tests: HashMap::from([(\"setup\".to_string(), format!(\"Setup failed: {{:?}}\", e))])
-                    }});
+                    return Err(e);
                 }}
             }};",
         module_prefix, struct_name
@@ -135,17 +126,18 @@ fn process_module_directory(
     for test_name in test_cases {
         writeln!(
             file,
-            "        if let Err(e) = {}::{}::TestCase::run(&data).await {{
-                let error_msg = format!(\"✗ Test case src/{} failed with runtime error: {{:?}}\", e);
-                tracing::error!(\"{{}}\", error_msg.red());
-                failed_tests.insert(\"{}\".to_string(), error_msg);
-            }} else {{
-                tracing::info!(
+            "        match {}::{}::TestCase::run(&data).await {{
+                Ok(_) => tracing::info!(
                     \"{{}}\", 
                     \"✓ Test case src/{} completed successfully.\".green()
-                );
-            }}",
-            module_prefix, test_name, test_name, test_name, test_name
+                ),
+
+                Err(e) => tracing::error!(
+                    \"{{}}\", 
+                    format!(\"✗ Test case src/{} failed with runtime error: {{:?}}\", e).red()
+                ),
+        }}",
+            module_prefix, test_name, test_name, test_name
         )
         .unwrap();
     }
@@ -157,27 +149,13 @@ fn process_module_directory(
 
         writeln!(
             file,
-            "        if let Err(mut nested_failed) = {}::{}::{}::run(&data).await {{
-                failed_tests.extend(nested_failed.failed_tests);
-            }}",
+            "        {}::{}::{}::run(&data).await?;",
             module_prefix, nested_suite, nested_struct_name
         )
         .unwrap();
     }
 
-    writeln!(
-        file,
-        "        if !failed_tests.is_empty() {{
-                tracing::error!(\"One or more tests in the suite failed: {{:?}}\", failed_tests.keys());
-                return Err(crate::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure {{
-                    failed_tests
-                }});
-            }}
-
-            tracing::info!(\"All tests in the suite passed.\");
-            Ok(data)"
-    )
-    .unwrap();
+    writeln!(file, "        Ok(data)").unwrap();
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
 

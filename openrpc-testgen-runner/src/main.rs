@@ -11,8 +11,7 @@ use openrpc_testgen::{
     suite_openrpc::{SetupInput, TestSuiteOpenRpc},
     RunnableTrait,
 };
-use std::collections::HashMap;
-use tracing::{error, info};
+use tracing::error;
 pub mod args;
 
 #[tokio::main]
@@ -21,9 +20,7 @@ async fn main() {
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::INFO)
         .init();
-
     let args = Args::parse();
-    let failed_tests: HashMap<String, HashMap<String, String>> = HashMap::new(); // Suite -> {TestName -> ErrorMessage}
 
     for suite in args.suite {
         match suite {
@@ -38,11 +35,7 @@ async fn main() {
                         account_class_hash: args.account_class_hash.clone(),
                     };
                     if let Err(e) = TestSuiteOpenRpc::run(&suite_openrpc_input).await {
-                        if let openrpc_testgen::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure { failed_tests: suite_failed_tests } = e {
-                            failed_tests.insert("OpenRpc".to_string(), suite_failed_tests);
-                        } else {
-                            error!("Error while running TestSuiteOpenRpc: {}", e);
-                        }
+                        error!("Error while running TestSuiteOpenRpc: {}", e);
                     }
                 }
                 #[cfg(not(feature = "openrpc"))]
@@ -61,11 +54,7 @@ async fn main() {
                         account_class_hash: args.account_class_hash.clone(),
                     };
                     if let Err(e) = TestSuiteKatana::run(&suite_katana_input).await {
-                        if let openrpc_testgen::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure { failed_tests: suite_failed_tests } = e {
-                            failed_tests.insert("Katana".to_string(), suite_failed_tests);
-                        } else {
-                            error!("Error while running TestSuiteKatana: {}", e);
-                        }
+                        error!("Error while running TestSuiteKatana: {}", e);
                     }
                 }
                 #[cfg(not(feature = "katana"))]
@@ -86,11 +75,7 @@ async fn main() {
                     if let Err(e) =
                         TestSuiteKatanaNoMining::run(&suite_katana_no_mining_input).await
                     {
-                        if let openrpc_testgen::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure { failed_tests: suite_failed_tests } = e {
-                            failed_tests.insert("KatanaNoMining".to_string(), suite_failed_tests);
-                        } else {
-                            error!("Error while running TestSuiteKatanaNoMining: {}", e);
-                        }
+                        error!("Error while running TestSuiteKatanaNoMining: {}", e);
                     }
                 }
                 #[cfg(not(feature = "katana_no_mining"))]
@@ -109,11 +94,7 @@ async fn main() {
                         account_class_hash: args.account_class_hash.clone(),
                     };
                     if let Err(e) = TestSuiteKatanaNoFee::run(&suite_katana_no_fee_input).await {
-                        if let openrpc_testgen::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure { failed_tests: suite_failed_tests } = e {
-                            failed_tests.insert("KatanaNoFee".to_string(), suite_failed_tests);
-                        } else {
-                            error!("Error while running TestSuiteKatanaNoFee: {}", e);
-                        }
+                        error!("Error while running TestSuiteKatanaNoFee: {}", e);
                     }
                 }
                 #[cfg(not(feature = "katana_no_fee"))]
@@ -137,11 +118,10 @@ async fn main() {
                     )
                     .await
                     {
-                        if let openrpc_testgen::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure { failed_tests: suite_failed_tests } = e {
-                            failed_tests.insert("KatanaNoAccountValidation".to_string(), suite_failed_tests);
-                        } else {
-                            error!("Error while running TestSuiteKatanaNoAccountValidation: {}", e);
-                        }
+                        error!(
+                            "Error while running TestSuiteKatanaNoAccountValidation: {}",
+                            e
+                        );
                     }
                 }
                 #[cfg(not(feature = "katana_no_account_validation"))]
@@ -150,19 +130,5 @@ async fn main() {
                 }
             }
         }
-    }
-
-    if !failed_tests.is_empty() {
-        error!("Summary of failed tests:");
-        for (suite_name, tests) in &failed_tests {
-            error!("Suite: {}", suite_name);
-            for (test_name, error_msg) in tests {
-                error!("  Test: {}\n  Error: {}", test_name, error_msg);
-            }
-        }
-        std::process::exit(1);
-    } else {
-        info!("All test suites completed successfully.");
-        std::process::exit(0);
     }
 }
