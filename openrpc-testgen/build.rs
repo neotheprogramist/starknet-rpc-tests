@@ -90,111 +90,6 @@ fn process_directory_recursively(dir: &Path, out_dir: &str, parent_output_type: 
 ///
 /// # Returns
 /// The `Output` type of the current suite.
-// fn process_module_directory(
-//     module_path: &Path,
-//     out_dir: &str,
-//     parent_output_type: Option<&str>,
-// ) -> String {
-//     let module_name = module_path.strip_prefix("src").unwrap().to_str().unwrap();
-//     let module_name_safe = module_name.replace("/", "_");
-
-//     let generated_file_path =
-//         Path::new(out_dir).join(format!("generated_tests_{}.rs", module_name_safe));
-//     let mut file =
-//         File::create(&generated_file_path).expect("Could not create generated test file");
-
-//     writeln!(
-//         file,
-//         "// Auto-generated code for module `{}`\nuse colored::Colorize;\n",
-//         module_name
-//     )
-//     .unwrap();
-//     let module_prefix = format!("crate::{}", module_name.replace("/", "::"));
-
-//     let main_file_path = module_path.join("mod.rs");
-//     let struct_name = find_testsuite_struct_in_file(&main_file_path)
-//         .expect("Expected a struct starting with 'TestSuite' in mod.rs, but none was found");
-
-//     let (test_cases, nested_suites) = partition_modules(&main_file_path);
-
-//     writeln!(
-//         file,
-//         "impl crate::RunnableTrait for {}::{} {{",
-//         module_prefix, struct_name
-//     )
-//     .unwrap();
-
-//     if let Some(output_type) = parent_output_type {
-//         writeln!(file, "    type Input = {};", output_type).unwrap();
-//     } else {
-//         writeln!(file, "    type Input = SetupInput;").unwrap();
-//     }
-
-//     writeln!(
-//         file,
-//         "    async fn run(input: &Self::Input) -> Result<Self, crate::utils::v7::endpoints::errors::OpenRpcTestGenError> {{"
-//     )
-//     .unwrap();
-
-//     writeln!(
-//         file,
-//         "        tracing::info!(\"\\x1b[33m\n\n🚀 Starting Test Suite: {}::{} 🚀\\x1b[0m\");",
-//         module_prefix, struct_name
-//     )
-//     .unwrap();
-
-//     writeln!(
-//         file,
-//         "        let data = match {}::{}::setup(input).await {{
-//                 Ok(data) => data,
-//                 Err(e) => {{
-//                     tracing::error!(\"Setup failed with error: {{:?}}\", e);
-//                     return Err(e);
-//                 }}
-//             }};",
-//         module_prefix, struct_name
-//     )
-//     .unwrap();
-
-//     for test_name in test_cases {
-//         writeln!(
-//             file,
-//             "        match {}::{}::TestCase::run(&data).await {{
-//                 Ok(_) => tracing::info!(
-//                     \"{{}}\",
-//                     \"✓ Test case src/{} completed successfully.\".green()
-//                 ),
-
-//                 Err(e) => tracing::error!(
-//                     \"{{}}\",
-//                     format!(\"✗ Test case src/{} failed with runtime error: {{:?}}\", e).red()
-//                 ),
-//         }}",
-//             module_prefix, test_name, test_name, test_name
-//         )
-//         .unwrap();
-//     }
-
-//     for nested_suite in nested_suites.clone() {
-//         let nested_module_path = module_path.join(&nested_suite).join("mod.rs");
-//         let nested_struct_name = find_testsuite_struct_in_file(&nested_module_path)
-//             .expect("Expected a struct starting with 'TestSuite' in nested suite mod.rs, but none was found");
-
-//         writeln!(
-//             file,
-//             "        {}::{}::{}::run(&data).await?;",
-//             module_prefix, nested_suite, nested_struct_name
-//         )
-//         .unwrap();
-//     }
-
-//     writeln!(file, "        Ok(data)").unwrap();
-//     writeln!(file, "    }}").unwrap();
-//     writeln!(file, "}}").unwrap();
-
-//     format!("{}::{}", module_prefix, struct_name)
-// }
-
 fn process_module_directory(
     module_path: &Path,
     out_dir: &str,
@@ -303,12 +198,16 @@ fn process_module_directory(
     writeln!(
         file,
         "        if !failed_tests.is_empty() {{
-            return Err(crate::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure {{ failed_tests }});
-        }}"
+                tracing::error!(\"One or more tests in the suite failed: {{:?}}\", failed_tests.keys());
+                return Err(crate::utils::v7::endpoints::errors::OpenRpcTestGenError::TestSuiteFailure {{
+                    failed_tests
+                }});
+            }}
+            tracing::info!(\"All tests in the suite passed.\");
+            Ok(data)"
     )
     .unwrap();
 
-    writeln!(file, "        Ok(data)").unwrap();
     writeln!(file, "    }}").unwrap();
     writeln!(file, "}}").unwrap();
 
