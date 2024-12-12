@@ -11,6 +11,7 @@ use openrpc_testgen::{
     suite_openrpc::{SetupInput, TestSuiteOpenRpc},
     RunnableTrait,
 };
+use std::collections::HashMap;
 use tracing::error;
 pub mod args;
 
