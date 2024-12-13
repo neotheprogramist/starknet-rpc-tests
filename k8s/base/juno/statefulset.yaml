@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
         - name: init-juno
-          image: busybox
+          image: docker.io/busybox:1.37.0
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -33,7 +33,7 @@ spec:
               mountPath: /var/lib/juno
       containers:
         - name: juno
-          image: docker.io/nethermind/juno:latest
+          image: docker.io/nethermind/juno:v0.12.5
           ports:
             - containerPort: 6060
           args:
