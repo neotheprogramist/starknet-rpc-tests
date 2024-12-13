@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
         - name: init-juno
-          image: docker.io/busybox:latest
+          image: docker.io/busybox:1.37.0
           command: ["/bin/sh", "-c"]
           args:
             - |

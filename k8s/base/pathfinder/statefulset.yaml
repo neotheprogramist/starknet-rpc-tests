@@ -19,7 +19,7 @@ spec:
         fsGroup: 0
       initContainers:
         - name: init-pathfinder
-          image: docker.io/busybox:latest
+          image: docker.io/busybox:1.37.0
           command: ["/bin/sh", "-c"]
           args:
             - |
