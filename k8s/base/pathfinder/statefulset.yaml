@@ -19,7 +19,7 @@ spec:
         fsGroup: 0
       initContainers:
         - name: init-pathfinder
-          image: busybox
+          image: docker.io/busybox:latest
           command: ["/bin/sh", "-c"]
           args:
             - |
@@ -37,7 +37,9 @@ spec:
               mountPath: /usr/share/pathfinder/data
       containers:
         - name: pathfinder
-          image: docker.io/piotr439/pathfinder:eqlabs-certs
+          image: docker.io/eqlabs/pathfinder:latest
+          # image: docker.iopiotr439/pathfinder:14_4_certs
+          # image: docker.io/piotr439/pathfinder:eqlabs-certs
           ports:
             - containerPort: 80
             - containerPort: 9090

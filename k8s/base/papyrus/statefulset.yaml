@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: papyrus
-          image: ghcr.io/starkware-libs/papyrus:dev
+          image: ghcr.io/starkware-libs/papyrus:dvir-write_info_13_1-ec0ec35
           args:
             - "--base_layer.node_url"
             - "$(BASE_LAYER_NODE_URL)"
