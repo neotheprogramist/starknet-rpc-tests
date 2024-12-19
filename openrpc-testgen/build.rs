@@ -116,10 +116,6 @@ fn process_module_directory(
         .expect("Expected a struct starting with 'TestSuite' in mod.rs, but none was found");
 
     let (test_cases, nested_suites) = partition_modules(&main_file_path);
-    writeln!(file, "// Nested suites:").unwrap();
-    for nested_suite in &nested_suites {
-        writeln!(file, "// - {}", nested_suite).unwrap();
-    }
 
     writeln!(
         file,
@@ -243,7 +239,6 @@ fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
 
     (test_cases, nested_suites)
 }
-
 
 /// Finds the struct name starting with `TestSuite` in the given file.
 ///
