@@ -116,6 +116,10 @@ fn process_module_directory(
         .expect("Expected a struct starting with 'TestSuite' in mod.rs, but none was found");
 
     let (test_cases, nested_suites) = partition_modules(&main_file_path);
+    writeln!(file, "// Nested suites:").unwrap();
+    for nested_suite in &nested_suites {
+        writeln!(file, "// - {}", nested_suite).unwrap();
+    }
 
     writeln!(
         file,
@@ -237,22 +241,9 @@ fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
         }
     }
 
-    if let Some(parent_dir) = mod_file_path.parent() {
-        for entry in fs::read_dir(parent_dir).expect("Could not read directory") {
-            let entry = entry.expect("Could not read directory entry");
-            let path = entry.path();
-            if path.is_dir() {
-                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                    if name.starts_with("suite_") && !nested_suites.contains(&name.to_string()) {
-                        nested_suites.push(name.to_string());
-                    }
-                }
-            }
-        }
-    }
-
     (test_cases, nested_suites)
 }
+
 
 /// Finds the struct name starting with `TestSuite` in the given file.
 ///
