@@ -237,20 +237,6 @@ fn partition_modules(mod_file_path: &Path) -> (Vec<String>, Vec<String>) {
         }
     }
 
-    if let Some(parent_dir) = mod_file_path.parent() {
-        for entry in fs::read_dir(parent_dir).expect("Could not read directory") {
-            let entry = entry.expect("Could not read directory entry");
-            let path = entry.path();
-            if path.is_dir() {
-                if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                    if name.starts_with("suite_") && !nested_suites.contains(&name.to_string()) {
-                        nested_suites.push(name.to_string());
-                    }
-                }
-            }
-        }
-    }
-
     (test_cases, nested_suites)
 }
 
